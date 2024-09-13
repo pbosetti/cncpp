@@ -22,27 +22,31 @@ const map<Block::BlockType, string> Block::types = {
     {BlockType::CCWA, "CCW Arc"},
     {BlockType::NO_MOTION, "No Motion"}};
 
-data_t Block::Profile::lambda(data_t t, data_t &s) const {
+data_t Block::Profile::lambda(data_t t, data_t &s) {
   data_t r;
-
+  current_acc = 0.0;
   if (t < 0) {
     r = 0.0;
     s = 0.0;
   } else if (t < dt_1) { // acceleration
     r = a * pow(t, 2) / 2.0;
     s = a * t;
+    current_acc = a;
   } else if (t < dt_1 + dt_m) { // maintenance
     r = f * (dt_1 / 2.0 + (t - dt_1));
     s = f;
+    current_acc = 0.0;
   } else if (t < dt_1 + dt_m + dt_2) { // deceleration
     data_t t_2 = dt_1 + dt_m;
     r = f * dt_1 / 2.0 + f * (dt_m + t - t_2) +
         d / 2.0 * (pow(t, 2) + pow(t_2, 2)) - d * t * t_2;
     s = f + d * (t - t_2);
+    current_acc = d;
   } else {
     r = 1.0;
     s = 0.0;
-    return 0;
+    current_acc = 0.0;
+    return r;
   }
 
   r /= l;
@@ -79,7 +83,7 @@ Block::~Block() {
          << rang::style::reset << endl;
 }
 
-data_t Block::lambda(data_t t, data_t &s) const {
+data_t Block::lambda(data_t t, data_t &s) {
   return _profile.lambda(t, s);
 }
 
@@ -118,7 +122,7 @@ void Block::parse(const Machine *machine) {
   _parsed = true;
 }
 
-Point Block::interpolate(data_t lambda) const {
+Point Block::interpolate(data_t lambda) {
   Point result = _machine->setpoint();
   Point p0 = start_point();
 
@@ -144,7 +148,7 @@ Point Block::interpolate(data_t lambda) const {
   return result;
 }
 
-Point Block::interpolate(data_t time, data_t &lambda, data_t &speed) const {
+Point Block::interpolate(data_t time, data_t &lambda, data_t &speed) {
   lambda = this->lambda(time, speed);
   return interpolate(lambda);
 }
@@ -170,6 +174,15 @@ string Block::desc(bool colored) const {
      << format("T{:0>2} ", _tool) << format("M{:0>2} ", _m)
      << format("L{:>6.2f}mm ", _length) << format("DT{:>6.2f}s ", _profile.dt);
   return ss.str();
+}
+
+void Block::walk(std::function<void(Block &, data_t t, data_t l, data_t s)> f) {
+  data_t t = 0, l, s;
+  while (t < _profile.dt + _machine->tq()) {
+    l = lambda(t, s);
+    f(*this, t, l, s);
+    t += _machine->tq();
+  }
 }
 
 /*
@@ -347,6 +360,7 @@ void Block::arc() {
 
 #ifdef BLOCK_MAIN
 #include <iostream>
+#include <fstream>
 
 class Blocks {
 public:
@@ -374,7 +388,7 @@ public:
     }
   }
 
-  Block last() { return _blocks.back(); }
+  Block &last() { return _blocks.back(); }
 
 private:
   list<Block> _blocks;
@@ -384,12 +398,15 @@ private:
 int main() {
   Machine machine("machine.ini");
   Blocks blocks(&machine);
+  Block *test_block = nullptr;
 
   try {
     blocks << "N01 G00 X1 Y1 Z1";
     blocks << "N02 G1 Y2 Z2 T10 F2000"
-           << "G01 X200"
-           << "N4 G01 z100.3 y150 F3000";
+           << "G01 X200";
+    test_block = &blocks.last();
+
+    blocks << "N4 G01 z100.3 y150 F3000";
     blocks << "G50 M10"
            << "g00 x100 y100 z100";
     ;
@@ -398,6 +415,17 @@ int main() {
   }
 
   blocks.inspect();
+
+  cout << "Test block: " << test_block->desc() << endl;
+
+  ofstream out("test.csv");
+
+  out << "T, lambda, speed, acc, X, Y, Z" << endl;
+  test_block->walk([&out](Block &b, data_t t, data_t l, data_t s) {
+    Point pos = b.interpolate(l);
+    out << fmt::format("{:6.3f}, {:7.6f}, {:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}, {:7.3f}", t, l, s, b.profile().current_acc, pos.x(), pos.y(), pos.z()) << endl;
+  });
+  out.close();
 
   cout << "Exiting..." << endl;
 }

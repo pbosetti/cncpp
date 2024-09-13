@@ -27,7 +27,8 @@ class Block : Object {
     data_t fs, fe;           // initial and final feedrate
     data_t dt_1, dt_m, dt_2; // durations
     data_t dt;               // total duration
-    data_t lambda(data_t t, data_t &s) const;         // lambda function
+    data_t current_acc;       // current acceleration
+    data_t lambda(data_t t, data_t &s);         // lambda function
   };
 
   enum class BlockType {
@@ -50,9 +51,9 @@ public:
 
   // Methods
   void parse(const Machine *machine);
-  data_t lambda(data_t time, data_t &speed) const;
-  Point interpolate(data_t lambda) const;
-  Point interpolate(data_t time, data_t &lambda, data_t &speed) const;
+  data_t lambda(data_t time, data_t &speed);
+  Point interpolate(data_t lambda);
+  Point interpolate(data_t time, data_t &lambda, data_t &speed);
 
   // Accessors
   data_t dt() const { return _profile.dt; }
@@ -64,6 +65,8 @@ public:
   data_t r() const { return _r; }
   Point center() const { return _center; }
   Point target() const { return _target; }
+  Profile profile() const { return _profile; }
+  void walk(std::function<void(Block &, data_t t, data_t l, data_t s)> f);
 
 
 private:
