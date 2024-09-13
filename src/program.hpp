@@ -18,7 +18,7 @@
 
 namespace cncpp {
 
-class Program : Object {
+class Program : Object, public std::list<Block> {
 public:
   Program(const std::string &filename, Machine *machine);
   Program(Machine *machine) : _machine(machine) {}
@@ -29,21 +29,12 @@ public:
 
   Program &operator<<(string line);
 
-  size_t length() const { return _blocks.size(); }
-
   using iterator = std::list<Block>::iterator;
   using const_iterator = std::list<Block>::const_iterator;
 
-  iterator begin() { return _blocks.begin(); }
-  const_iterator begin() const { return _blocks.begin(); }
-  iterator end() { return _blocks.end(); }
-  const_iterator end() const { return _blocks.end(); }
-  Block &front() { return _blocks.front(); }
-  Block &back() { return _blocks.back(); }
-
 
 private:
-  std::list<Block> _blocks;
+  // std::list<Block> _blocks;
   Machine *_machine;
   std::string _filename;
 };

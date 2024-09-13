@@ -1,5 +1,6 @@
 #include "program.hpp"
 #include <fstream>
+#include <fmt/core.h>
 
 using namespace cncpp;
 using namespace std;
@@ -9,7 +10,8 @@ Program::Program(const string &filename, Machine *machine) : _machine(machine), 
 }
 
 Program::~Program() {
-  cout << "Destroying program..." << endl;
+  if (_debug)
+    cout << fmt::format("Destroying program with {:} blocks", size()) << endl;
 }
 
 void Program::load(const std::string &filename) {
@@ -27,18 +29,18 @@ void Program::load(const std::string &filename) {
 }
 
 Program &Program::operator<<(string line) {
-  if (_blocks.size() > 0) {
-    _blocks.emplace_back(line, _blocks.back());
+  if (size() > 0) {
+    emplace_back(line, back());
   } else {
-    _blocks.emplace_back(line);
+    emplace_back(line);
   }
-  _blocks.back().parse(_machine);
+  back().parse(_machine);
   return *this;
 }
 
 std::string Program::desc(bool colored) const {
   std::ostringstream ss;
-  for(auto &b : _blocks) {
+  for(auto &b : *this) {
     ss << b.desc() << ", previous: " << (b.prev ? to_string(b.prev->n()) : "(null)") << std::endl;
   }
   return ss.str();
@@ -79,6 +81,7 @@ int main(int argc, const char *argv[]) {
   } catch (CNCError &e) {
     std::cerr << "Error: " << e.what() << " in " << e.who() << std::endl;
   }
+
   cout << program.desc(false) << endl;
 
   for (auto &b : program) {

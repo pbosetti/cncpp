@@ -25,7 +25,7 @@ Global include for CNCpp project
 
 #define VERSION "@VERSION@"
 #define BUILD_TYPE "@CMAKE_BUILD_TYPE@"
-
+#define @BUILD_FLAG@
 #define NUMBERS_WIDTH "8" // Must be a string
 
 typedef double data_t;
@@ -45,6 +45,12 @@ namespace cncpp {
 class Object {
 public:
   virtual std::string desc(bool colored = true) const = 0;
+protected:
+#ifdef DEBUG_BUILD
+  bool _debug = false;
+#else
+  bool _debug = true;
+#endif
 };
 
 class CNCError : public std::exception {
