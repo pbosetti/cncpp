@@ -11,11 +11,14 @@
 			"*.hh": "c++",
 			"optional": "cpp",
 			"regex": "cpp",
-			"vector": "cpp"
+			"vector": "cpp",
+			"map": "cpp"
 		},
 		"C_Cpp.default.cppStandard": "c++20",
 		"C_Cpp.default.defines": [
-			"POINT_MAIN"
+			"POINT_MAIN",
+			"BLOCK_MAIN".
+			"PROGRAM_MAIN"
 		]
 	}
 }

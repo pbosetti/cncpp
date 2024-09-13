@@ -23,6 +23,11 @@ using namespace fmt;
 
 Point::Point(opt_data_t x, opt_data_t y, opt_data_t z) : _x(x), _y(y), _z(z) {}
 
+void Point::reset() {
+  _x.reset();
+  _y.reset();
+  _z.reset();
+}
 
 void Point::modal(Point p) {
   if (p._x && !_x) {
@@ -44,7 +49,7 @@ Point Point::delta(Point p) {
 }
 
 
-data_t Point::length() {
+data_t Point::length() const {
   if(!complete()) throw CNCError("Point is not complete", this);
   return sqrt(_x.value_or(0) * _x.value_or(0) + _y.value_or(0) * _y.value_or(0) + _z.value_or(0) * _z.value_or(0));
 }
@@ -62,7 +67,7 @@ string coord_str(opt_data_t coord, optional<fmt::color> color = nullopt) {
 }
 
 
-string Point::desc(bool colored) {
+string Point::desc(bool colored) const {
   stringstream ss;
   using col_t = optional<fmt::color>;
   ss << "[" << 
@@ -73,7 +78,7 @@ string Point::desc(bool colored) {
 }
 
 
-vector<data_t> Point::vec() {
+vector<data_t> Point::vec() const {
   if(!complete()) throw CNCError("Point is not complete", this);
   return vector<data_t>{
     _x.value(),
@@ -111,6 +116,7 @@ int main() {
 
   p2.modal(p1);
   p3.modal(p2);
+  p3.z(30);
 
   cout << "After modal:" << endl;
   cout << p1.desc();

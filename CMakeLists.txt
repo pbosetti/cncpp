@@ -52,7 +52,17 @@ file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 
 
 add_library(cncpp STATIC ${SRC_FILES})
+target_link_libraries(cncpp PRIVATE fmt::fmt)
 
 add_executable(point_test ${SRC_DIR}/point.cpp)
-target_link_libraries(point_test PRIVATE fmt::fmt)
+target_link_libraries(point_test PRIVATE cncpp)
 target_compile_definitions(point_test PRIVATE POINT_MAIN)
+
+add_executable(block_test ${SRC_DIR}/block.cpp)
+target_link_libraries(block_test PRIVATE cncpp)
+target_compile_definitions(block_test PRIVATE BLOCK_MAIN)
+
+add_executable(program_test ${SRC_DIR}/program.cpp)
+target_link_libraries(program_test PRIVATE cncpp)
+target_compile_definitions(program_test PRIVATE PROGRAM_MAIN)
+

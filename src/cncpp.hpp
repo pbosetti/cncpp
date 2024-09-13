@@ -11,7 +11,6 @@ Global include for CNCpp project
 #ifndef CNCPP_HPP
 #define CNCPP_HPP
 
-#include "point.hpp"
 #include <optional>
 #include <string>
 
@@ -45,18 +44,18 @@ namespace cncpp {
 
 class Object {
 public:
-  virtual std::string desc(bool colored = true) = 0;
+  virtual std::string desc(bool colored = true) const = 0;
 };
 
 class CNCError : public std::exception {
 public:
-  CNCError(const char *msg, Object *o) : _msg(msg), _obj(o) {}
+  CNCError(const char *msg, const Object *o) : _msg(msg), _obj(o) {}
   const char *what() const noexcept override { return _msg; }
   std::string who() noexcept { return _obj->desc(false); }
 
 private:
   const char *_msg;
-  Object *_obj;
+  const Object *_obj;
 };
 
 } // namespace cncpp
