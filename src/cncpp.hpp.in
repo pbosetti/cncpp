@@ -45,8 +45,9 @@ namespace cncpp {
 class Object {
 public:
   virtual std::string desc(bool colored = true) const = 0;
+
 protected:
-#ifdef DEBUG_BUILD
+#ifdef RELEASE_BUILD
   bool _debug = false;
 #else
   bool _debug = true;

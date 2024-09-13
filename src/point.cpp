@@ -8,15 +8,14 @@
 */
 
 #include "point.hpp"
-#include <sstream>
-#include <math.h>
-#include <string>
-#include <iostream>
-#include <fmt/format.h>
-#include <fmt/color.h>
 #include <fmt/base.h>
+#include <fmt/color.h>
+#include <fmt/format.h>
 #include <fmt/ranges.h>
-
+#include <iostream>
+#include <math.h>
+#include <sstream>
+#include <string>
 
 using namespace cncpp;
 using namespace fmt;
@@ -41,61 +40,57 @@ void Point::modal(Point p) {
   }
 }
 
-
 Point Point::delta(Point p) {
-  if(!complete() || !p.complete()) throw CNCError("Point is not complete", this);
-  Point out(_x.value_or(0) - p._x.value_or(0), _y.value_or(0) - p._y.value_or(0), _z.value_or(0) - p._z.value_or(0));
+  if (!complete() || !p.complete())
+    throw CNCError("Point is not complete", this);
+  Point out(_x.value_or(0) - p._x.value_or(0),
+            _y.value_or(0) - p._y.value_or(0),
+            _z.value_or(0) - p._z.value_or(0));
   return out;
 }
 
-
 data_t Point::length() const {
-  if(!complete()) throw CNCError("Point is not complete", this);
-  return sqrt(_x.value_or(0) * _x.value_or(0) + _y.value_or(0) * _y.value_or(0) + _z.value_or(0) * _z.value_or(0));
+  if (!complete())
+    throw CNCError("Point is not complete", this);
+  return sqrt(_x.value_or(0) * _x.value_or(0) +
+              _y.value_or(0) * _y.value_or(0) +
+              _z.value_or(0) * _z.value_or(0));
 }
-
 
 string coord_str(opt_data_t coord, optional<fmt::color> color = nullopt) {
   string str;
-  if (coord && color) 
-    str = format("{:" NUMBERS_WIDTH ".3f}", styled(coord.value(), fmt::fg(color.value())));
+  if (coord && color)
+    str = format("{:" NUMBERS_WIDTH ".3f}",
+                 styled(coord.value(), fmt::fg(color.value())));
   else if (coord)
     str = format("{:" NUMBERS_WIDTH ".3f}", coord.value());
-  else 
+  else
     str = format("{:>" NUMBERS_WIDTH "}", "-");
   return str;
 }
 
-
 string Point::desc(bool colored) const {
   stringstream ss;
   using col_t = optional<fmt::color>;
-  ss << "[" << 
-    coord_str(_x, colored ? col_t(color::red) : nullopt) << ", " << 
-    coord_str(_y, colored ? col_t(color::green) : nullopt) << ", " << 
-    coord_str(_z, colored ? col_t(color::blue) : nullopt) << "]";
+  ss << "[" << coord_str(_x, colored ? col_t(color::red) : nullopt) << ", "
+     << coord_str(_y, colored ? col_t(color::green) : nullopt) << ", "
+     << coord_str(_z, colored ? col_t(color::blue) : nullopt) << "]";
   return ss.str();
 }
 
-
 vector<data_t> Point::vec() const {
-  if(!complete()) throw CNCError("Point is not complete", this);
-  return vector<data_t>{
-    _x.value(),
-    _y.value(),
-    _z.value()
-  };
+  if (!complete())
+    throw CNCError("Point is not complete", this);
+  return vector<data_t>{_x.value(), _y.value(), _z.value()};
 }
 
-
-
 /*
-  _____         _   
- |_   _|__  ___| |_ 
+  _____         _
+ |_   _|__  ___| |_
    | |/ _ \/ __| __|
-   | |  __/\__ \ |_ 
+   | |  __/\__ \ |_
    |_|\___||___/\__|
-                    
+
 */
 
 #ifdef POINT_MAIN

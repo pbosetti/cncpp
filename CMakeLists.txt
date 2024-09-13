@@ -36,22 +36,27 @@ FetchContent_Declare(tomlplusplus
     GIT_SHALLOW    TRUE
 )
 
-FetchContent_Declare(
-  fmt
+FetchContent_Declare(fmt
   GIT_REPOSITORY https://github.com/fmtlib/fmt
   GIT_TAG        11.0.2
   GIT_SHALLOW    TRUE
 )
 
-FetchContent_MakeAvailable(tomlplusplus fmt)
+FetchContent_Declare(rang
+  GIT_REPOSITORY https://github.com/agauniyal/rang.git
+  GIT_TAG v3.2
+  GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(tomlplusplus fmt rang)
 
 include_directories(
   ${tomlplusplus_SOURCE_DIR}/include
   ${fmt_SOURCE_DIR}/include
+  ${rang_SOURCE_DIR}/include
 )
 
 file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
-
 
 
 add_library(cncpp STATIC ${SRC_FILES})

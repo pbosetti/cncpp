@@ -32,7 +32,6 @@ public:
   using iterator = std::list<Block>::iterator;
   using const_iterator = std::list<Block>::const_iterator;
 
-
 private:
   // std::list<Block> _blocks;
   Machine *_machine;

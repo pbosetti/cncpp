@@ -1,27 +1,26 @@
 
 
-#include "cncpp.hpp"
 #include "block.hpp"
-#include <iostream>
+#include "cncpp.hpp"
+#include <fmt/color.h>
+#include <fmt/format.h>
 #include <iomanip>
-#include <sstream>
+#include <iostream>
 #include <list>
 #include <memory>
-#include <fmt/format.h>
-#include <fmt/color.h>
-
+#include <rang.hpp>
+#include <sstream>
 
 using namespace std;
 using namespace cncpp;
-
+using namespace fmt;
 
 const map<Block::BlockType, string> Block::types = {
-  {BlockType::RAPID, "Rapid"},
-  {BlockType::LINE, "Line"},
-  {BlockType::CWA, "CW Arc"},
-  {BlockType::CCWA, "CCW Arc"},
-  {BlockType::NO_MOTION, "No Motion"}
-};
+    {BlockType::RAPID, "Rapid"},
+    {BlockType::LINE, "Line"},
+    {BlockType::CWA, "CW Arc"},
+    {BlockType::CCWA, "CCW Arc"},
+    {BlockType::NO_MOTION, "No Motion"}};
 
 data_t Block::Profile::lambda(data_t t, data_t &s) const {
   data_t r;
@@ -45,20 +44,19 @@ data_t Block::Profile::lambda(data_t t, data_t &s) const {
     s = 0.0;
     return 0;
   }
-  
+
   r /= l;
   s *= 60; // convert to mm/min
   return r;
 }
 
-
 /*
-  ____        _     _ _                       _   _               _     
- |  _ \ _   _| |__ | (_) ___   _ __ ___   ___| |_| |__   ___   __| |___ 
+  ____        _     _ _                       _   _               _
+ |  _ \ _   _| |__ | (_) ___   _ __ ___   ___| |_| |__   ___   __| |___
  | |_) | | | | '_ \| | |/ __| | '_ ` _ \ / _ \ __| '_ \ / _ \ / _` / __|
  |  __/| |_| | |_) | | | (__  | | | | | |  __/ |_| | | | (_) | (_| \__ \
  |_|    \__,_|_.__/|_|_|\___| |_| |_| |_|\___|\__|_| |_|\___/ \__,_|___/
-                                                                        
+
 */
 Block::Block(string line) : _line(line), _n(0) {}
 
@@ -75,9 +73,10 @@ Block::Block(string line, Block &p) : Block(line) {
   _m = 0;
 }
 
-
 Block::~Block() {
-  cout << fmt::format("Block {:>3} destroyed.", _n) << endl;
+  if (_debug)
+    cout << rang::style::italic << fmt::format("Block {:>3} destroyed.", _n)
+         << rang::style::reset << endl;
 }
 
 data_t Block::lambda(data_t t, data_t &s) const {
@@ -107,10 +106,9 @@ void Block::parse(const Machine *machine) {
   case BlockType::CWA:
   case BlockType::CCWA:
     arc();
-    _arc_feedrate = min(
-      _feedrate,
-      pow(3.0 / 4.0 * pow(_machine->A(), 2) * pow(_r, 2), 0.25) * 60
-    );
+    _arc_feedrate =
+        min(_feedrate,
+            pow(3.0 / 4.0 * pow(_machine->A(), 2) * pow(_r, 2), 0.25) * 60);
     compute();
     break;
   default:
@@ -123,7 +121,7 @@ void Block::parse(const Machine *machine) {
 Point Block::interpolate(data_t lambda) const {
   Point result = _machine->setpoint();
   Point p0 = start_point();
-  
+
   // 1. the block describes a segment
   // x(t) = x(0) + d_x * lambda(t)
   // y(t) = y(0) + d_y * lambda(t)
@@ -146,7 +144,6 @@ Point Block::interpolate(data_t lambda) const {
   return result;
 }
 
-
 Point Block::interpolate(data_t time, data_t &lambda, data_t &speed) const {
   lambda = this->lambda(time, speed);
   return interpolate(lambda);
@@ -157,52 +154,55 @@ string Block::desc(bool colored) const {
     return fmt::format("[{:0>3}] {:} (parse error)", _n, _line);
   }
   stringstream ss;
+  auto color = color::red;
   using col_t = optional<fmt::color>;
-  ss << fmt::format("[{:0>3}] ", _n) <<
-    fmt::format("G{:0>2} ", static_cast<int>(_type)) <<
-    fmt::format("({:-^9}) ", Block::types.at(_type)) <<
-    target().desc() <<
-    fmt::format(" F{:>5.0f} ", _feedrate) <<
-    fmt::format("S{:>4.0f} ", _spindle) <<
-    fmt::format("T{:0>2} ", _tool) <<
-    fmt::format("M{:0>2} ", _m);
+  ss << format("[{:0>3}] ", _n);
+  if (_type == BlockType::NO_MOTION) {
+    color = color::gray;
+  } else if (_type == BlockType::RAPID) {
+    color = color::magenta;
+  } else {
+    color = color::cyan;
+  }
+  ss << format("G{:0>2} ", styled(static_cast<int>(_type), fg(color)))
+     << format("({:-^9}) ", Block::types.at(_type)) << target().desc()
+     << format(" F{:>5.0f} ", _feedrate) << format("S{:>4.0f} ", _spindle)
+     << format("T{:0>2} ", _tool) << format("M{:0>2} ", _m)
+     << format("L{:>6.2f}mm ", _length) << format("DT{:>6.2f}s ", _profile.dt);
   return ss.str();
 }
 
-
-
 /*
-  ____       _            _                        _   _               _     
- |  _ \ _ __(_)_   ____ _| |_ ___   _ __ ___   ___| |_| |__   ___   __| |___ 
+  ____       _            _                        _   _               _
+ |  _ \ _ __(_)_   ____ _| |_ ___   _ __ ___   ___| |_| |__   ___   __| |___
  | |_) | '__| \ \ / / _` | __/ _ \ | '_ ` _ \ / _ \ __| '_ \ / _ \ / _` / __|
  |  __/| |  | |\ V / (_| | ||  __/ | | | | | |  __/ |_| | | | (_) | (_| \__ \
  |_|   |_|  |_| \_/ \__,_|\__\___| |_| |_| |_|\___|\__|_| |_|\___/ \__,_|___/
-                                                                             
+
 */
 
 void Block::parse_token(string token) {
   char cmd = toupper(token[0]);
   string arg = token.substr(1);
-  switch (cmd)
-  {
+  switch (cmd) {
   case 'N':
     _n = stoi(arg);
     if (prev && _n <= prev->n()) {
       throw CNCError("Block number must be greater than previous block", this);
     }
     break;
-  
+
   case 'G':
     _type = static_cast<BlockType>(stoi(arg));
     if (_type > BlockType::NO_MOTION) {
       throw CNCError("Unknown G-code", this);
     }
     break;
-  
+
   case 'X':
     _target.x(stod(arg));
     break;
-  
+
   case 'Y':
     _target.y(stod(arg));
     break;
@@ -217,7 +217,7 @@ void Block::parse_token(string token) {
 
   case 'J':
     _j = stod(arg);
-    break;  
+    break;
 
   case 'R':
     _r = stod(arg);
@@ -234,7 +234,7 @@ void Block::parse_token(string token) {
   case 'T':
     _tool = stoi(arg);
     break;
-  
+
   case 'M':
     _m = stoi(arg);
     break;
@@ -246,7 +246,6 @@ void Block::parse_token(string token) {
     break;
   }
 }
-
 
 Point Block::start_point() const {
   return prev ? prev->target() : _machine->zero();
@@ -316,7 +315,9 @@ void Block::arc() {
     yc = y0 + _j;
     r2 = hypot(xf - xc, yf - yc);
     if (fabs(_r - r2) > _machine->error()) {
-      throw CNCError(fmt::format("Arc endpoints mismatch error ({:})", _r - r2).c_str(), this);
+      throw CNCError(
+          fmt::format("Arc endpoints mismatch error ({:})", _r - r2).c_str(),
+          this);
     }
   }
   _center.x(xc);
@@ -335,30 +336,25 @@ void Block::arc() {
   _r = fabs(_r);
 }
 
-
-
 /*
-  _____         _   
- |_   _|__  ___| |_ 
+  _____         _
+ |_   _|__  ___| |_
    | |/ _ \/ __| __|
-   | |  __/\__ \ |_ 
+   | |  __/\__ \ |_
    |_|\___||___/\__|
-                    
+
 */
 
 #ifdef BLOCK_MAIN
 #include <iostream>
 
 class Blocks {
-  public:
-
+public:
   Blocks(Machine *machine) : _machine(machine) {
     cout << _machine->desc() << endl;
   }
 
-  ~Blocks() {
-    cout << "Destroying blocks list..." << endl;
-  }
+  ~Blocks() { cout << "Destroying blocks list..." << endl; }
 
   Blocks &operator<<(string line) {
     if (_blocks.size() > 0) {
@@ -371,20 +367,19 @@ class Blocks {
   }
 
   void inspect() {
-    for(auto &b : _blocks) {
-      cout << b.desc() << ", previous: " << (b.prev ? to_string(b.prev->n()) : "(null)") << endl;
+    for (auto &b : _blocks) {
+      cout << b.desc()
+           << ", previous: " << (b.prev ? to_string(b.prev->n()) : "(null)")
+           << endl;
     }
   }
 
-  Block last() {
-    return _blocks.back();
-  }
+  Block last() { return _blocks.back(); }
 
-  private:
+private:
   list<Block> _blocks;
   Machine *_machine;
 };
-
 
 int main() {
   Machine machine("machine.ini");
@@ -392,8 +387,12 @@ int main() {
 
   try {
     blocks << "N01 G00 X1 Y1 Z1";
-    blocks << "N02 G1 Y2 Z2 T10 F2000" << "G01 X200" << "N4 G01 z100.3 y150 F3000";
-    blocks << "G50 M10" << "g00 x100 y100 z100";;
+    blocks << "N02 G1 Y2 Z2 T10 F2000"
+           << "G01 X200"
+           << "N4 G01 z100.3 y150 F3000";
+    blocks << "G50 M10"
+           << "g00 x100 y100 z100";
+    ;
   } catch (CNCError &e) {
     cerr << "Error: " << e.what() << " in " << e.who() << endl;
   }
