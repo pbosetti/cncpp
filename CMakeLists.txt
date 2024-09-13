@@ -23,8 +23,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 set(MAIN_DIR ${SRC_DIR}/main)
 
+set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/usr CACHE PATH "Install path prefix" FORCE)
+
 message(STATUS "SRC_DIR: ${SRC_DIR}")
 message(STATUS "MAIN_DIR: ${MAIN_DIR}")
+message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 
 
@@ -88,19 +91,40 @@ configure_file(
 
 # main Library
 file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
+file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 add_library(cncpp STATIC ${SRC_FILES})
 target_link_libraries(cncpp PRIVATE fmt::fmt)
+set_target_properties(cncpp PROPERTIES PUBLIC_HEADER "${HEADERS}")
+list(APPEND TARGET_LIST cncpp)
 
 # Test executables
 add_executable(point_test ${SRC_DIR}/point.cpp)
 target_link_libraries(point_test PRIVATE cncpp)
 target_compile_definitions(point_test PRIVATE POINT_MAIN)
+list(APPEND TARGET_LIST point_test)
 
 add_executable(block_test ${SRC_DIR}/block.cpp)
 target_link_libraries(block_test PRIVATE cncpp)
 target_compile_definitions(block_test PRIVATE BLOCK_MAIN)
+list(APPEND TARGET_LIST block_test)
 
 add_executable(program_test ${SRC_DIR}/program.cpp)
 target_link_libraries(program_test PRIVATE cncpp)
 target_compile_definitions(program_test PRIVATE PROGRAM_MAIN)
+list(APPEND TARGET_LIST program_test)
 
+
+#   ___           _        _ _ 
+#  |_ _|_ __  ___| |_ __ _| | |
+#   | || '_ \/ __| __/ _` | | |
+#   | || | | \__ \ || (_| | | |
+#  |___|_| |_|___/\__\__,_|_|_|
+#  
+
+install(TARGETS ${TARGET_LIST}
+  BUNDLE DESTINATION bin
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  ARCHIVE DESTINATION lib
+  PUBLIC_HEADER DESTINATION include
+)

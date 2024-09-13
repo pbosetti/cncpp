@@ -21,7 +21,7 @@ using namespace std;
 
 namespace cncpp {
 
-class Block : Object {
+class Block final : Object {
 
   struct Profile {
     data_t a, d;             // actual accelerations
@@ -33,6 +33,8 @@ class Block : Object {
     data_t lambda(data_t t, data_t &s);         // lambda function
   };
 
+public:
+
   enum class BlockType {
     RAPID = 0, 
     LINE = 1, 
@@ -41,10 +43,8 @@ class Block : Object {
     NO_MOTION
   };
 
-
   static const map<BlockType, string> types;
 
-public:
   // Lifecycle
   Block(string line, Block &prev);
   Block(string line);

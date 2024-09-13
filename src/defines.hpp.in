@@ -8,8 +8,8 @@
 Global include for CNCpp project
 Author: Paolo Bosetti, 2024
 */
-#ifndef CNCPP_HPP
-#define CNCPP_HPP
+#ifndef DEFINES_HPP
+#define DEFINES_HPP
 
 #include <optional>
 #include <string>
@@ -42,6 +42,10 @@ typedef std::optional<data_t> opt_data_t;
 
 namespace cncpp {
 
+static std::string version() {
+  return VERSION " (" BUILD_TYPE ")";
+}
+
 class Object {
 public:
   virtual std::string desc(bool colored = true) const = 0;
@@ -67,4 +71,4 @@ private:
 
 } // namespace cncpp
 
-#endif // CNCPP_HPP
+#endif // DEFINES_HPP

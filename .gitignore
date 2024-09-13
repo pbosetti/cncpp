@@ -1,4 +1,6 @@
 /build/
 src/defines.hpp
+usr/
 *.dgraph
 /*.csv
+.Rproj.user

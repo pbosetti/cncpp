@@ -8,8 +8,8 @@
 CNCpp master include file
 Author: Paolo Bosetti, 2024
 */
-#ifndef DCDCPP_HPP
-#define DCDCPP_HPP
+#ifndef CNCPP_HPP
+#define CNCPP_HPP
 #include "defines.hpp"
 #include "point.hpp"
 #include "block.hpp"
@@ -17,4 +17,4 @@ Author: Paolo Bosetti, 2024
 #include "program.hpp"
 
 
-#endif // DCDCPP_HPP
+#endif // CNCPP_HPP
