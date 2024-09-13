@@ -5,8 +5,9 @@
  |  __/ (_) | | | | | |_  | (__| | (_| \__ \__ \
  |_|   \___/|_|_| |_|\__|  \___|_|\__,_|___/___/
 
+Point class implementation
+Author: Paolo Bosetti, 2024
 */
-
 #include "point.hpp"
 #include <fmt/base.h>
 #include <fmt/color.h>

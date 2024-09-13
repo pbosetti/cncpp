@@ -1,23 +1,25 @@
 /*
-  ____  _            _    
- | __ )| | ___   ___| | __
- |  _ \| |/ _ \ / __| |/ /
- | |_) | | (_) | (__|   < 
- |____/|_|\___/ \___|_|\_\
-                          
+  ____  _            _           _                                       
+ | __ )| | ___   ___| | __   ___| | __ _ ___ ___                         
+ |  _ \| |/ _ \ / __| |/ /  / __| |/ _` / __/ __|                        
+ | |_) | | (_) | (__|   <  | (__| | (_| \__ \__ \                        
+ |____/|_|\___/ \___|_|\_\  \___|_|\__,_|___/___/                        
+                                                                         
+Block class header file
+Author: Paolo Bosetti, 2024
 */
 #ifndef BLOCK_HPP
 #define BLOCK_HPP
 
-#include "cncpp.hpp"
+#include "defines.hpp"
 #include "point.hpp"
 #include "machine.hpp"
 #include <map>
 
 using namespace std;
 
-namespace cncpp {
 
+namespace cncpp {
 
 class Block : Object {
 

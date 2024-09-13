@@ -5,12 +5,14 @@
  |  __/| | | (_) | (_| | | | (_| | | | | | | | (__| | (_| \__ \__ \
  |_|   |_|  \___/ \__, |_|  \__,_|_| |_| |_|  \___|_|\__,_|___/___/
                   |___/
+Program class header
+Author: Paolo Bosetti, 2024
 */
 #ifndef PROGRAM_HPP
 #define PROGRAM_HPP
 
 #include "block.hpp"
-#include "cncpp.hpp"
+#include "defines.hpp"
 #include "machine.hpp"
 #include <iostream>
 #include <list>

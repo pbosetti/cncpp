@@ -5,11 +5,13 @@
  | |  | | (_| | (__| | | | | | | |  __/ | (__| | (_| \__ \__ \
  |_|  |_|\__,_|\___|_| |_|_|_| |_|\___|  \___|_|\__,_|___/___/
                                                               
+Machine class header file
+Author: Paolo Bosetti, 2024
 */
 #ifndef MACHINE_HPP
 #define MACHINE_HPP
 
-#include "cncpp.hpp"
+#include "defines.hpp"
 #include "point.hpp"
 #include <string>
 

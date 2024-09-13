@@ -6,8 +6,8 @@
   \____|_| \_|\____|_|   |_|      \__, |_|\___/|_.__/ \__,_|_|
                                   |___/
 Global include for CNCpp project
+Author: Paolo Bosetti, 2024
 */
-
 #ifndef CNCPP_HPP
 #define CNCPP_HPP
 

@@ -5,12 +5,13 @@
  |  __/ (_) | | | | | |_  | (__| | (_| \__ \__ \
  |_|   \___/|_|_| |_|\__|  \___|_|\__,_|___/___/
 
+Point class header
+Author: Paolo Bosetti, 2024
 */
-
 #ifndef POINT_HPP
 #define POINT_HPP
 
-#include "cncpp.hpp"
+#include "defines.hpp"
 #include <optional>
 #include <string>
 #include <vector>

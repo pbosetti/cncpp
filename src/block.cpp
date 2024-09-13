@@ -1,7 +1,15 @@
-
-
+/*
+  ____  _            _           _               
+ | __ )| | ___   ___| | __   ___| | __ _ ___ ___ 
+ |  _ \| |/ _ \ / __| |/ /  / __| |/ _` / __/ __|
+ | |_) | | (_) | (__|   <  | (__| | (_| \__ \__ \
+ |____/|_|\___/ \___|_|\_\  \___|_|\__,_|___/___/
+                                                 
+Block class implementation
+Author: Paolo Bosetti, 2024
+*/
 #include "block.hpp"
-#include "cncpp.hpp"
+#include "defines.hpp"
 #include <fmt/color.h>
 #include <fmt/format.h>
 #include <iomanip>

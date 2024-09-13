@@ -1,4 +1,4 @@
 /build/
-src/cncpp.hpp
+src/defines.hpp
 *.dgraph
 /*.csv
