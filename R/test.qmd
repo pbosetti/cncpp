@@ -41,5 +41,23 @@ cnc$simulate() %>%
   labs(x="Total time (s)")
 ```
 
+Clear current program, load a new one and simulate again:
+
+```{r}
+cnc$reset()
+prog <-  list(
+  "N01 G01 X0 Y0 Z0 F2000", 
+  "N20 G01 X100 Y150",
+  "N30 G01 X200 Y0 F5000",
+  "N40 G01 X0 Y0 Z0 F2000"
+)
+cnc$load(prog)
+cnc$simulate() %>% 
+  mutate(kind=cut(acc, c(-Inf, -1e-6, 1e-6, Inf), labels=c("acc", "cruise", "dec"))) %>%
+  ggplot(aes(x=t_time, y=lambda)) + 
+  geom_line(linewidth=0.2) +
+  geom_point(aes(color=kind), size=0.1) +
+  labs(x="Total time (s)")
+```
 
 

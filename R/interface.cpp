@@ -14,13 +14,15 @@ class CNCpp {
 public:
   CNCpp(List blocks, string machine) : 
     _blocks(blocks), _machine(machine), _prog(&_machine) {
-    for (int i = 0; i < _blocks.size(); i++) {
-      _prog << as<string>(_blocks[i]);
-    }    
+    load(blocks);
   }
   
   string version() {
     return cncpp::version();
+  }
+  
+  void reset() {
+    _prog.reset();
   }
   
   DataFrame simulate() {
@@ -60,6 +62,12 @@ public:
     return df;
   }
   
+  void load(List blocks) {
+    for (auto &b : blocks) {
+      _prog << as<string>(b);
+    }
+  }
+  
 private:
   List _blocks;
   Machine _machine;
@@ -72,7 +80,9 @@ RCPP_MODULE(cncpp) {
 
     class_<CNCpp>("CNCpp")
     .constructor<List, string>()
-    .method("simulate", &CNCpp::simulate, "Simulate program and get data frame of results")
+    .method("simulate", &CNCpp::simulate)
+    .method("load", &CNCpp::load)
     .method("version", &CNCpp::version)
+    .method("reset", &CNCpp::reset)
     ;
 }

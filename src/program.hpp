@@ -24,18 +24,19 @@ class Program : Object, public std::list<Block> {
 public:
   Program(const std::string &filename, Machine *machine);
   Program(Machine *machine) : _machine(machine) {}
+  Program() : _machine() {}
   ~Program();
+  void load_machine(std::string machine_file);
   void load(const std::string &filename);
-
   std::string desc(bool colored) const override;
 
   Program &operator<<(string line);
+  void reset() { clear(); }
 
   using iterator = std::list<Block>::iterator;
   using const_iterator = std::list<Block>::const_iterator;
 
 private:
-  // std::list<Block> _blocks;
   Machine *_machine;
   std::string _filename;
 };
