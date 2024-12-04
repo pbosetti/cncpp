@@ -1,0 +1,12 @@
+{
+  "files.associations": {
+    "*.h": "c",
+    "*.rmd": "markdown",
+    "*.hh": "c++",
+    "optional": "cpp",
+    "regex": "cpp",
+    "vector": "cpp",
+    "map": "cpp",
+    "ostream": "cpp"
+  }
+}

@@ -92,26 +92,31 @@ configure_file(
 # main Library
 file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
-add_library(cncpp STATIC ${SRC_FILES})
-target_link_libraries(cncpp PRIVATE fmt::fmt)
-set_target_properties(cncpp PROPERTIES PUBLIC_HEADER "${HEADERS}")
-list(APPEND TARGET_LIST cncpp)
+list(FILTER SRC_FILES EXCLUDE REGEX ".*fsm.*")
+add_library(cncpp_lib STATIC ${SRC_FILES})
+target_link_libraries(cncpp_lib PRIVATE fmt::fmt)
+set_target_properties(cncpp_lib PROPERTIES PUBLIC_HEADER "${HEADERS}")
+list(APPEND TARGET_LIST cncpp_lib)
 
 # Test executables
 add_executable(point_test ${SRC_DIR}/point.cpp)
-target_link_libraries(point_test PRIVATE cncpp)
+target_link_libraries(point_test PRIVATE cncpp_lib)
 target_compile_definitions(point_test PRIVATE POINT_MAIN)
 list(APPEND TARGET_LIST point_test)
 
 add_executable(block_test ${SRC_DIR}/block.cpp)
-target_link_libraries(block_test PRIVATE cncpp)
+target_link_libraries(block_test PRIVATE cncpp_lib)
 target_compile_definitions(block_test PRIVATE BLOCK_MAIN)
 list(APPEND TARGET_LIST block_test)
 
 add_executable(program_test ${SRC_DIR}/program.cpp)
-target_link_libraries(program_test PRIVATE cncpp)
+target_link_libraries(program_test PRIVATE cncpp_lib)
 target_compile_definitions(program_test PRIVATE PROGRAM_MAIN)
 list(APPEND TARGET_LIST program_test)
+
+# Main exec
+add_executable(cncpp ${MAIN_DIR}/cncpp.cpp)
+target_link_libraries(cncpp cncpp_lib)
 
 
 #   ___           _        _ _ 
