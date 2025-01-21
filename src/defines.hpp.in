@@ -61,11 +61,12 @@ protected:
 class CNCError : public std::exception {
 public:
   CNCError(const char *msg, const Object *o) : _msg(msg), _obj(o) {}
-  const char *what() const noexcept override { return _msg; }
+  CNCError(const std::string &msg, const Object *o) : _msg(msg), _obj(o) {}
+  const char *what() const noexcept override { return _msg.c_str(); }
   std::string who() noexcept { return _obj->desc(false); }
 
 private:
-  const char *_msg;
+  const std::string _msg;
   const Object *_obj;
 };
 

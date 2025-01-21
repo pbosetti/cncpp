@@ -17,6 +17,7 @@ struct FSMData {
   FSMData(string ini_file) : machine(ini_file), program(&machine) {}
 };
 
+
 int main(int argc, char** argv) {
   FSMData data(argv[1]);
   FSM::FiniteStateMachine fsm(&data);

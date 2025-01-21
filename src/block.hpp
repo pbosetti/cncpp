@@ -65,6 +65,7 @@ public:
   string line() const { return _line; }
   size_t n() const { return _n; }
   data_t r() const { return _r; }
+  data_t feedrate() const { return _feedrate; }
   Point center() const { return _center; }
   Point target() const { return _target; }
   Profile profile() const { return _profile; }

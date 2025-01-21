@@ -101,7 +101,15 @@ void Block::parse(const Machine *machine) {
   string token;
 
   while (ss >> token) {
-    parse_token(token);
+    try {
+      parse_token(token);
+    } catch (exception &e) {
+      stringstream ss;
+      ss << "Parsing error in line: " << _line << endl;
+      ss << "Token: " << token << endl;
+      ss << "Exception: " << e.what() << endl;
+      throw CNCError(ss.str(), this);
+    }
   }
 
   _target.modal(start_point());
@@ -205,6 +213,9 @@ void Block::walk(std::function<void(Block &, data_t t, data_t l, data_t s)> f) {
 void Block::parse_token(string token) {
   char cmd = toupper(token[0]);
   string arg = token.substr(1);
+  if (arg.empty()) {
+    throw CNCError("Empty command argument", this);
+  }
   switch (cmd) {
   case 'N':
     _n = stoi(arg);

@@ -39,7 +39,7 @@ void Program::load(const std::string &filename) {
   if (!file.is_open()) {
     throw runtime_error("Could not open file: " + _filename);
   }
-
+  
   string line;
   while (getline(file, line)) {
     *this << line;
