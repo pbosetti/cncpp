@@ -29,9 +29,6 @@ Machine::Machine(const std::string &ini_file) : _ini_file(ini_file) {
          << style::reset << fg::reset << endl;
   }
 
-  if (connect(_mqtt_host.c_str(), _mqtt_port, _mqtt_keepalive) != MOSQ_ERR_SUCCESS) {
-    throw CNCError("Cannot connect to MQTT broker", this);
-  }
 }
 
 Machine::~Machine() {
@@ -40,6 +37,14 @@ Machine::~Machine() {
          << endl;
   }
   mosqpp::lib_cleanup();
+}
+
+int Machine::connect() {
+  int rc = mosquittopp::connect(_mqtt_host.c_str(), _mqtt_port, _mqtt_keepalive);
+  if (rc != MOSQ_ERR_SUCCESS) {
+    throw CNCError("Cannot connect to MQTT broker", this);
+  }
+  return rc;
 }
 
 void Machine::load(const string &ini_file) {
@@ -186,6 +191,7 @@ int main(int argc, const char *argv[]) {
   std::signal(SIGINT, [](int sig) { Running = false; });
 
   cncpp::Machine machine(argv[1]);
+  machine.connect();
   cout << machine.desc() << endl;
   machine.listen_start();
 

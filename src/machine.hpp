@@ -38,6 +38,7 @@ public:
   data_t quantize(data_t t, data_t &dq) const;
 
   // MQTT related methods
+  int connect();
   void sync(bool rapid = false);
   void listen_start();
   void listen_stop();
