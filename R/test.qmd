@@ -12,8 +12,8 @@ library(tidyverse)
 library(glue)
 library(Rcpp)
 library(plotly)
-Sys.setenv(PKG_CXXFLAGS = glue("-I{getwd()}/../usr/include"))
-Sys.setenv(PKG_LIBS = glue("-L{getwd()}/../usr/lib -lcncpp_lib -lfmtd"))
+Sys.setenv(PKG_CXXFLAGS = glue("-I{getwd()}/../usr/include -I{getwd()}/../build/_deps/json-src/include -I/opt/homebrew/include"))
+Sys.setenv(PKG_LIBS = glue("-L{getwd()}/../usr/lib -L/opt/homebrew/lib -lcncpp_lib -lfmtd -lmosquittopp"))
 sourceCpp("interface.cpp")
 ```
 
@@ -47,8 +47,7 @@ Clear current program, load a new one and simulate again:
 ```{r}
 cnc$reset()
 prog <-  list(
-  "N01 G00 Z250",
-  "N10 G01 X0 Y0 Z0 F2000", 
+  "N01 G01 X0 Y0 Z0 F2000", 
   "N20 G01 X100 Y150",
   "N30 G01 X500 Y0 F5000",
   "N40 G01 X0 Y0 Z0 F2000",
@@ -56,7 +55,6 @@ prog <-  list(
   "N60 G03 x25 y75 r25"
 )
 cnc$load(prog)
-cnc$program()
 path <- cnc$simulate() %>% 
   mutate(n=factor(n))
 ```
@@ -107,18 +105,9 @@ path %>%
     type = 'scatter3d')
 ```
 
-
-Load a new program from file:
-
 ```{r}
-prog <-  list(
-  "N01 G01 X0 Y0 Z0 F2000", 
-  "N20 G01 X100 Y150",
-  "N30 G01 X200 Y0 F5000"
-)
-cnc <- new(CNCpp, prog, "../machine.ini")
+cnc$reset()
 cnc$load_file("test.g")
-cnc$program()
 path <- cnc$simulate() %>% 
   mutate(n=factor(n))
 
