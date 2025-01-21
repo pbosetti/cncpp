@@ -41,6 +41,15 @@ void Point::modal(Point p) {
   }
 }
 
+Point Point::operator+(const Point& other) const {
+  if (!complete() || !other.complete())
+    throw CNCError("Point is not complete", this);
+  return Point(
+    _x.value() + other._x.value(), 
+    _y.value() + other._y.value(), 
+    _z.value() + other._z.value());
+}
+
 Point Point::delta(Point p) {
   if (!complete() || !p.complete())
     throw CNCError("Point is not complete", this);

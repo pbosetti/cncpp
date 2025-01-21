@@ -13,7 +13,11 @@
 			"regex": "cpp",
 			"vector": "cpp",
 			"map": "cpp",
-			"iostream": "cpp"
+			"iostream": "cpp",
+			"string": "cpp",
+			"stdexcept": "cpp",
+			"__locale": "cpp",
+			"string_view": "cpp"
 		},
 		"C_Cpp.default.cppStandard": "c++17",
 		"C_Cpp.default.defines": [

@@ -23,7 +23,16 @@ namespace cncpp {
 class Point : Object {
 public:
   Point(opt_data_t x = nullopt, opt_data_t y = nullopt, opt_data_t z = nullopt);
+  Point& operator=(const Point& other) {
+    if (this != &other) {
+      _x = other._x;
+      _y = other._y;
+      _z = other._z;
+    }
+    return *this;
+  }
 
+  Point operator+(const Point& other) const;
   void modal(Point p);
   Point delta(Point p);
   data_t length() const;

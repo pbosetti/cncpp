@@ -14,12 +14,18 @@ Author: Paolo Bosetti, 2024
 #include "defines.hpp"
 #include "point.hpp"
 #include <string>
+#include <mosquittopp.h>
+#include <nlohmann/json.hpp>
+
+#define BUFLEN 1024
 
 using namespace std;
+using namespace mosqpp;
+using json = nlohmann::json;
 
 namespace cncpp {
 
-class Machine : Object {
+class Machine : Object, public mosquittopp {
 public:
   // Lifecycle
   Machine(const std::string &ini_file);
@@ -31,9 +37,31 @@ public:
   string desc(bool colored = true) const override;
   data_t quantize(data_t t, data_t &dq) const;
 
+  // MQTT related methods
+  void sync(bool rapid = false);
+  void listen_start();
+  void listen_stop();
+  void on_connect(int rc) override;
+	void on_message(const struct mosquitto_message *message) override;
+	void on_subscribe(int mid, int qos_count, const int *granted_qos) override;
+
   // Accessors
   Point position() const { return _position; }
+  Point position(Point p) { _position = p; return _position; }
+  Point position(data_t x, data_t y, data_t z) { 
+    _position.x(x);
+    _position.y(y);
+    _position.z(z);
+    return _position;
+  }
   Point setpoint() const { return _setpoint; }
+  Point setpoint(Point p) { _setpoint = p; return _setpoint; }
+  Point setpoint(data_t x, data_t y, data_t z) { 
+    _setpoint.x(x);
+    _setpoint.y(y);
+    _setpoint.z(z);
+    return _setpoint;
+  }
   Point offset() const { return _offset; }
   Point zero() const { return _zero; }
   data_t max_error() const { return _max_error; }
@@ -52,6 +80,12 @@ private:
   Point _setpoint, _position;     // Setpoint and actual position
   Point _offset;                 // Workpiece origin coordinates
   bool _initialized = false;
+  string _mqtt_host = "localhost";
+  int _mqtt_port = 1883;
+  int _mqtt_keepalive = 60;
+  string _pub_topic;
+  string _sub_topic;
+  char _msg_buffer[BUFLEN];
 };
 
 

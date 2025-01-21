@@ -42,6 +42,12 @@ include(FetchContent)
 
 message(STATUS "Fetching dependencies...")
 
+FetchContent_Declare(json
+  GIT_REPOSITORY https://github.com/nlohmann/json.git
+  GIT_TAG        HEAD
+  GIT_SHALLOW    TRUE
+)
+
 FetchContent_Declare(tomlplusplus
   GIT_REPOSITORY https://github.com/pbosetti/tomlplusplus.git
   GIT_TAG        050c7a0
@@ -60,7 +66,7 @@ FetchContent_Declare(rang
   GIT_SHALLOW    TRUE
 )
 
-FetchContent_MakeAvailable(tomlplusplus fmt rang)
+FetchContent_MakeAvailable(tomlplusplus fmt rang json)
 
 message(STATUS "Dependencies fetched.")
 
@@ -68,6 +74,12 @@ include_directories(
   ${tomlplusplus_SOURCE_DIR}/include
   ${fmt_SOURCE_DIR}/include
   ${rang_SOURCE_DIR}/include
+  ${json_SOURCE_DIR}/include
+  /opt/homebrew/include
+)
+
+link_directories(
+  /opt/homebrew/lib
 )
 
 #    ____             __ _                          _    __ _ _           
@@ -94,7 +106,7 @@ file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 list(FILTER SRC_FILES EXCLUDE REGEX ".*fsm.*")
 add_library(cncpp_lib STATIC ${SRC_FILES})
-target_link_libraries(cncpp_lib PRIVATE fmt::fmt)
+target_link_libraries(cncpp_lib PRIVATE fmt::fmt mosquittopp)
 set_target_properties(cncpp_lib PROPERTIES PUBLIC_HEADER "${HEADERS}")
 list(APPEND TARGET_LIST cncpp_lib)
 
@@ -113,6 +125,11 @@ add_executable(program_test ${SRC_DIR}/program.cpp)
 target_link_libraries(program_test PRIVATE cncpp_lib)
 target_compile_definitions(program_test PRIVATE PROGRAM_MAIN)
 list(APPEND TARGET_LIST program_test)
+
+add_executable(machine_test ${SRC_DIR}/machine.cpp)
+target_link_libraries(machine_test PRIVATE cncpp_lib)
+target_compile_definitions(machine_test PRIVATE MACHINE_MAIN)
+list(APPEND TARGET_LIST machine_test)
 
 # Main exec
 add_executable(cncpp ${MAIN_DIR}/cncpp.cpp)
