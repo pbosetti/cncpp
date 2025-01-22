@@ -76,14 +76,13 @@ void Machine::load(const string &settings_file) {
 
 string Machine::desc(bool colored) const {
   ostringstream ss;
-  ss << "Machine: ";
   ss << "A=" << _A << ", ";
   ss << "tq=" << _tq << ", ";
   ss << "max_error=" << _max_error << ", ";
   ss << "fmax=" << _fmax << ", ";
-  ss << "zero=" << _zero.desc(false) << ", ";
-  ss << "offset=" << _offset.desc(false) << ", ";
-  ss << "mqtt_host=" << _mqtt_host << ", ";
+  ss << endl << "zero=" << _zero.desc(false) << ", ";
+  ss << endl << "offset=" << _offset.desc(false) << ", ";
+  ss << endl << "mqtt_host=" << _mqtt_host << ", ";
   ss << "mqtt_port=" << _mqtt_port;
   return ss.str();
 };

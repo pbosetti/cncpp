@@ -15,6 +15,7 @@ The finite state machine has:
 
 #include <syslog.h>
 #include "fsm.hpp"
+#include <keystroker.h>
     
 using namespace std;
     
@@ -41,8 +42,9 @@ namespace FSM {
 // valid return states: STATE_IDLE, STATE_STOP
 template<class T> 
 state_t do_init(T &data) {
-  state_t next_state = FSM::UNIMPLEMENTED;
-  /* Your Code Here */
+  state_t next_state = FSM::STATE_IDLE;
+  data.machine.connect();
+  cout << data.program.desc(true) << endl;
   
   return next_state;
 }
@@ -52,8 +54,24 @@ state_t do_init(T &data) {
 // SIGINT triggers an emergency transition to STATE_STOP
 template<class T> 
 state_t do_idle(T &data) {
-  state_t next_state = FSM::UNIMPLEMENTED;
-  /* Your Code Here */
+  state_t next_state = FSM::NO_CHANGE;
+  char key = keystroker::read_key();
+
+  switch(key) {
+  case ' ':
+    next_state = FSM::STATE_LOAD_BLOCK;
+    break;
+  case 'q':
+  case 'Q':
+    next_state = FSM::STATE_STOP;
+    break;
+  case 'z':
+  case 'Z':
+    next_state = FSM::STATE_GO_TO_ZERO;
+    break;
+  default:
+    break;
+  }
   
   return next_state;
 }
@@ -62,8 +80,9 @@ state_t do_idle(T &data) {
 // valid return states: NO_CHANGE
 template<class T> 
 state_t do_stop(T &data) {
-  state_t next_state = FSM::UNIMPLEMENTED;
+  state_t next_state = FSM::STATE_STOP;
   /* Your Code Here */
+  data.machine.listen_stop();
   
   return next_state;
 }

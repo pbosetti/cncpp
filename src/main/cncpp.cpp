@@ -38,6 +38,6 @@ int main(int argc, char** argv) {
   fsm.set_timing_function([]() {
     this_thread::sleep_for(chrono::milliseconds(5));
   });
-  // fsm.run(FSM::STATE_INIT);
+  fsm.run(FSM::STATE_INIT);
   return 0;
 }

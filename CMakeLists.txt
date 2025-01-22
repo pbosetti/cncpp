@@ -62,11 +62,13 @@ FetchContent_Declare(rang
 
 FetchContent_Declare(yaml-cpp
   GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+  GIT_SHALLOW    TRUE
   GIT_TAG HEAD
 )
 
 FetchContent_Declare(keystroker
   GIT_REPOSITORY https://github.com/pbosetti/keystroker.git
+  GIT_SHALLOW    TRUE
   GIT_TAG HEAD
 )
 
