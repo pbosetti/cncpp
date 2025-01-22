@@ -27,9 +27,6 @@
 		],
 		"C_Cpp.default.compilerArgs": [
 			"-Wno-c++11-extensions"
-		],
-		"yaml.schemas": {
-			"https://json.schemastore.org/github-action.json": "file:///Users/p4010/Develop/cncpp/test.yml"
-		},
+		]
 	}
 }

@@ -48,12 +48,6 @@ FetchContent_Declare(json
   GIT_SHALLOW    TRUE
 )
 
-FetchContent_Declare(tomlplusplus
-  GIT_REPOSITORY https://github.com/pbosetti/tomlplusplus.git
-  GIT_TAG        050c7a0
-  GIT_SHALLOW    TRUE
-)
-
 FetchContent_Declare(fmt
   GIT_REPOSITORY https://github.com/fmtlib/fmt
   GIT_TAG        11.0.2
@@ -66,15 +60,20 @@ FetchContent_Declare(rang
   GIT_SHALLOW    TRUE
 )
 
-FetchContent_MakeAvailable(tomlplusplus fmt rang json)
+FetchContent_Declare(yaml-cpp
+  GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+  GIT_TAG HEAD
+)
+
+FetchContent_MakeAvailable(fmt rang json yaml-cpp)
 
 message(STATUS "Dependencies fetched.")
 
 include_directories(
-  ${tomlplusplus_SOURCE_DIR}/include
   ${fmt_SOURCE_DIR}/include
   ${rang_SOURCE_DIR}/include
   ${json_SOURCE_DIR}/include
+  ${yaml-cpp_SOURCE_DIR}/include
   /opt/homebrew/include
 )
 
@@ -106,7 +105,7 @@ file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 list(FILTER SRC_FILES EXCLUDE REGEX ".*fsm.*")
 add_library(cncpp_lib STATIC ${SRC_FILES})
-target_link_libraries(cncpp_lib PRIVATE fmt::fmt mosquittopp)
+target_link_libraries(cncpp_lib PRIVATE fmt::fmt mosquittopp yaml-cpp::yaml-cpp)
 set_target_properties(cncpp_lib PROPERTIES PUBLIC_HEADER "${HEADERS}")
 list(APPEND TARGET_LIST cncpp_lib)
 

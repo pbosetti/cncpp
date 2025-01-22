@@ -1,0 +1,15 @@
+---
+machine:
+  A: 10.0
+  tq: 0.005
+  max_error: 0.005
+  fmax: 1000
+  zero: [0, 0, 600]
+  offset: [200, 200, 500]
+mqtt:
+  host: localhost
+  port: 1883
+  keepalive: 60
+  topics:
+    sub: cncpp/status/#
+    pub: cncpp/setpoint

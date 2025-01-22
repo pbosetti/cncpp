@@ -9,17 +9,18 @@ Machine class implementation
 Author: Paolo Bosetti, 2024
 */
 #include "machine.hpp"
-#include <toml++/toml.h>
 #include <sstream>
 #include <iostream>
 #include <rang.hpp>
+#include <yaml-cpp/yaml.h>
+
 
 using namespace rang;
 
 namespace cncpp {
 
-Machine::Machine(const std::string &ini_file) : _ini_file(ini_file) {
-  load(_ini_file);
+Machine::Machine(const std::string &settings_file) : _settings_file(settings_file) {
+  load(_settings_file);
   mosqpp::lib_init();
   if (_debug) {
     int major, minor, revision;
@@ -47,34 +48,33 @@ int Machine::connect() {
   return rc;
 }
 
-void Machine::load(const string &ini_file) {
-  _ini_file = ini_file;
-  auto data = toml::parse_file(ini_file);
-  auto machine = data["machine"];
-  _A = machine["A"].value_or(10.0);
-  _tq = machine["tq"].value_or(0.005);
-  _max_error = machine["max_error"].value_or(0.001);
-  _fmax = machine["fmax"].value_or(10000.0);
+void Machine::load(const string &settings_file) {
+  _settings_file = settings_file;
+  auto data = YAML::LoadFile(settings_file);
+  _A = data["machine"]["A"].as<double>();
+  _tq = data["machine"]["tq"].as<double>();
+  _max_error = data["machine"]["max_error"].as<double>();
+  _fmax = data["machine"]["fmax"].as<double>();
   _zero = Point(
-    machine["zero"][0].value_or(0.0), 
-    machine["zero"][1].value_or(0.0), 
-    machine["zero"][2].value_or(0.0)
+    data["machine"]["zero"][0].as<double>(), 
+    data["machine"]["zero"][1].as<double>(), 
+    data["machine"]["zero"][2].as<double>()
   );
   _offset = Point(
-    machine["offset"][0].value_or(0.0), 
-    machine["offset"][1].value_or(0.0), 
-    machine["offset"][2].value_or(500.0)
+    data["machine"]["offset"][0].as<double>(), 
+    data["machine"]["offset"][1].as<double>(), 
+    data["machine"]["offset"][2].as<double>()
   );
-  _mqtt_host = machine["mqtt_host"].value_or("localhost");
-  _mqtt_port = machine["mqtt_port"].value_or(1883);
-  _mqtt_keepalive = machine["mqtt_keepalive"].value_or(60);
-  _pub_topic = machine["pub_topic"].value_or("cncpp/setpoint");
-  _sub_topic = machine["sub_topic"].value_or("cncpp/status/#");
-  _initialized = true;
+  _mqtt_host = data["mqtt"]["host"].as<string>("localhost");
+  _mqtt_port = data["mqtt"]["port"].as<int>(1883);
+  _mqtt_keepalive = data["mqtt"]["keepalive"].as<int>(60);
+  _pub_topic = data["mqtt"]["topics"]["pub"].as<string>("cncpp/setpoint");
+  _sub_topic = data["mqtt"]["topics"]["sub"].as<string>("cncpp/status/#");
+
 }
 
+
 string Machine::desc(bool colored) const {
-  if (!_initialized) throw CNCError("Not initialized", this);
   ostringstream ss;
   ss << "Machine: ";
   ss << "A=" << _A << ", ";
@@ -89,7 +89,6 @@ string Machine::desc(bool colored) const {
 };
 
 data_t Machine::quantize(data_t t, data_t &dq) const {
-  if (!_initialized) throw CNCError("Not initialized", this);
   data_t q;
   q = ((size_t)(t / _tq) + 1) * _tq;
   dq = q - t;
@@ -184,7 +183,7 @@ static bool Running = true;
 
 int main(int argc, const char *argv[]) {
   if (argc < 2) {
-    cerr << "Usage: " << argv[0] << " <ini_file>" << endl;
+    cerr << "Usage: " << argv[0] << " <settings_file.yml>" << endl;
     return 1;
   }
 

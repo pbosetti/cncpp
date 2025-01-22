@@ -28,12 +28,12 @@ namespace cncpp {
 class Machine : Object, mosquittopp {
 public:
   // Lifecycle
-  Machine(const std::string &ini_file);
+  Machine(const std::string &settings_file);
   Machine() {}
   ~Machine();
 
   // Methods
-  void load(const string &ini_file);
+  void load(const string &settings_file);
   string desc(bool colored = true) const override;
   data_t quantize(data_t t, data_t &dq) const;
 
@@ -72,7 +72,7 @@ public:
   data_t A() const { return _A; }
 
 private:
-  std::string _ini_file;
+  std::string _settings_file;
   data_t _A;                     // Maximum acceleration (m/s/s)
   data_t _tq;                    // Sampling time (s)
   data_t _max_error, _error;      // Maximum and actual positioning error (mm)
@@ -80,7 +80,6 @@ private:
   Point _zero;                   // Initial machine position
   Point _setpoint, _position;     // Setpoint and actual position
   Point _offset;                 // Workpiece origin coordinates
-  bool _initialized = false;
   string _mqtt_host = "localhost";
   int _mqtt_port = 1883;
   int _mqtt_keepalive = 60;
