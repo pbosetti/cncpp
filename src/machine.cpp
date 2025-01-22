@@ -114,8 +114,8 @@ void Machine::on_message(const struct mosquitto_message *message) {
   if (_debug) {
     cout << fg::yellow << "Received message on topic " 
          << style::bold << message->topic << style::reset
-         << fg::reset << endl;
-    cout << fg::yellow << "Payload: " 
+         << fg::reset << endl
+         << fg::yellow << "Payload: " 
          << style::bold << (char *)message->payload  << style::reset
          << fg::reset << endl;
   }

@@ -65,7 +65,12 @@ FetchContent_Declare(yaml-cpp
   GIT_TAG HEAD
 )
 
-FetchContent_MakeAvailable(fmt rang json yaml-cpp)
+FetchContent_Declare(keystroker
+  GIT_REPOSITORY https://github.com/pbosetti/keystroker.git
+  GIT_TAG HEAD
+)
+
+FetchContent_MakeAvailable(fmt rang json yaml-cpp keystroker)
 
 message(STATUS "Dependencies fetched.")
 
@@ -74,6 +79,7 @@ include_directories(
   ${rang_SOURCE_DIR}/include
   ${json_SOURCE_DIR}/include
   ${yaml-cpp_SOURCE_DIR}/include
+  ${keystroker_SOURCE_DIR}/include
   /opt/homebrew/include
 )
 
@@ -105,7 +111,7 @@ file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 list(FILTER SRC_FILES EXCLUDE REGEX ".*fsm.*")
 add_library(cncpp_lib STATIC ${SRC_FILES})
-target_link_libraries(cncpp_lib PRIVATE fmt::fmt mosquittopp yaml-cpp::yaml-cpp)
+target_link_libraries(cncpp_lib PRIVATE fmt::fmt mosquittopp yaml-cpp::yaml-cpp keystroker)
 set_target_properties(cncpp_lib PROPERTIES PUBLIC_HEADER "${HEADERS}")
 list(APPEND TARGET_LIST cncpp_lib)
 
