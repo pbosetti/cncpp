@@ -21,6 +21,8 @@ struct FSMData {
 int main(int argc, char** argv) {
   FSMData data(argv[1]);
   FSM::FiniteStateMachine fsm(&data);
+  openlog("CCNC v" VERSION, LOG_PID, LOG_USER);
+  syslog(LOG_INFO, "Starting CNC program");
   try {
     data.program.load(argv[2]);
   } catch (exception &e) {
@@ -28,16 +30,22 @@ int main(int argc, char** argv) {
          << style::reset << endl;
     return 1;
   }
-  cout << fg::green << style::bold << "MACHINE:" << style::reset 
-       << fg::reset << endl;
-  cout << data.machine.desc(true) << endl;
-  cout << fg::green << style::bold << "PROGRAM:" << style::reset 
-       << fg::reset << endl;
-  cout << data.program.desc(true) << endl;
+  cerr << fg::green << style::bold << "MACHINE:" << style::reset 
+       << fg::reset << endl
+       << data.machine.desc(true) << endl
+       << fg::green << style::bold << "PROGRAM:" << style::reset 
+       << fg::reset << endl
+       << data.program.desc(true) << endl;
 
   fsm.set_timing_function([]() {
     this_thread::sleep_for(chrono::milliseconds(5));
   });
-  fsm.run(FSM::STATE_INIT);
+#ifdef DEBUG
+  fsm.run([&fsm](FSMData &d){
+    cout << "State: " << fsm.state_name() << endl;
+  });
+#else
+  fsm.run();
+#endif
   return 0;
 }

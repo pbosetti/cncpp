@@ -18,6 +18,7 @@ The finite state machine has:
 #include <keystroker.h>
     
 using namespace std;
+using namespace rang;
     
 
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
@@ -44,8 +45,9 @@ template<class T>
 state_t do_init(T &data) {
   state_t next_state = FSM::STATE_IDLE;
   data.machine.connect();
-  cout << data.program.desc(true) << endl;
-  
+  cerr << fg::green << "Connected to machine "
+       << style::bold << data.machine.mqtt_host()
+       << style::reset << fg::reset << endl;
   return next_state;
 }
 
@@ -55,6 +57,12 @@ state_t do_init(T &data) {
 template<class T> 
 state_t do_idle(T &data) {
   state_t next_state = FSM::NO_CHANGE;
+
+  cerr << "Press " << fg::green << "<space>" << fg::reset
+       << " to run, " << fg::blue << "z" << fg::reset
+       << " to go to zero, " << fg ::red << "q" << fg::reset
+       << " to quit" << endl;
+       
   char key = keystroker::read_key();
 
   switch(key) {
@@ -81,9 +89,8 @@ state_t do_idle(T &data) {
 template<class T> 
 state_t do_stop(T &data) {
   state_t next_state = FSM::STATE_STOP;
-  /* Your Code Here */
   data.machine.listen_stop();
-  
+  cerr << fg::red << style::bold << "STOP" << fg::reset << style::reset << endl;
   return next_state;
 }
 
@@ -91,7 +98,7 @@ state_t do_stop(T &data) {
 // valid return states: STATE_IDLE, STATE_NO_MOTION, STATE_RAPID_MOTION, STATE_INTERP_MOTION
 template<class T> 
 state_t do_load_block(T &data) {
-  state_t next_state = FSM::UNIMPLEMENTED;
+  state_t next_state = FSM::STATE_RAPID_MOTION;
   /* Your Code Here */
   
   return next_state;
@@ -123,7 +130,7 @@ state_t do_no_motion(T &data) {
 // SIGINT triggers an emergency transition to STATE_STOP
 template<class T> 
 state_t do_rapid_motion(T &data) {
-  state_t next_state = FSM::UNIMPLEMENTED;
+  state_t next_state = FSM::NO_CHANGE;
   /* Your Code Here */
   
   return next_state;

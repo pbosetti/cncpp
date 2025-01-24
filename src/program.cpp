@@ -61,7 +61,7 @@ std::string Program::desc(bool colored) const {
   std::ostringstream ss;
   for (auto &b : *this) {
     ss << b.desc()
-       << ", previous: " << (b.prev ? to_string(b.prev->n()) : "(null)")
+       << ", previous: " << fmt::format("{:0>3}", b.prev ? b.prev->n() : 0)
        << std::endl;
   }
   return ss.str();

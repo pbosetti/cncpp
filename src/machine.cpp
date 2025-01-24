@@ -25,7 +25,7 @@ Machine::Machine(const std::string &settings_file) : _settings_file(settings_fil
   if (_debug) {
     int major, minor, revision;
     mosqpp::lib_version(&major, &minor, &revision);
-    cout << style::italic << fg::cyan << "Using Mosquitto library version " 
+    cerr << style::italic << fg::cyan << "Using Mosquitto library version " 
          << major << "." << minor << "." << revision 
          << style::reset << fg::reset << endl;
   }
@@ -98,20 +98,20 @@ data_t Machine::quantize(data_t t, data_t &dq) const {
 
 void Machine::on_connect(int rc) {
   if (rc == 0 && _debug) {
-    cout << fg::yellow << "Connected to MQTT broker " 
+    cerr << fg::yellow << "Connected to MQTT broker " 
          << _mqtt_host << ":" << _mqtt_port << fg::reset << endl;
   }
 }
 
 void Machine::on_subscribe(int mid, int qos_count, const int *granted_qos) {
   if (_debug)
-    cout << fg::yellow << "Subscribed to topic " << _sub_topic << fg::reset  
+    cerr << fg::yellow << "Subscribed to topic " << _sub_topic << fg::reset  
          << endl;
 }
 
 void Machine::on_message(const struct mosquitto_message *message) {
   if (_debug) {
-    cout << fg::yellow << "Received message on topic " 
+    cerr << fg::yellow << "Received message on topic " 
          << style::bold << message->topic << style::reset
          << fg::reset << endl
          << fg::yellow << "Payload: " 
@@ -130,7 +130,7 @@ void Machine::on_message(const struct mosquitto_message *message) {
   }
   _position = Point(j["x"], j["y"], j["z"]);
   if (_debug)
-    cout << fg::yellow <<  "Received: " << j.dump() << fg::reset << endl;
+    cerr << fg::yellow <<  "Received: " << j.dump() << fg::reset << endl;
 }
 
 

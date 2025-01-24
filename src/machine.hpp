@@ -71,6 +71,8 @@ public:
   data_t tq() const { return _tq; }
   data_t A() const { return _A; }
 
+  string mqtt_host() const { return "mqtt://" + _mqtt_host + ":" + to_string(_mqtt_port); }
+
 private:
   std::string _settings_file;
   data_t _A;                     // Maximum acceleration (m/s/s)

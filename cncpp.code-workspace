@@ -17,7 +17,10 @@
 			"string": "cpp",
 			"stdexcept": "cpp",
 			"__locale": "cpp",
-			"string_view": "cpp"
+			"string_view": "cpp",
+			"__split_buffer": "cpp",
+			"deque": "cpp",
+			"list": "cpp"
 		},
 		"C_Cpp.default.cppStandard": "c++17",
 		"C_Cpp.default.defines": [

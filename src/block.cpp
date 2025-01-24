@@ -70,7 +70,7 @@ data_t Block::Profile::lambda(data_t t, data_t &s) {
  |_|    \__,_|_.__/|_|_|\___| |_| |_| |_|\___|\__|_| |_|\___/ \__,_|___/
 
 */
-Block::Block(string line) : _line(line), _n(0) {}
+Block::Block(string line) : _line(line), _n(0), prev(nullptr), next(nullptr) {}
 
 Block::Block(string line, Block &p) : Block(line) {
   *this = p;
@@ -188,7 +188,7 @@ string Block::desc(bool colored) const {
      << format("({:-^9}) ", Block::types.at(_type)) << target().desc()
      << format(" F{:>5.0f} ", _feedrate) << format("S{:>4.0f} ", _spindle)
      << format("T{:0>2} ", _tool) << format("M{:0>2} ", _m)
-     << format("L{:>6.2f}mm ", _length) << format("DT{:>6.2f}s ", _profile.dt);
+     << format("L{:>6.2f}mm ", _length) << format("DT{:>6.2f}s", _profile.dt);
   return ss.str();
 }
 
@@ -220,7 +220,7 @@ void Block::parse_token(string token) {
   case 'N':
     _n = stoi(arg);
     if (prev && _n <= prev->n()) {
-      throw CNCError("Block number must be greater than previous block", this);
+      throw CNCError("Block number must be greater than previous block: " + to_string(prev->n()), this);
     }
     break;
 

@@ -13,7 +13,9 @@ library(glue)
 library(Rcpp)
 library(plotly)
 Sys.setenv(PKG_CXXFLAGS = glue("-I{getwd()}/../usr/include -I{getwd()}/../build/_deps/json-src/include -I/opt/homebrew/include"))
-Sys.setenv(PKG_LIBS = glue("-L{getwd()}/../usr/lib -L/opt/homebrew/lib -lcncpp_lib -lfmtd -lmosquittopp"))
+Sys.setenv(PKG_LIBS = glue("-L{getwd()}/../usr/lib -L{getwd()}/../build/_deps/yaml-cpp-build/ -L/opt/homebrew/lib -lcncpp_lib -lfmtd -lyaml-cppd -lmosquittopp"))
+Sys.getenv("PKG_CXXFLAGS")
+Sys.getenv("PKG_LIBS")
 sourceCpp("interface.cpp")
 ```
 
@@ -27,7 +29,7 @@ prog <-  list(
   "N20 G01 X100 Y150",
   "N30 G01 X200 Y0 F5000"
 )
-cnc <- new(CNCpp, prog, "../machine.ini")
+cnc <- new(CNCpp, prog, "../machine.yml")
 cnc$version()
 ```
 
@@ -55,6 +57,7 @@ prog <-  list(
   "N60 G03 x25 y75 r25"
 )
 cnc$load(prog)
+cnc$program()
 path <- cnc$simulate() %>% 
   mutate(n=factor(n))
 ```
@@ -110,6 +113,8 @@ cnc$reset()
 cnc$load_file("test.g")
 path <- cnc$simulate() %>% 
   mutate(n=factor(n))
+
+cnc$program()
 
 path %>% 
   select(n, t = t_time, X=x, Y=y, Z=z, speed) %>% 
