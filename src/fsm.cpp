@@ -45,14 +45,20 @@ namespace FSM {
 template<class T> 
 state_t do_init(T &data) {
   state_t next_state = FSM::STATE_IDLE;
+
+  // STEPS:
+  // 1. Connect to machine (MQTT broker)
   data.machine.connect();
 
+  // 2. Set machine to zero
   data.machine.position(data.machine.zero());
   data.machine.setpoint(data.machine.zero());
 
+  // 3. Message user
   cerr << fg::green << "Connected to machine "
        << style::bold << data.machine.mqtt_host()
        << style::reset << fg::reset << endl;
+
   return next_state;
 }
 
@@ -69,9 +75,9 @@ state_t do_idle(T &data) {
        << " to run, " << fg::blue << "z" << fg::reset
        << " to go to zero, " << fg ::red << "q" << fg::reset
        << " to quit" << endl;
-       
   char key = keystroker::read_key();
 
+  // 2. select next state
   switch(key) {
   case ' ':
     next_state = FSM::STATE_LOAD_BLOCK;
@@ -89,7 +95,7 @@ state_t do_idle(T &data) {
     break;
   }
 
-  // 2. Reset timing
+  // 3. Reset timing
   data.t_tot  = 0;
   data.t_blk  = 0;
 

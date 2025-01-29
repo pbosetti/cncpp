@@ -114,10 +114,10 @@ macro(create_example target)
   list(TRANSFORM ARG_SRCS PREPEND "${CMAKE_CURRENT_LIST_DIR}/examples/${target}/")
   message(STATUS "Creating example: ${target}")
   message(STATUS "  Sources: ${ARG_SRCS}")
-  add_executable(${target} ${ARG_SRCS})
-  list(APPEND TARGET_LIST ${target})
-  target_link_libraries(${target} ${ARG_LIBS})
-  target_compile_definitions(${target} PRIVATE ${ARG_DEFS})
+  add_executable(ex_${target} ${ARG_SRCS})
+  list(APPEND TARGET_LIST ex_${target})
+  target_link_libraries(ex_${target} ${ARG_LIBS})
+  target_compile_definitions(ex_${target} PRIVATE ${ARG_DEFS})
 endmacro()
 
 
@@ -129,6 +129,7 @@ endmacro()
 #                            |_|                          |___/              
 
 create_example(basics SRCS basics.cpp myobject.cpp)
+create_example(rang SRCS rang.cpp)
 
 
 #   _____                    _       
