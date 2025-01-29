@@ -16,6 +16,7 @@ The finite state machine has:
 #include <syslog.h>
 #include "fsm.hpp"
 #include <keystroker.h>
+#include <algorithm>
     
 using namespace std;
 using namespace rang;
@@ -45,6 +46,10 @@ template<class T>
 state_t do_init(T &data) {
   state_t next_state = FSM::STATE_IDLE;
   data.machine.connect();
+
+  data.machine.position(data.machine.zero());
+  data.machine.setpoint(data.machine.zero());
+
   cerr << fg::green << "Connected to machine "
        << style::bold << data.machine.mqtt_host()
        << style::reset << fg::reset << endl;
@@ -58,6 +63,8 @@ template<class T>
 state_t do_idle(T &data) {
   state_t next_state = FSM::NO_CHANGE;
 
+  // STEPS:
+  // 1. Wait for user input
   cerr << "Press " << fg::green << "<space>" << fg::reset
        << " to run, " << fg::blue << "z" << fg::reset
        << " to go to zero, " << fg ::red << "q" << fg::reset
@@ -68,6 +75,7 @@ state_t do_idle(T &data) {
   switch(key) {
   case ' ':
     next_state = FSM::STATE_LOAD_BLOCK;
+    data.program.rewind();
     break;
   case 'q':
   case 'Q':
@@ -80,7 +88,11 @@ state_t do_idle(T &data) {
   default:
     break;
   }
-  
+
+  // 2. Reset timing
+  data.t_tot  = 0;
+  data.t_blk  = 0;
+
   return next_state;
 }
 
@@ -89,8 +101,17 @@ state_t do_idle(T &data) {
 template<class T> 
 state_t do_stop(T &data) {
   state_t next_state = FSM::STATE_STOP;
+
+  // STEPS:
+  // 1. Reset signal handler
+  signal(SIGINT, SIG_DFL);
+
+  // 2. Disconnect from machine
   data.machine.listen_stop();
+
+  // 3. Message user
   cerr << fg::red << style::bold << "STOP" << fg::reset << style::reset << endl;
+
   return next_state;
 }
 
@@ -99,7 +120,36 @@ state_t do_stop(T &data) {
 template<class T> 
 state_t do_load_block(T &data) {
   state_t next_state = FSM::STATE_RAPID_MOTION;
-  /* Your Code Here */
+
+  // STEPS:
+  // 1. Load next block, go back to idle if it's the last one
+  data.program.load_next();
+  if (data.program.done()) {
+    return FSM::STATE_IDLE;
+  }
+
+  // 2. Check current block type and set next state
+  cncpp::Block &b = *data.program.current();
+  cerr << "Loading " << b.desc() << endl;
+  switch (b.type()) {
+  case cncpp::Block::BlockType::NO_MOTION:
+    next_state = FSM::STATE_NO_MOTION;
+    break;
+  case cncpp::Block::BlockType::RAPID:
+    next_state = FSM::STATE_RAPID_MOTION;
+    break;
+  case cncpp::Block::BlockType::LINE:
+  case cncpp::Block::BlockType::CWA:
+  case cncpp::Block::BlockType::CCWA:
+    next_state = FSM::STATE_INTERP_MOTION;
+    break;
+  default:
+    next_state = FSM::STATE_IDLE;
+    break;
+  }
+
+  // 3. Increment total time
+  data.t_tot += data.machine.tq();
   
   return next_state;
 }
@@ -109,8 +159,23 @@ state_t do_load_block(T &data) {
 // SIGINT triggers an emergency transition to STATE_STOP
 template<class T> 
 state_t do_go_to_zero(T &data) {
-  state_t next_state = FSM::UNIMPLEMENTED;
-  /* Your Code Here */
+  state_t next_state = FSM::NO_CHANGE;
+
+  // STEPS:
+  // 1. sync machine setpoint
+  data.machine.sync(true);
+
+  // 2. check if we are at zero
+  if (data.machine.error() < data.machine.max_error()) {
+    next_state = FSM::STATE_IDLE;
+  } 
+
+  // 3. check if we need to stop for CTRL-C; if so, go to IDLE state
+  //    to skip over a rapid block
+  if (stop_requested) {
+    stop_requested = false;
+    next_state = FSM::STATE_IDLE;
+  }
   
   return next_state;
 }
@@ -119,8 +184,15 @@ state_t do_go_to_zero(T &data) {
 // valid return states: STATE_LOAD_BLOCK
 template<class T> 
 state_t do_no_motion(T &data) {
-  state_t next_state = FSM::UNIMPLEMENTED;
-  /* Your Code Here */
+  state_t next_state = FSM::STATE_LOAD_BLOCK;
+
+  // STEPS:
+  // 1. Print warning
+  cerr << fg::yellow << "No motion block: " << fg::reset
+       << (*data.program.current()).desc() << endl;
+
+  // 2. Increment total time
+  data.t_tot += data.machine.tq();
   
   return next_state;
 }
@@ -131,7 +203,33 @@ state_t do_no_motion(T &data) {
 template<class T> 
 state_t do_rapid_motion(T &data) {
   state_t next_state = FSM::NO_CHANGE;
-  /* Your Code Here */
+  data_t duration;
+  cncpp::Block &b = *data.program.current();
+
+  // STEPS:
+  // 1. Sync machine setpoint
+  data.machine.sync(true);
+
+  // 2. Exit if the error is small or the time has elapsed
+  duration = b.length() / data.machine.fmax() * 60.0;
+  if (data.machine.error() < data.machine.max_error() && data.t_blk > duration) {
+    next_state = FSM::STATE_LOAD_BLOCK;
+  }
+
+  // 3. Deal with CTRL-C for skipping over a rapid block
+  if (stop_requested) {
+    stop_requested = false;
+    next_state = FSM::STATE_LOAD_BLOCK;
+  }
+
+  // 4. Get current position and print values table
+  cncpp::Point p = data.machine.position();
+  data_t rel_distance = min(data.machine.error() / b.length(), 1.0);
+  cout << fmt::format("{:0>3d} {:0>2d} {:.3f} {:.3f} {:.3f} {:.3f} {:.1f} {:.3f} {:.3f} {:.3f} {:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, rel_distance, rel_distance * b.length(), data.machine.fmax(), b.profile().current_acc, p.x(), p.y(), p.z()) << endl;
+
+  // 5. Increment total and block time
+  data.t_blk += data.machine.tq();
+  data.t_tot += data.machine.tq();
   
   return next_state;
 }
@@ -141,8 +239,30 @@ state_t do_rapid_motion(T &data) {
 // SIGINT triggers an emergency transition to STATE_STOP
 template<class T> 
 state_t do_interp_motion(T &data) {
-  state_t next_state = FSM::UNIMPLEMENTED;
-  /* Your Code Here */
+  state_t next_state = FSM::NO_CHANGE;
+  cncpp::Block &b = *data.program.current();
+  data_t lambda, speed;
+  data_t tq = data.machine.tq();
+
+  // STEPS:
+  // 1. Interpolate position
+  cncpp::Point p = b.interpolate(data.t_blk, lambda, speed);
+
+  // 2. Print values table
+  cout << fmt::format("{:0>3d} {:0>2d} {:.3f} {:.3f} {:.3f} {:.3f} {:.1f} {:.3f} {:.3f} {:.3f} {:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), speed, b.profile().current_acc, p.x(), p.y(), p.z()) << endl;
+
+  // 3. Sync machine setpoint
+  data.machine.setpoint(p);
+  data.machine.sync(false);
+
+  // 4. Chck if we are done
+  if (data.t_blk > b.dt() + tq / 10.0) {
+    next_state = FSM::STATE_LOAD_BLOCK;
+  }
+
+  // 5. Increment total and block time
+  data.t_blk += tq;
+  data.t_tot += tq;
   
   return next_state;
 }
@@ -165,35 +285,44 @@ state_t do_interp_motion(T &data) {
 // 1. from idle to load_block
 template<class T>
 void reset(T &data) {
-  /* Your Code Here */
+  data.t_tot = 0;
+  data.t_blk = 0;
+  cout << "# n type t_tot t_blk lambda s feedrate acc x y z" << endl;
 }
 
 // This function is called in 1 transition:
 // 1. from idle to go_to_zero
 template<class T>
 void begin_zero(T &data) {
-  /* Your Code Here */
+  data.machine.listen_start();
+  data.machine.setpoint(data.machine.zero());
+  data.machine.sync(true);
+  cerr << "Going to zero.at " << data.machine.zero().desc() << "..." << endl;
 }
 
 // This function is called in 1 transition:
 // 1. from load_block to rapid_motion
 template<class T>
 void begin_rapid(T &data) {
-  /* Your Code Here */
+  cncpp::Block &b = *data.program.current();
+  data.t_blk = 0;
+  data.machine.listen_start();
+  data.machine.setpoint(b.target());
+  data.machine.sync(true);
 }
 
 // This function is called in 1 transition:
 // 1. from load_block to interp_motion
 template<class T>
 void begin_interp(T &data) {
-  /* Your Code Here */
+  data.t_blk = 0;
 }
 
 // This function is called in 1 transition:
 // 1. from rapid_motion to load_block
 template<class T>
 void end_rapid(T &data) {
-  /* Your Code Here */
+  data.machine.listen_stop();
 }
 
 // This function is called in 1 transition:
@@ -207,7 +336,7 @@ void end_interp(T &data) {
 // 1. from go_to_zero to idle
 template<class T>
 void end_zero(T &data) {
-  /* Your Code Here */
+  data.machine.listen_stop();
 }
 
 

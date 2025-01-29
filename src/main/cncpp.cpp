@@ -14,6 +14,8 @@ using namespace rang;
 struct FSMData {
   Program program;
   Machine machine;
+  data_t t_tot;
+  data_t t_blk;
   FSMData(string ini_file) : machine(ini_file), program(&machine) {}
 };
 

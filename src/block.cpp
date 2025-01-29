@@ -87,7 +87,7 @@ Block::Block(string line, Block &p) : Block(line) {
 
 Block::~Block() {
   if (_debug)
-    cout << rang::style::italic << fmt::format("Block {:>3} destroyed.", _n)
+    cerr << rang::style::italic << fmt::format("Block {:>3} destroyed.", _n)
          << rang::style::reset << endl;
 }
 
@@ -186,9 +186,9 @@ string Block::desc(bool colored) const {
   }
   ss << format("G{:0>2} ", styled(static_cast<int>(_type), fg(color)))
      << format("({:-^9}) ", Block::types.at(_type)) << target().desc()
-     << format(" F{:>5.0f} ", _feedrate) << format("S{:>4.0f} ", _spindle)
-     << format("T{:0>2} ", _tool) << format("M{:0>2} ", _m)
-     << format("L{:>6.2f}mm ", _length) << format("DT{:>6.2f}s", _profile.dt);
+     << format(" F{:>5.0f} S{:>4.0f} ", _feedrate, _spindle)
+     << format("T{:0>2} M{:0>2} ", _tool, _m)
+     << format("L{:>6.2f}mm DT{:>6.2f}s", _length, _profile.dt);
   return ss.str();
 }
 

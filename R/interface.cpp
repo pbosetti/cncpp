@@ -31,7 +31,7 @@ public:
   }
   
   void reset() {
-    _prog.reset();
+    _prog.clear();
   }
   
   DataFrame simulate() {

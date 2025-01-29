@@ -31,13 +31,19 @@ public:
   std::string desc(bool colored) const override;
 
   Program &operator<<(string line);
-  void reset() { clear(); }
 
+  // Iterating blocks
   using iterator = std::list<Block>::iterator;
   using const_iterator = std::list<Block>::const_iterator;
+  void rewind() { _current = begin(); _current--; _done = false;}
+  Program::iterator load_next() { _current++; _done = _current == end(); return _current; }
+  Program::iterator current() { return _current; }
+  bool done() { return _done; };
 
 private:
   Machine *_machine;
+  Program::iterator _current = begin();
+  bool _done = false;
   std::string _filename;
 };
 

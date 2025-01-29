@@ -24,7 +24,7 @@ Program::Program(const string &filename, Machine *machine)
 
 Program::~Program() {
   if (_debug)
-    cout << rang::style::italic
+    cerr << rang::style::italic
          << fmt::format("Destroying program with {:} blocks", size())
          << rang::style::reset << endl;
 }
@@ -61,7 +61,7 @@ std::string Program::desc(bool colored) const {
   std::ostringstream ss;
   for (auto &b : *this) {
     ss << b.desc()
-       << ", previous: " << fmt::format("{:0>3}", b.prev ? b.prev->n() : 0)
+       << fmt::format(", previous: {:0>3}", b.prev ? b.prev->n() : 0)
        << std::endl;
   }
   return ss.str();

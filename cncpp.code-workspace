@@ -20,7 +20,11 @@
 			"string_view": "cpp",
 			"__split_buffer": "cpp",
 			"deque": "cpp",
-			"list": "cpp"
+			"list": "cpp",
+			"fstream": "cpp",
+			"istream": "cpp",
+			"locale": "cpp",
+			"streambuf": "cpp"
 		},
 		"C_Cpp.default.cppStandard": "c++17",
 		"C_Cpp.default.defines": [

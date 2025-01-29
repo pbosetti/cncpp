@@ -43,7 +43,7 @@ void Point::modal(Point p) {
 
 Point Point::operator+(const Point& other) const {
   if (!complete() || !other.complete())
-    throw CNCError("Point is not complete", this);
+    throw CNCError("(+) Point is not complete", this);
   return Point(
     _x.value() + other._x.value(), 
     _y.value() + other._y.value(), 
@@ -52,7 +52,7 @@ Point Point::operator+(const Point& other) const {
 
 Point Point::delta(Point p) {
   if (!complete() || !p.complete())
-    throw CNCError("Point is not complete", this);
+    throw CNCError("(delta) Point is not complete", this);
   Point out(_x.value_or(0) - p._x.value_or(0),
             _y.value_or(0) - p._y.value_or(0),
             _z.value_or(0) - p._z.value_or(0));
@@ -61,7 +61,7 @@ Point Point::delta(Point p) {
 
 data_t Point::length() const {
   if (!complete())
-    throw CNCError("Point is not complete", this);
+    throw CNCError("(length) Point is not complete", this);
   return sqrt(_x.value_or(0) * _x.value_or(0) +
               _y.value_or(0) * _y.value_or(0) +
               _z.value_or(0) * _z.value_or(0));
@@ -90,7 +90,7 @@ string Point::desc(bool colored) const {
 
 vector<data_t> Point::vec() const {
   if (!complete())
-    throw CNCError("Point is not complete", this);
+    throw CNCError("(vec) Point is not complete", this);
   return vector<data_t>{_x.value(), _y.value(), _z.value()};
 }
 

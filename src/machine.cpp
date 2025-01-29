@@ -103,10 +103,22 @@ void Machine::on_connect(int rc) {
   }
 }
 
+void Machine::on_disconnect(int rc) {
+  if (_debug)
+    cerr << fg::yellow << "Disconnected from MQTT broker " 
+         << _mqtt_host << ":" << _mqtt_port << fg::reset << endl;
+}
+
 void Machine::on_subscribe(int mid, int qos_count, const int *granted_qos) {
   if (_debug)
     cerr << fg::yellow << "Subscribed to topic " << _sub_topic << fg::reset  
          << endl;
+}
+
+void Machine::on_unsubscribe(int mid) {
+  if (_debug)
+    cerr << fg::yellow << "Unsubscribed from topic " << _sub_topic 
+         << fg::reset << endl;
 }
 
 void Machine::on_message(const struct mosquitto_message *message) {
