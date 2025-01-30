@@ -43,9 +43,10 @@ int main(int argc, char** argv) {
     this_thread::sleep_for(chrono::milliseconds(5));
   });
 #ifdef DEBUG
-  fsm.run([&fsm](FSMData &d){
-    cout << "State: " << fsm.state_name() << endl;
-  });
+  fsm.run();
+  // fsm.run([&fsm](FSMData &d){
+  //   cerr << "State: " << fsm.state_name() << endl;
+  // });
 #else
   fsm.run();
 #endif

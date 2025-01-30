@@ -95,6 +95,8 @@ state_t do_idle(T &data) {
     break;
   }
 
+  data.machine.sync();
+
   // 3. Reset timing
   data.t_tot  = 0;
   data.t_blk  = 0;
@@ -218,20 +220,26 @@ state_t do_rapid_motion(T &data) {
 
   // 2. Exit if the error is small or the time has elapsed
   duration = b.length() / data.machine.fmax() * 60.0;
-  if (data.machine.error() < data.machine.max_error() && data.t_blk > duration) {
+  if (data.machine.error() < data.machine.max_error() && data.t_blk > data.machine.tq() * 10) {
+    cerr << "Rapid block " << b.desc() << " completed." << endl;
+    cerr << "Duration: " << duration << " s" << endl;
+    cerr << "Elapsed: " << data.t_blk << " s" << endl;
+    cerr << "Error: " << data.machine.error() << " mm" << endl;
     next_state = FSM::STATE_LOAD_BLOCK;
   }
 
   // 3. Deal with CTRL-C for skipping over a rapid block
   if (stop_requested) {
+    cerr << "Rapid block " << b.desc() << " skipped." << endl;
     stop_requested = false;
     next_state = FSM::STATE_LOAD_BLOCK;
   }
 
   // 4. Get current position and print values table
   cncpp::Point p = data.machine.position();
+  cncpp::Point r = b.target();
   data_t rel_distance = min(data.machine.error() / b.length(), 1.0);
-  cout << fmt::format("{:0>3d} {:0>2d} {:.3f} {:.3f} {:.3f} {:.3f} {:.1f} {:.3f} {:.3f} {:.3f} {:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, rel_distance, rel_distance * b.length(), data.machine.fmax(), b.profile().current_acc, p.x(), p.y(), p.z()) << endl;
+  cout << fmt::format("{:0>3d} {:0>2d} {:.3f} {:.3f} {:.3f} {:.3f} {:.1f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, rel_distance, rel_distance * b.length(), data.machine.fmax(), b.profile().current_acc, r.x(), r.y(), r.z(), p.x(), p.y(), p.z()) << endl;
 
   // 5. Increment total and block time
   data.t_blk += data.machine.tq();
@@ -252,13 +260,14 @@ state_t do_interp_motion(T &data) {
 
   // STEPS:
   // 1. Interpolate position
-  cncpp::Point p = b.interpolate(data.t_blk, lambda, speed);
+  cncpp::Point p = data.machine.position();
+  cncpp::Point r = b.interpolate(data.t_blk, lambda, speed);
 
   // 2. Print values table
-  cout << fmt::format("{:0>3d} {:0>2d} {:.3f} {:.3f} {:.3f} {:.3f} {:.1f} {:.3f} {:.3f} {:.3f} {:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), speed, b.profile().current_acc, p.x(), p.y(), p.z()) << endl;
+  cout << fmt::format("{:0>3d} {:0>2d} {:.3f} {:.3f} {:.3f} {:.3f} {:.1f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), speed, b.profile().current_acc, r.x(), r.y(), r.z(), p.x(), p.y(), p.z()) << endl;
 
   // 3. Sync machine setpoint
-  data.machine.setpoint(p);
+  data.machine.setpoint(r);
   data.machine.sync(false);
 
   // 4. Chck if we are done
@@ -293,7 +302,7 @@ template<class T>
 void reset(T &data) {
   data.t_tot = 0;
   data.t_blk = 0;
-  cout << "# n type t_tot t_blk lambda s feedrate acc x y z" << endl;
+  cout << "# n type t_tot t_blk lambda s feedrate acc xr yr zr x y z" << endl;
 }
 
 // This function is called in 1 transition:
@@ -321,6 +330,7 @@ void begin_rapid(T &data) {
 // 1. from load_block to interp_motion
 template<class T>
 void begin_interp(T &data) {
+  data.machine.sync(false);
   data.t_blk = 0;
 }
 
@@ -335,7 +345,7 @@ void end_rapid(T &data) {
 // 1. from interp_motion to load_block
 template<class T>
 void end_interp(T &data) {
-  /* Your Code Here */
+  data.machine.sync(false);
 }
 
 // This function is called in 1 transition:

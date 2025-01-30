@@ -97,39 +97,42 @@ data_t Machine::quantize(data_t t, data_t &dq) const {
 // MQTT related methods
 
 void Machine::on_connect(int rc) {
-  if (rc == 0 && _debug) {
-    cerr << fg::yellow << "Connected to MQTT broker " 
-         << _mqtt_host << ":" << _mqtt_port << fg::reset << endl;
+  if (_debug) {
+    cerr << fg::yellow << style::italic << "Connected to MQTT broker " 
+         << _mqtt_host << ":" << _mqtt_port 
+         << fg::reset << style::reset << endl;
   }
 }
 
 void Machine::on_disconnect(int rc) {
   if (_debug)
-    cerr << fg::yellow << "Disconnected from MQTT broker " 
-         << _mqtt_host << ":" << _mqtt_port << fg::reset << endl;
+    cerr << fg::yellow << style::italic << "Disconnected from MQTT broker " 
+         << _mqtt_host << ":" << _mqtt_port 
+         << style::reset << fg::reset << endl;
 }
 
 void Machine::on_subscribe(int mid, int qos_count, const int *granted_qos) {
   if (_debug)
-    cerr << fg::yellow << "Subscribed to topic " << _sub_topic << fg::reset  
-         << endl;
+    cerr << fg::yellow << style::italic << "Subscribed to topic " << _sub_topic 
+         << style::reset << fg::reset << endl;
 }
 
 void Machine::on_unsubscribe(int mid) {
   if (_debug)
-    cerr << fg::yellow << "Unsubscribed from topic " << _sub_topic 
-         << fg::reset << endl;
+    cerr << fg::yellow << style::italic << "Unsubscribed from topic " 
+         << _sub_topic 
+         << style::reset << fg::reset << endl;
 }
 
 void Machine::on_message(const struct mosquitto_message *message) {
-  if (_debug) {
-    cerr << fg::yellow << "Received message on topic " 
-         << style::bold << message->topic << style::reset
-         << fg::reset << endl
-         << fg::yellow << "Payload: " 
-         << style::bold << (char *)message->payload  << style::reset
-         << fg::reset << endl;
-  }
+  // if (_debug) {
+  //   cerr << style::italic << fg::yellow << "Received message on topic " 
+  //        << style::bold << message->topic << style::reset
+  //        << fg::reset << endl
+  //        << fg::yellow << "Payload: " 
+  //        << style::bold << (char *)message->payload  << style::reset
+  //        << fg::reset << style::reset << endl;
+  // }
   string payload((char *)message->payload, message->payloadlen);
   json j;
   try {
@@ -140,9 +143,8 @@ void Machine::on_message(const struct mosquitto_message *message) {
          << style::reset << fg::reset << endl;
     return;
   }
-  _position = Point(j["x"], j["y"], j["z"]);
-  if (_debug)
-    cerr << fg::yellow <<  "Received: " << j.dump() << fg::reset << endl;
+  _position = Point(j.value("x", 0)*1000, j.value("y", 0)*1000, j.value("z", 0)*1000);
+  _error = j.value("error", 0) * 1000;
 }
 
 

@@ -16,6 +16,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
   set(BUILD_FLAG "RELEASE_BUILD")
 else()
   set(BUILD_FLAG "DEBUG_BUILD")
+  add_compile_definitions(DEBUG=1)
 endif()
 
 set(CMAKE_CXX_STANDARD 17)

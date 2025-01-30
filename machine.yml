@@ -4,12 +4,12 @@ machine:
   tq: 0.005
   max_error: 0.005
   fmax: 1000
-  zero: [0, 0, 600]
+  zero: [500, 1000, 500]
   offset: [200, 200, 500]
 mqtt:
   host: localhost
   port: 1883
   keepalive: 60
   topics:
-    sub: cncpp/status/#
-    pub: cncpp/setpoint
+    sub: cnc/status/#
+    pub: cnc/setpoint
