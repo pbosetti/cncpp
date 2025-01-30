@@ -73,7 +73,21 @@ FetchContent_Declare(keystroker
   GIT_TAG HEAD
 )
 
-FetchContent_MakeAvailable(fmt rang json yaml-cpp keystroker)
+set(DOCUMENTATION OFF)
+set(INC_BRIDGE_SUPPORT OFF)
+set(WITH_APPS OFF)
+set(WITH_CLIENTS OFF)
+set(WITH_PIC ON)
+set(WITH_STATIC_LIBRARIES ON)
+set(WITH_TLS OFF)
+set(WITH_LIB_CPP ON)
+FetchContent_Declare(mosquitto
+  GIT_REPOSITORY https://github.com/eclipse-mosquitto/mosquitto.git
+  GIT_SHALLOW    TRUE
+  GIT_TAG v2.0.20
+)
+
+FetchContent_MakeAvailable(fmt rang json yaml-cpp keystroker mosquitto)
 
 message(STATUS "Dependencies fetched.")
 
@@ -83,11 +97,14 @@ include_directories(
   ${json_SOURCE_DIR}/include
   ${yaml-cpp_SOURCE_DIR}/include
   ${keystroker_SOURCE_DIR}/include
-  /opt/homebrew/include
+  ${mosquitto_SOURCE_DIR}/include
+  ${mosquitto_SOURCE_DIR}/lib/cpp
+  # /opt/homebrew/include
 )
 
 link_directories(
-  /opt/homebrew/lib
+  ${mosquitto_BINARY_DIR}/lib
+  ${mosquitto_BINARY_DIR}/lib/cpp
 )
 
 #    ____             __ _                          _    __ _ _           
@@ -131,6 +148,7 @@ endmacro()
 
 create_example(basics SRCS basics.cpp myobject.cpp)
 create_example(rang SRCS rang.cpp)
+create_example(mqtt_sub SRCS mqtt_sub.cpp LIBS mosquittopp_static mosquitto_static)
 
 
 #   _____                    _       
@@ -145,7 +163,7 @@ file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 list(FILTER SRC_FILES EXCLUDE REGEX ".*fsm.*")
 add_library(cncpp_lib STATIC ${SRC_FILES})
-target_link_libraries(cncpp_lib PRIVATE fmt::fmt mosquittopp yaml-cpp::yaml-cpp keystroker)
+target_link_libraries(cncpp_lib PRIVATE fmt::fmt mosquittopp_static mosquitto_static yaml-cpp::yaml-cpp keystroker)
 set_target_properties(cncpp_lib PROPERTIES PUBLIC_HEADER "${HEADERS}")
 list(APPEND TARGET_LIST cncpp_lib)
 
