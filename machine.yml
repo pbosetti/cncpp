@@ -6,6 +6,40 @@ machine:
   fmax: 1000
   zero: [500, 1000, 500]
   offset: [200, 200, 500]
+  axes:
+    X:
+      length: 1
+      friction: 1000
+      mass: 150
+      max_torque: 20
+      pitch: 0.01
+      gravity: 0
+      integration_dt: 1
+      p: 50
+      i: 0.0
+      d: 13.0
+    Y:
+      length: 2
+      friction: 1000
+      mass: 150
+      max_torque: 20
+      pitch: 0.01
+      gravity: 0
+      integration_dt: 1
+      p: 53.0
+      i: 0.0
+      d: 10.0
+    Z:
+      length: 1
+      friction: 1000
+      mass: 100
+      max_torque: 15
+      pitch: 0.01
+      gravity: 0
+      integration_dt: 1
+      p: 40
+      i: 0.0
+      d: 4.0
 mqtt:
   host: localhost
   port: 1883
@@ -13,3 +47,4 @@ mqtt:
   topics:
     sub: cnc/status/#
     pub: cnc/setpoint
+

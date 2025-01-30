@@ -68,8 +68,8 @@ void Machine::load(const string &settings_file) {
   _mqtt_host = data["mqtt"]["host"].as<string>("localhost");
   _mqtt_port = data["mqtt"]["port"].as<int>(1883);
   _mqtt_keepalive = data["mqtt"]["keepalive"].as<int>(60);
-  _pub_topic = data["mqtt"]["topics"]["pub"].as<string>("cncpp/setpoint");
-  _sub_topic = data["mqtt"]["topics"]["sub"].as<string>("cncpp/status/#");
+  _pub_topic = data["mqtt"]["topics"]["pub"].as<string>("cnc/setpoint");
+  _sub_topic = data["mqtt"]["topics"]["sub"].as<string>("cnc/status/#");
 
 }
 
