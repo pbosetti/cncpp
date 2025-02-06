@@ -73,14 +73,14 @@ FetchContent_Declare(keystroker
   GIT_TAG HEAD
 )
 
-set(DOCUMENTATION OFF)
-set(INC_BRIDGE_SUPPORT OFF)
-set(WITH_APPS OFF)
-set(WITH_CLIENTS OFF)
-set(WITH_PIC ON)
-set(WITH_STATIC_LIBRARIES ON)
-set(WITH_TLS OFF)
-set(WITH_LIB_CPP ON)
+set(DOCUMENTATION OFF CACHE BOOL "")
+set(INC_BRIDGE_SUPPORT OFF CACHE BOOL "")
+set(WITH_APPS OFF CACHE BOOL "")
+set(WITH_CLIENTS OFF CACHE BOOL "")
+set(WITH_PIC ON CACHE BOOL "")
+set(WITH_STATIC_LIBRARIES ON CACHE BOOL "")
+set(WITH_TLS OFF CACHE BOOL "")
+set(WITH_LIB_CPP ON CACHE BOOL "")
 FetchContent_Declare(mosquitto
   GIT_REPOSITORY https://github.com/eclipse-mosquitto/mosquitto.git
   GIT_SHALLOW    TRUE
@@ -149,6 +149,7 @@ endmacro()
 create_example(basics SRCS basics.cpp myobject.cpp)
 create_example(rang SRCS rang.cpp)
 create_example(mqtt_sub SRCS mqtt_sub.cpp LIBS mosquittopp_static mosquitto_static)
+add_dependencies(ex_mqtt_sub mosquitto)
 
 
 #   _____                    _       
