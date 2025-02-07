@@ -69,8 +69,6 @@ string last_element = v.back(); // last_element = "banana"
 
 > **Note**: `front()` and `back()` throw an exception if the vector is empty.
 
----
-
 ## Auto keyword
 
 > The `auto` keyword in `C++` automatically detects and assigns a data type to the variable with which it is used. This can be helpful for making your code more concise and readable. Notably, `auto` is a **type inference** keyword, not a data type.
@@ -159,7 +157,7 @@ vector<double>::iterator iter2;
 
 There are two main ways to initialize vector iterators:
 
-**1. Using `begin()` and `end()`**
+1. **Using `begin()` and `end()`**
 
 - `begin()` returns an iterator pointing to the first element.
 - `end()` refers to the theoretical element after the last element.
@@ -178,7 +176,7 @@ cout << "num[0] = " << *iter << endl;
 iter = num.end() - 1;
 ```
 
-**2. Using reverse iterators**
+2. **Using reverse iterators**
 
 - `rbegin()` returns a reverse iterator pointing to the last element.
 - `rend()` refers to the theoretical element before the first element.
@@ -219,8 +217,6 @@ for (auto ir = v.rbegin(); ir != v.rend(); ++ir) {
 ```
 
 Using iterators provides more control and flexibility compared to traditional indexing. They offer functionalities like element insertion, deletion, and distance calculation, making them essential tools for working with vectors in C++.
-
----
 
 # Vector functionalities
 
@@ -363,8 +359,6 @@ vector<int> v1 = {1, 2, 3};
 vector<int> v2 = {4, 5, 6};
 v1.swap(v2);
 ```
-
----
 
 # Vector operations
 

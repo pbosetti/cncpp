@@ -17,7 +17,8 @@ Author: Davide Stocco, 2025
 #include <fmt/core.h>
 
 // Basic usage: String Formatting
-int main() {
+int main(int argc, char * argv[])
+{
   int age = 25;
   std::string name = "Alice";
 

@@ -2,8 +2,6 @@
 
 In C++, `std::list` is a **doubly linked list** that provides dynamic memory allocation and efficient insertion/deletion at both ends and anywhere in the list. Unlike `std::vector`, which uses **contiguous memory**, a `list` consists of **nodes** where each node stores an element and pointers to its **previous** and **next** elements.
 
----
-
 ## Declaring a `list`
 
 A `list` can be declared in multiple ways:
@@ -28,8 +26,6 @@ struct Person {
 
 std::list<Person> people = {{"Alice", 25}, {"Bob", 30}};
 ```
-
----
 
 ## Accessing elements
 
@@ -56,8 +52,6 @@ std::cout << lst.front(); // Output: 10
 std::cout << lst.back();  // Output: 30
 ```
 
----
-
 ## Iterating through a `list`
 
 ### Using range-based for loop
@@ -77,8 +71,6 @@ for (auto it = lst.rbegin(); it != lst.rend(); ++it) {
   std::cout << *it << " ";
 }
 ```
-
----
 
 ## Adding elements
 
@@ -104,8 +96,6 @@ std::advance(it, 2); // Move iterator to 3rd element
 lst.insert(it, 15);  // Insert 15 at the 3rd position
 ```
 
----
-
 ## Removing elements
 
 - **pop_back()** → Removes the last element.
@@ -125,8 +115,6 @@ lst.erase(it); // Remove 2nd element
 
 lst.remove(4); // Remove all occurrences of 4
 ```
-
----
 
 ## List operations
 
@@ -157,8 +145,6 @@ lst.unique();
 ```
 > The list must be **sorted** before using `unique()`.
 
----
-
 ## Splicing (Moving elements between lists)
 
 - **splice(position, source_list)** → Moves the entire `source_list` into another list at the specified `position`.
@@ -171,8 +157,6 @@ auto it = lst1.begin();
 std::advance(it, 2); // Move to the 3rd element
 lst1.splice(it, lst2); // Moves all elements from lst2 into lst1
 ```
-
----
 
 ## Capacity functions
 
@@ -189,8 +173,6 @@ std::cout << lst.size(); // Output: 3
 lst.clear();
 std::cout << lst.empty(); // Output: true
 ```
-
----
 
 ## Advantages of `std::list`
 - **Fast insertion and deletion** anywhere in the list (O(1)).

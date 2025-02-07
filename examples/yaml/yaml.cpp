@@ -26,11 +26,11 @@ Author: Davide Stocco, 2025
 // Convert YAML to JSON
 #include "yaml2json.hpp"
 
-int main(int argc, char* argv[]) {
-
+int main(int argc, char * argv[])
+{
   // Check for command-line arguments
-  if (argc < 2) {
-    std::cerr << "Please provide a YAML files paths as an argument." << std::endl;
+  if (argc != 4) {
+    std::cerr << "Please provide three YAML files paths argument." << std::endl;
     return -1;
   }
 

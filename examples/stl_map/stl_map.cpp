@@ -19,7 +19,8 @@ struct Descending {
   }
 };
 
-int main() {
+int main(int argc, char * argv[])
+{
   // Declaring and Initializing Maps
   std::map<int, std::string> students = {
     {101, "Alice"},

@@ -10,7 +10,7 @@ Author: Davide Stocco, 2025
 */
 
 // Run this program with the following command from the root directory:
-// ./build/ex_yaml examples/json/example.json
+// ./build/ex_json examples/json/example.json
 
 // STL library headers
 #include <iostream>
@@ -24,16 +24,16 @@ Author: Davide Stocco, 2025
 
 using json = nlohmann::json;
 
-int main(int argc, char* argv[]) {
-
+int main(int argc, char * argv[])
+{
   // Check for command-line arguments
-  if (argc < 2) {
-    std::cerr << "Please provide a YAML files paths as an argument." << std::endl;
+  if (argc != 2) {
+    std::cerr << "Please provide one JSON file path argument." << std::endl;
     return -1;
   }
 
   // Reading JSON from a file
-  std::ifstream file("example.json");
+  std::ifstream file(argv[1]);
   json data = json::parse(file);
   std::cout << "Reading from JSON file: " << std::endl;
   std::cout << data << std::endl;

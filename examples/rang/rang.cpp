@@ -18,7 +18,8 @@ Author: Davide Stocco, 2025
 // FMT library header
 #include <fmt/core.h>
 
-int main() {
+int main(int argc, char * argv[])
+{
   // Basic Usage - Coloring Text
 
   // Using foreground colors

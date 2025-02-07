@@ -14,7 +14,7 @@ Author: Davide Stocco, 2025
 
 using namespace std;
 
-int main()
+int main(int argc, char * argv[])
 {
   // Declaring vectors
   vector<int> v1 = {1, 2, 3};
