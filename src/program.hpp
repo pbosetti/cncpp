@@ -38,7 +38,7 @@ public:
   void rewind() { _current = begin(); _current--; _done = false;}
   Program::iterator load_next() { _current++; _done = _current == end(); return _current; }
   Program::iterator current() { return _current; }
-  bool done() { return _done; };
+  bool done() const { return _done; };
 
 private:
   Machine *_machine;

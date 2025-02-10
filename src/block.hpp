@@ -95,7 +95,6 @@ private:
 
   void parse_token(string token);
   Point start_point() const;
-  void parse();
   void compute();
   void arc();
 
