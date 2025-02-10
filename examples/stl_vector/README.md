@@ -1,6 +1,6 @@
 # STL `vector`
 
-In C++, vectors are **dynamically-sized arrays**. They offer a convenient and efficient way to store collections of elements of the same type. Imagine a flexible container that automatically adjusts its size as you add or remove elements, that's essentially what a vector is.
+In `C++`, vectors are **dynamically-sized arrays**. They offer a convenient and efficient way to store collections of elements of the same type. Imagine a flexible container that automatically adjusts its size as you add or remove elements, that's essentially what a vector is.
 
 ## Declaring a vector
 
@@ -8,19 +8,19 @@ There are several ways to declare a vector. Here are some examples:
 
 ```cpp
 vector<int> v = {1, 2, 3}; // initializer list
-vector<int> vect1{10, 20, 30}; // brace initialization
+vector<int> v{10, 20, 30}; // brace initialization
 vector<int> v; // empty vector
-vector<int> vect(n, 10); // size n, all values 10
-vector<int> vect(10); // size 10
+vector<int> v(n, 10); // size n, all values 10
+vector<int> v(10); // size 10
 ```
 
 You can also create a vector of vectors, which is essentially a 2D dynamic array (or matrix):
 
 ```cpp
-// create a vector containing a single vector with the elements 1, 2, and 3.
-vector<vector<data_type>> vec;
+// create a vector containing a single vector with the elements 1, 2, and 3
+vector<vector<data_type>> v1;
 v2 = {1, 2, 3};
-vec.push_back(v2);
+v1.push_back(v2);
 
 // create a 5x5 matrix with all elements set to 0, you can use
 vector<vector<int>> v(5, vector<int>(5, 0));
@@ -30,16 +30,16 @@ vector<vector<int>> v(5, vector<int>(5, 0));
 
 1. Using the `at()` method
 
-    ```cpp
-    vector<int> num {1, 2, 3, 4, 5};
-    cout << "Element at Index 0: " << num.at(0) << endl;
-    ```
+```cpp
+vector<int> num {1, 2, 3, 4, 5};
+cout << "Element at Index 0: " << num.at(0) << endl;
+```
 
 2. Using the `[]` operator
 
-    ```cpp
-    cout << num[1];
-    ```
+```cpp
+cout << num[1];
+```
 
 The `at()` method is preferred over the `[]` operator because it throws an exception if you try to access an element that is out of bounds. The `[]` operator, on the other hand, will simply give you a *garbage* value.
 
@@ -82,15 +82,15 @@ auto string_var{"Hello"}; // creates string type variable
 auto char_var{"C"}; // creates char type variable
 ```
 
-> Since C++11, initialization can be done using curly braces `{}` or the assignment operator `=`.
+> Since `C++11`, initialization can be done using curly braces `{}` or the assignment operator `=`.
 
 You can also use `auto` with references:
 
 ```cpp
-auto number1 = 10;
+auto n1 = 10;
 
-auto & number2 = number1; // number2 is a reference to number1
-number2 = 20; // modifies the original value of number1
+auto & n2 = n1; // n2 is a reference to number1
+n2 = 20; // modifies the original value of number1
 ```
 
 ## Foreach loop
@@ -141,9 +141,7 @@ The syntax for declaring a vector iterator is:
 vector<T>::iterator iterator_name;
 ```
 
-Here, `T` represents the type of elements stored in the vector.
-
-**Example**
+Here, `T` represents the type of elements stored in the vector. A practical example would be:
 
 ```cpp
 // iterator for an int vector
@@ -157,12 +155,7 @@ vector<double>::iterator iter2;
 
 There are two main ways to initialize vector iterators:
 
-1. **Using `begin()` and `end()`**
-
-- `begin()` returns an iterator pointing to the first element.
-- `end()` refers to the theoretical element after the last element.
-
-**Example**
+1. **Using `begin()` and `end()`**, where `begin()` returns an iterator pointing to the first element, and `end()` refers to the theoretical element after the last element.
 
 ```cpp
 vector<int> num = {1, 2, 3};
@@ -176,12 +169,7 @@ cout << "num[0] = " << *iter << endl;
 iter = num.end() - 1;
 ```
 
-2. **Using reverse iterators**
-
-- `rbegin()` returns a reverse iterator pointing to the last element.
-- `rend()` refers to the theoretical element before the first element.
-
-**Example**
+2. **Using reverse iterators**, which allow you to traverse the vector in reverse order. In other words, `rbegin()` returns a reverse iterator pointing to the last element, and `rend()` refers to the theoretical element before the first element.
 
 ```cpp
 vector<int> num = {1, 2, 3};
@@ -200,8 +188,6 @@ for (auto i = num.rbegin(); i != num.rend(); ++i) {
 
 Iterators are commonly used in `for` loops to iterate through each element in a vector.
 
-**Example**
-
 ```cpp
 vector<int> v = {1, 2, 3, 4, 5};
 
@@ -216,7 +202,7 @@ for (auto ir = v.rbegin(); ir != v.rend(); ++ir) {
 }
 ```
 
-Using iterators provides more control and flexibility compared to traditional indexing. They offer functionalities like element insertion, deletion, and distance calculation, making them essential tools for working with vectors in C++.
+Using iterators provides more control and flexibility compared to traditional indexing. They offer functionalities like element insertion, deletion, and distance calculation, making them essential tools for working with vectors in `C++`.
 
 # Vector functionalities
 
@@ -245,48 +231,35 @@ Let's break down the differences between `insert`, `push_back`, and `emplace_bac
 
 ## `push_back`
 
-- Usage:
+You use `push_back` when you want to add an element to the back (end) of the vector. It's like adding a new item to the end of a line.
 
-    ```cpp
-    vector<int> numbers = {1, 2, 3};
-    numbers.push_back(4);
-    ```
-
-- **Explanation**: You use `push_back` when you want to add an element to the back (end) of the vector. It's like adding a new item to the end of a line.
+```cpp
+vector<int> numbers = {1, 2, 3};
+numbers.push_back(4);
+```
 
 ## `emplace_back`
 
-- Usage:
+`emplace_back` is similar to `push_back`, but it directly constructs the element in place. It's like welcoming a new person into a group by constructing them right there instead of preparing them separately and then adding.
 
-    ```cpp
-    vector<string> names = {"Alice", "Bob"};
-    names.emplace_back("Charlie");
-    ```
-
-- **Explanation**: `emplace_back` is similar to `push_back`, but it directly constructs the element in place. It's like welcoming a new person into a group by constructing them right there instead of preparing them separately and then adding.
+```cpp
+vector<string> names = {"Alice", "Bob"};
+names.emplace_back("Charlie");
+```
 
 ## `insert`
 
-- **Purpose**: Inserting elements at a specified position in the vector.
+`insert` is like adding elements at a specific point in the vector.
 
-- Usage:
+```cpp
+vector<int> numbers = {1, 2, 3};
+auto it = numbers.begin() + 1;
+numbers.insert(it, 4);
+```
 
-    ```cpp
-    vector<int> numbers = {1, 2, 3};
-    auto it = numbers.begin() + 1;
-    numbers.insert(it, 4);
-    ```
+It's like squeezing a new person into a group but not necessarily at the end – you decide where they fit. By understanding the differences between these functions, you can choose the right one for your specific needs.
 
-- **Explanation**: `insert` is like adding elements at a specific point in the vector. It's like squeezing a new person into a group but not necessarily at the end – you decide where they fit.
-
-**Inserting books (Example)**
-
-- **Push**: This is like adding a book to the **end** of a specific section. It's quick and easy, like adding a new book to the "Science" section at the end of the other science books.
-- **Emplace**: This is like building a book directly on the shelf. It's more efficient for large or complex books, like building a custom scrapbook directly on the shelf instead of bringing it from another location.
-
-In summary, `push_back` is for adding to the end, `emplace_back` is for constructing and adding to the end.
-
-- **insert(position, value)** inserts a new element at a specified **position** within the vector. The existing elements at and after the position are shifted to make room for the new element.
+- **`insert(position, value)`** inserts a new element at a specified **position** within the vector. The existing elements at and after the position are shifted to make room for the new element.
 
 ```cpp
 vector<int> v = {1, 2, 3};
@@ -294,7 +267,7 @@ v.insert(v.begin() + 1, 10); // Insert 10 at index 1
 // v now contains: 1, 10, 2, 3
 ```
 
-- **insert(position, n, value)** inserts n *copies* of a specific value at a specified position.
+- **`insert(position, n, value)`** inserts n *copies* of a specific value at a specified position.
 
 ```cpp
 vector<char> v = {'a', 'b', 'c'};
@@ -302,7 +275,7 @@ v.insert(v.begin() + 1, 2, 'x'); // Insert 2 'x' at index 1
 // v now contains: 'a', 'x', 'x', 'b', 'c'
 ```
 
-- **insert(position, begin, end)** inserts a *range of elements* from another container (begin and end iterators) at a specified position.
+- **`insert(position, begin, end)`** inserts a *range of elements* from another container (begin and end iterators) at a specified position.
 
 ```cpp
 vector<int> v1 = {1, 2, 3};
@@ -321,7 +294,7 @@ v.pop_back();
 // v now contains: "apple", "banana"
 ```
 
-- **erase(position)** removes the element at a specified **position** from the vector. The remaining elements are shifted down to fill the gap.
+- **`erase(position)`** removes the element at a specified **position** from the vector. The remaining elements are shifted down to fill the gap.
 
 ```cpp
 vector<int> v = {1, 2, 3, 4};
@@ -334,7 +307,7 @@ fruits.erase(fruits.end() - 1); // Remove the last element ("orange")
 // fruits now contains {"apple", "banana"}
 ```
 
-- **erase(begin, end)** removes a **range of elements** from a specified position (begin and end iterators) within the vector.
+- **`erase(begin, end)`** removes a **range of elements** from a specified position (begin and end iterators) within the vector.
 
 ```cpp
 vector<char> v = {'a', 'b', 'c', 'd', 'e'};
@@ -346,9 +319,9 @@ v.erase(v.begin() + 1, v.begin() + 3); // erases elements from index 1 to 2 (exc
 
 The time complexity of `erase` depends on the operation:
 
-- **Single element**: O(n), where n is the number of elements after the erased element. This is because remaining elements need to be shifted to fill the gap.
-- **Range of elements**: O(n + m), where n is the number of elements after the erased range and m is the number of erased elements.
-- **Erasing the last element**: O(1), as no shifting is necessary.
+- **Single element**: $\mathcal{O}(n)$, where n is the number of elements after the erased element. This is because remaining elements need to be shifted to fill the gap.
+- **Range of elements**: $\mathcal{O}(n+m)$, where $n$ is the number of elements after the erased range and $m$ is the number of erased elements.
+- **Erasing the last element**: $\mathcal{O}(1)$, as no shifting is necessary.
 
 ## Other operations
 
@@ -383,14 +356,14 @@ size_t capacity = v.capacity(); // capacity might be > 1
 
 ## Resizing and shrinking
 
-- **resize(n)** changes the size of the vector to n. If n is smaller than the current size, elements are removed. If it's larger, new elements are added with their default values.
+- **`resize(n)`** changes the size of the vector to `n`. If `n` is smaller than the current size, elements are removed. If it's larger, new elements are added with their default values.
 
 ```cpp
 vector<int> v = {1, 2, 3};
 v.resize(5); // v becomes {1, 2, 3, 0, 0}
 ```
 
-- **resize(n, value)** is similar to `resize(n)`, but assigns the specified value to all new elements added.
+- **`resize(n, value)`** is similar to `resize(n)`, but assigns the specified value to all new elements added.
 
 ```cpp
 vector<string> v = {"apple", "banana"};
@@ -405,7 +378,7 @@ v.push_back(1); // only 1 element added
 v.shrink_to_fit(); // capacity reduced to 1
 ```
 
-- **reserve(n)** requests that the vector capacity be at least enough to hold n elements. This avoids reallocation when adding elements.
+- **`reserve(n)`** requests that the vector capacity be at least enough to hold n elements. This avoids reallocation when adding elements.
 
 ```cpp
 vector<char> v;
@@ -421,7 +394,7 @@ bool is_empty = v.empty(); // is_empty is true
 
 ## Modifying elements
 
-- **assign(n, value)** replaces all elements in the vector with the specified value.
+- **`assign(n, value)`** replaces all elements in the vector with the specified value.
 
 ```cpp
 vector<int> v = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
@@ -448,7 +421,7 @@ By understanding these functions, you can effectively manage the size and conten
 
 ## Advantages of vectors
 
-- Vectors have contiguous memory allocation, which means that elements are stored in contiguous memory locations. This makes accessing elements faster compared to other containers like lists and deques. Note that accessing elements in a vector using the `[]` operator is faster than using the `at()` function, as the `at()` function performs a range check.
+- Vectors have contiguous memory allocation, which means that elements are stored in contiguous memory locations. This makes accessing elements faster compared to other containers like lists. Note that accessing elements in a vector using the `[]` operator is faster than using the `at()` function, as the `at()` function performs a range check.
 - Vectors have a dynamic size, which means that they can be resized during runtime.
 - Vectors support random access, which means that elements can be accessed in constant time using an index.
 

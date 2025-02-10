@@ -1,6 +1,6 @@
 # STL `list`
 
-In C++, `std::list` is a **doubly linked list** that provides dynamic memory allocation and efficient insertion/deletion at both ends and anywhere in the list. Unlike `std::vector`, which uses **contiguous memory**, a `list` consists of **nodes** where each node stores an element and pointers to its **previous** and **next** elements.
+In `C++`, `std::list` is a **doubly linked list** that provides dynamic memory allocation and efficient insertion/deletion at both ends and anywhere in the list. Unlike `std::vector`, which uses **contiguous memory**, a `list` consists of **nodes** where each node stores an element and pointers to its **previous** and **next** elements.
 
 ## Declaring a `list`
 
@@ -15,8 +15,7 @@ std::list<int> lst2{4, 5, 6}; // brace initialization
 std::list<int> lst3(5, 10); // list with 5 elements, all set to 10
 ```
 
-### Declaring a list of objects
-A `list` can store **user-defined objects**:
+A `list` can store **user-defined objects** as follows:
 
 ```cpp
 struct Person {
@@ -31,8 +30,6 @@ std::list<Person> people = {{"Alice", 25}, {"Bob", 30}};
 
 Unlike `vector`, `std::list` **does not support random access** using `[]` or `at()`. Instead, elements are accessed using **iterators**.
 
-### Using iterators
-
 ```cpp
 std::list<int> lst = {10, 20, 30, 40};
 
@@ -42,9 +39,7 @@ for (auto it = lst.begin(); it != lst.end(); ++it) {
 }
 ```
 
-### Using `front()` and `back()`
-- **front()** returns the first element.
-- **back()** returns the last element.
+The functions `front()` and `back()` can be used to access the **first** and **last** elements, respectively.
 
 ```cpp
 std::list<int> lst = {10, 20, 30};
@@ -54,7 +49,7 @@ std::cout << lst.back();  // Output: 30
 
 ## Iterating through a `list`
 
-### Using range-based for loop
+- **Using range-based for loop**
 
 ```cpp
 std::list<int> lst = {1, 2, 3, 4, 5};
@@ -63,8 +58,7 @@ for (auto num : lst) {
 }
 ```
 
-### Using reverse iterators
-To traverse in reverse order:
+- **Using reverse iterators**
 
 ```cpp
 for (auto it = lst.rbegin(); it != lst.rend(); ++it) {
@@ -74,10 +68,12 @@ for (auto it = lst.rbegin(); it != lst.rend(); ++it) {
 
 ## Adding elements
 
-- **push_back(value)** → Adds an element to the end.
-- **push_front(value)** → Adds an element to the beginning.
-- **emplace_back(value)** → Constructs an element at the end.
-- **emplace_front(value)** → Constructs an element at the beginning.
+Elements can be added at the **beginning** or **end** of the list using the following functions:
+
+- **`push_back(value)`** adds an element to the end.
+- **`push_front(value)`** adds an element to the beginning.
+- **`emplace_back(value)`** constructs an element at the end.
+- **`emplace_front(value)`** constructs an element at the beginning.
 
 ```cpp
 std::list<int> lst;
@@ -87,8 +83,7 @@ lst.emplace_back(30);  // {20, 10, 30}
 lst.emplace_front(40); // {40, 20, 10, 30}
 ```
 
-### Using `insert()`
-To insert elements at a **specific position**, use an iterator:
+To insert elements at a **specific position**, use an iterator together with the `insert()` function.
 
 ```cpp
 auto it = lst.begin();
@@ -98,11 +93,13 @@ lst.insert(it, 15);  // Insert 15 at the 3rd position
 
 ## Removing elements
 
-- **pop_back()** → Removes the last element.
-- **pop_front()** → Removes the first element.
-- **erase(iterator)** → Removes the element at the given iterator.
-- **erase(start, end)** → Removes a range of elements.
-- **remove(value)** → Removes all occurrences of a value.
+Elements can be removed using the following functions:
+
+- **`pop_back()`** removes the last element.
+- **`pop_front()`** removes the first element.
+- **`erase(iterator)`** removes the element at the given iterator.
+- **`erase(start, end)`** removes a range of elements.
+- **`remove(value)`** removes all occurrences of a value.
 
 ```cpp
 std::list<int> lst = {1, 2, 3, 4, 5};
@@ -118,7 +115,7 @@ lst.remove(4); // Remove all occurrences of 4
 
 ## List operations
 
-### **Sorting a list**
+### Sorting
 Unlike `vector`, `std::list` provides a built-in `sort()` function.
 
 ```cpp
@@ -126,12 +123,12 @@ std::list<int> lst = {5, 1, 4, 2, 3};
 lst.sort(); // lst = {1, 2, 3, 4, 5}
 ```
 
-### **Reversing a list**
+### Reversing
 ```cpp
 lst.reverse(); // lst = {5, 4, 3, 2, 1}
 ```
 
-### **Merging two sorted lists**
+### Merging two lists
 ```cpp
 std::list<int> lst1 = {1, 3, 5};
 std::list<int> lst2 = {2, 4, 6};
@@ -139,23 +136,23 @@ std::list<int> lst2 = {2, 4, 6};
 lst1.merge(lst2); // lst1 = {1, 2, 3, 4, 5, 6}
 ```
 
-### **Removing duplicates**
+### Removing duplicates
 ```cpp
 lst.unique();
 ```
 > The list must be **sorted** before using `unique()`.
 
-## Splicing (Moving elements between lists)
+### Splicing (moving elements between lists)
 
-- **splice(position, source_list)** → Moves the entire `source_list` into another list at the specified `position`.
+- **`splice(position, source_list)`** moves the entire `source_list` into another list at the specified `position`.
 
 ```cpp
 std::list<int> lst1 = {1, 2, 3};
 std::list<int> lst2 = {4, 5, 6};
 
 auto it = lst1.begin();
-std::advance(it, 2); // Move to the 3rd element
-lst1.splice(it, lst2); // Moves all elements from lst2 into lst1
+std::advance(it, 2); // move to the 3rd element
+lst1.splice(it, lst2); // moves all elements from lst2 into lst1
 ```
 
 ## Capacity functions
@@ -175,16 +172,16 @@ std::cout << lst.empty(); // Output: true
 ```
 
 ## Advantages of `std::list`
-- **Fast insertion and deletion** anywhere in the list (O(1)).
-- **No memory reallocation** (unlike `vector`).
-- **Efficient for frequent insertions/deletions** in the middle.
+- Fast insertion and deletion anywhere in the list $\mathcal{O}(1)$.
+- No memory reallocation (unlike `vector`).
+- Efficient for frequent insertions/deletions in the middle.
 
 ## Disadvantages of `std::list`
-- **No random access** (O(n) to access an element).
-- **Higher memory overhead** due to extra pointers.
-- **Slower traversal** compared to `vector`.
+- No random access ($\mathcal{O}(n)$ to access an element).
+- Higher memory overhead due to extra pointers.
+- Slower traversal compared to `vector`.
 
-## When to Use `std::list`
+## `std::vector` vs `std::list`
 
 | Use Case | Choose |
 |----------|--------|

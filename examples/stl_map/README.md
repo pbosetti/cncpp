@@ -1,29 +1,29 @@
 # STL map
 
-In `C++`, a **map** is an associative container that stores elements in **key-value pairs**. It provides **fast lookups, insertions, and deletions** while keeping the keys in a **sorted order**. Internally, `std::map` is implemented as a **self-balancing binary search tree (usually a Red-Black Tree)**, ensuring O(log n) complexity for operations like insertion, deletion, and lookup.
+In `C++`, a **map** is an associative container that stores elements in **key-value pairs**. It provides **fast lookups, insertions, and deletions** while keeping the keys in a **sorted order**. Internally, `std::map` is implemented as a **self-balancing binary search tree (usually a Red-Black Tree)**, ensuring $\mathcal{O}(\log(n))$ complexity for operations like insertion, deletion, and lookup.
 
 ## Declaring a map
 
-A map is declared using the `std::map` template:
+A map is declared using the `std::map` template class.
 
 ```cpp
 std::map<key_type, value_type> map_name;
 ```
 
-### Examples
+It can be initialized using an **initializer list** as follows:
 
 ```cpp
 std::map<int, std::string> student;
 
 // initializing a map using initializer list
 std::map<int, std::string> students = {
-    {101, "Alice"},
-    {102, "Bob"},
-    {103, "Charlie"}
+  {101, "Alice"},
+  {102, "Bob"},
+  {103, "Charlie"}
 };
 
 // initializing an empty map
-std::map<std::string, int> wordCount;
+std::map<std::string, int> word_count;
 ```
 
 ## Accessing elements
@@ -54,9 +54,9 @@ std::cout << students.at(101); // outputs "Alice"
 
 ```cpp
 if (students.find(105) != students.end()) {
-    std::cout << "Key exists!";
+  std::cout << "Key exists!";
 } else {
-    std::cout << "Key does not exist!";
+  std::cout << "Key does not exist!";
 }
 ```
 
@@ -68,7 +68,7 @@ if (students.find(105) != students.end()) {
 
 ```cpp
 for (auto it = students.begin(); it != students.end(); ++it) {
-    std::cout << "ID: " << it->first << ", Name: " << it->second << std::endl;
+  std::cout << "ID: " << it->first << ", Name: " << it->second <<std::endl;
 }
 ```
 
@@ -76,7 +76,7 @@ for (auto it = students.begin(); it != students.end(); ++it) {
 
 ```cpp
 for (const auto& [id, name] : students) {
-    std::cout << "ID: " << id << ", Name: " << name << std::endl;
+  std::cout << "ID: " << id << ", Name: " << name << std::endl;
 }
 ```
 
@@ -114,7 +114,7 @@ students.insert({105, "Emma"});
 ```cpp
 auto result = students.insert({102, "Eve"});
 if (!result.second) {
-    std::cout << "Insertion failed: Key already exists";
+  std::cout << "Insertion failed: Key already exists";
 }
 ```
 
@@ -151,7 +151,7 @@ std::cout << students.size(); // returns the number of elements in the map
 
 ```cpp
 if (students.empty()) {
-    std::cout << "Map is empty!";
+  std::cout << "Map is empty!";
 }
 ```
 
@@ -176,19 +176,19 @@ map1.swap(map2); // map1 now contains {3, "X"}, {4, "Y"}
 - Elements in a `std::map` are **always sorted** by key.
 - You can use **custom comparator functions** to change sorting order.
 
-### Uses balanced BST (O(log n) operations)
+### Uses balanced binary search tree (BST)
 
-- Insertion, deletion, and lookup take **O(log n)** time.
+Insertion, deletion, and lookup take **$\mathcal{O}(\log(n))$** time.
 
 ## Custom comparator for sorting
 
-By default, `std::map` sorts elements in **ascending order**. You can define a custom comparator:
+By default, `std::map` sorts elements in **ascending order**. An optional **comparator function** can be provided to change the sorting order at the time of declaration.
 
 ```cpp
 struct Descending {
-    bool operator()(int a, int b) const {
-        return a > b; // sort in descending order
-    }
+  bool operator()(int a, int b) const {
+    return a > b; // sort in descending order
+  }
 };
 
 std::map<int, std::string, Descending> rev_map;
@@ -196,7 +196,7 @@ std::map<int, std::string, Descending> rev_map;
 
 ## Unordered map (faster alternative)
 
-If **ordering of keys is not required**, `std::unordered_map` is a better choice. It uses a **hash table**, providing O(1) average time complexity for insertions, deletions, and lookups.
+If **ordering of keys is not required**, `std::unordered_map` is a better choice. It uses a **hash table**, providing $\mathcal{O}(1)$ average time complexity for insertions, deletions, and lookups.
 
 ```cpp
 std::unordered_map<int, std::string> u_map;
@@ -209,8 +209,8 @@ u_map[1] = "Alice";
 |---------|----------------------|----------------------------------|
 | Data structure | Balanced BST (RB-Tree) | Hash Table |
 | Key ordering | Sorted (ascending by default) | No ordering |
-| Lookup time | O(log n) | O(1) average, O(n) worst case |
-| Insertion time | O(log n) | O(1) average, O(n) worst case |
+| Lookup time | $\mathcal{O}(\log(n))$ | $\mathcal{O}(1)$ average, $\mathcal{O}(n)$ worst case |
+| Insertion time | $\mathcal{O}(\log(n))$ | $\mathcal{O}(1)$ average, $\mathcal{O}(n)$ worst case |
 | Best for | Sorted key-value pairs | Fast lookups when ordering is unnecessary |
 
 `std::map` is **great when you need ordered keys and log-time complexity**, whereas `std::unordered_map` is **faster for general-purpose key-value storage** where ordering does not matter.

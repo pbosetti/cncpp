@@ -5,7 +5,7 @@
 |  _ < (_| | | | | (_| |
 |_| \_\__,_|_| |_|\__, |
                   |___/
-JSON library
+Rang library
 Author: Davide Stocco, 2025
 */
 
@@ -56,7 +56,7 @@ int main(int argc, char * argv[])
   std::cout << rang::fg::blue << "Line 3: Blue Text!" << rang::style::reset << std::endl;
 
   // Combining fmt and rang libraries
-  std::cout << rang::fg::cyan << fmt::format("This is cyan text using fmt and rang!\n") << rang::style::reset;
+  std::cout << rang::fg::cyan << fmt::format("This is cyan text using fmt and rang!") << rang::style::reset;
 
   return 0;
 }

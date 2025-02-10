@@ -16,15 +16,36 @@ Author: Davide Stocco, 2025
 // FMT library header
 #include <fmt/core.h>
 
+  // Custom formatting for user-defined types
+  struct Point {
+    std::string name;
+    int x, y;
+  };
+
+  template <>
+  class fmt::formatter<Point> {
+  public:
+    constexpr auto parse (format_parse_context& ctx) {return ctx.begin();}
+
+    template <typename Context>
+    constexpr auto format (Point const& point, Context& ctx) const
+    {
+      return format_to(ctx.out(), "{}({}, {})", point.name, point.x, point.y);
+    }
+  };
+
 // Basic usage: String Formatting
 int main(int argc, char * argv[])
 {
   int age = 25;
   std::string name = "Alice";
 
-  // Basic string formatting using placeholders
+  // String formatting using placeholders
   std::string formatted_str = fmt::format("My name is {} and I am {} years old.", name, age);
   std::cout << formatted_str << std::endl;
+
+  // Printing formatted string
+  fmt::print("My name is {} and I am {} years old.\n", name, age);
 
   // Using positional arguments
   std::cout << fmt::format("{0} is {1} years old, and {0} is a software engineer.", name, age) << std::endl;
@@ -58,23 +79,9 @@ int main(int argc, char * argv[])
     std::cout << "Caught format error: " << e.what() << std::endl;
   }
 
-  /* FIXME:
   // Custom formatting for user-defined types
-  struct Point {
-    int x, y;
-  };
-
-  template<>
-  struct fmt::formatter<Point> : fmt::formatter<std::string> {
-    template <typename FormatContext>
-    auto format(const Point& p, FormatContext& ctx) {
-      return fmt::format_to(ctx.out(), "Point({}, {})", p.x, p.y);
-    }
-  };
-
-  Point p = {3, 4};
-  std::cout << fmt::format("The point is: {}", p) << std::endl;
-  */
+  Point p = {"P1", 3, 4};
+  fmt::print("The point is: {}\n", p);
 
   return 0;
 }

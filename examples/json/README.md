@@ -1,7 +1,7 @@
 
 # `json` library
 
-JSON (JavaScript Object Notation) is a lightweight data-interchange format. It is easy for humans to read and write. There are many libraries available to handle JSON in `C++`, with the most popular one being [`nlohmann/json`](https://github.com/nlohmann/json) (also known as JSON for Modern `C++`). This library is a single header file that provides a simple way to work with JSON data.
+JSON (JavaScript Object Notation) is a lightweight data-interchange format. There are many libraries available to handle JSON in `C++`, with the most popular one being [`nlohmann/json`](https://github.com/nlohmann/json) (also known as JSON for Modern `C++`). This library is a single header file that provides a simple way to work with JSON data.
 
 ## Read JSON from a file
 
@@ -29,7 +29,7 @@ Assume you want to create hard-code this literal JSON value in a file, as a `jso
 }
 ```
 
-There are various options:
+There are various options, such as using raw string literals, user-defined literals, or initializer lists:
 
 ```cpp
 // using (raw) string literals and json::parse
@@ -58,9 +58,7 @@ json ex3 = {
 
 ## JSON as first-class data type
 
-Here are some examples to give you an idea how to use the class.
-
-Assume you want to create the JSON object
+Here are some examples to give you an idea how to use the class. Assume you want to create the JSON object:
 
 ```json
 {

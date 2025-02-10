@@ -1,30 +1,40 @@
 # `fmt` library
 
-[fmt](https://github.com/fmtlib/fmt) is a modern formatting library for C++ that provides a fast and flexible way to format strings. It provides similar functionality to Python's `f-string` but for C++.
+[fmt](https://github.com/fmtlib/fmt) is a modern formatting library for `C++` that provides a fast and flexible way to format strings. It provides similar functionality to Python's `f-string` but for `C++`.
 
 ## Basic usage
 
 The `fmt` library provides a simple and modern interface for string formatting, similar to Python's f-strings.
 
-### Basic string formatting
+To include the `fmt` library in your code, you need to include the `fmt/core.h` header file.
+
+```cpp
+#include <fmt/core.h>
+```
+
+### String formatting
 
 The `fmt::format` function is used to format strings. You can specify placeholders using curly braces `{}` and pass the values to be inserted in those positions.
 
 ```cpp
-#include <fmt/core.h>
-#include <iostream>
+int age = 25;
+std::string name = "Alice";
 
-int main() {
-    int age = 25;
-    std::string name = "Alice";
+// format string using fmt
+std::string formatted_str = fmt::format("My name is {} and I am {} years old.", name, age);
 
-    // Format string using fmt
-    std::string formatted_str = fmt::format("My name is {} and I am {} years old.", name, age);
+std::cout << formatted_str << std::endl;
+```
+```
+My name is Alice and I am 25 years old.
+```
 
-    std::cout << formatted_str << std::endl;
+### Printing formatted strings
 
-    return 0;
-}
+You can also directly print formatted strings using `fmt::print`. This will output the formatted string to the console.
+
+```cpp
+fmt::print("My name is {} and I am {} years old.", name, age);
 ```
 ```
 My name is Alice and I am 25 years old.
@@ -32,43 +42,19 @@ My name is Alice and I am 25 years old.
 
 ### Using positional and named arguments
 
-You can use positional and named arguments to improve clarity and avoid mistakes with the order of arguments.
-
-- **Positional arguments**:
+You can use positional to improve clarity and avoid mistakes with the order of arguments.
 
 ```cpp
-#include <fmt/core.h>
-#include <iostream>
-
-int main() {
-    std::string name = "Alice";
-    int age = 25;
-
-    // Using positional arguments
-    std::cout << fmt::format("{0} is {1} years old, and {0} is a software engineer.", name, age) << std::endl;
-
-    return 0;
-}
+std::cout << fmt::format("{0} is {1} years old, and {0} is a software engineer.", name, age) << std::endl;
 ```
 ```
 Alice is 25 years old, and Alice is a software engineer.
 ```
 
-- **Named arguments:**
+Arguments can also be named for better readability.
 
 ```cpp
-#include <fmt/core.h>
-#include <iostream>
-
-int main() {
-    std::string name = "Alice";
-    int age = 25;
-
-    // Using named arguments
-    std::cout << fmt::format("{name} is {age} years old.", fmt::arg("name", name), fmt::arg("age", age)) << std::endl;
-
-    return 0;
-}
+sd::cout << fmt::format("{name} is {age} years old.", fmt::arg("name", name), fmt::arg("age", age)) << std::endl;
 ```
 ```
 Alice is 25 years old.
@@ -79,22 +65,15 @@ Alice is 25 years old.
 You can format numbers with various specifications such as decimal precision, width, alignment, and more.
 
 ```cpp
-#include <fmt/core.h>
-#include <iostream>
+double pi = 3.14159;
 
-int main() {
-    double pi = 3.14159;
+// format numbers with precision
+std::cout << fmt::format("Pi with 2 decimal places: {:.2f}", pi) << std::endl;
 
-    // Format numbers with precision
-    std::cout << fmt::format("Pi with 2 decimal places: {:.2f}", pi) << std::endl;
-
-    // Width and alignment
-    int num = 42;
-    std::cout << fmt::format("Right-aligned: {:>5}", num) << std::endl;
-    std::cout << fmt::format("Left-aligned: {:<5}", num) << std::endl;
-
-    return 0;
-}
+// width and alignment
+int num = 42;
+std::cout << fmt::format("Right-aligned: {:>5}", num) << std::endl;
+std::cout << fmt::format("Left-aligned: {:<5}", num) << std::endl;
 ```
 ```
 Pi with 2 decimal places: 3.14
@@ -107,17 +86,10 @@ Left-aligned: 42
 You can also use the `fmt` library with terminal color codes by combining it with ANSI escape codes.
 
 ```cpp
-#include <fmt/core.h>
-#include <iostream>
+std::string message = "Hello, World!";
 
-int main() {
-    std::string message = "Hello, World!";
-
-    // Adding colors to the formatted text
-    std::cout << fmt::format("\033[1;31m{}\033[0m", message) << std::endl; // Red text
-
-    return 0;
-}
+// adding colors to the formatted text
+std::cout << fmt::format("\033[1;31m{}\033[0m", message) << std::endl; // red text
 ```
 
 This approach uses raw ANSI escape codes but works seamlessly with `fmt::format`.
@@ -127,21 +99,14 @@ This approach uses raw ANSI escape codes but works seamlessly with `fmt::format`
 You can use special format specifiers for specific types, such as dates, hexadecimal numbers, and more.
 
 ```cpp
-#include <fmt/core.h>
-#include <iostream>
+int num = 255;
+double pi = 3.14159;
 
-int main() {
-    int num = 255;
-    double pi = 3.14159;
+// Formatting numbers in hexadecimal
+std::cout << fmt::format("Hexadecimal: {0:x}", num) << std::endl;
 
-    // Formatting numbers in hexadecimal
-    std::cout << fmt::format("Hexadecimal: {0:x}", num) << std::endl;
-
-    // Formatting floating-point numbers
-    std::cout << fmt::format("Pi with 4 decimal places: {:.4f}", pi) << std::endl;
-
-    return 0;
-}
+// Formatting floating-point numbers
+std::cout << fmt::format("Pi with 4 decimal places: {:.4f}", pi) << std::endl;
 ```
 ```
 Hexadecimal: ff
@@ -153,17 +118,10 @@ Pi with 4 decimal places: 3.1416
 The `fmt` library allows handling exceptions when format errors occur. For example, an invalid format string or mismatched arguments will throw a `fmt::format_error`.
 
 ```cpp
-#include <fmt/core.h>
-#include <iostream>
-
-int main() {
-    try {
-        std::cout << fmt::format("This is an invalid format: {}", "missing closing brace") << std::endl;
-    } catch (const fmt::format_error& e) {
-        std::cout << "Caught format error: " << e.what() << std::endl;
-    }
-
-    return 0;
+try {
+  std::cout << fmt::format("This is an invalid format: {}", "missing closing brace") << std::endl;
+} catch (const fmt::format_error& e) {
+  std::cout << "Caught format error: " << e.what() << std::endl;
 }
 ```
 ```
@@ -181,24 +139,28 @@ If needed, you can define your own custom formatters for user-defined types by s
 #include <iostream>
 
 struct Point {
-    int x, y;
+  std::string name;
+  int x, y;
 };
 
 template <>
-struct fmt::formatter<Point> : fmt::formatter<std::string> {
-    template <typename FormatContext>
-    auto format(const Point& p, FormatContext& ctx) {
-        return fmt::format_to(ctx.out(), "Point({}, {})", p.x, p.y);
-    }
+class fmt::formatter<Point> {
+public:
+  constexpr auto parse (format_parse_context& ctx) {return ctx.begin() }
+
+  template <typename Context>
+  constexpr auto format (Point const& point, Context& ctx) const {
+    return format_to(ctx.out(), "{}({}, {})", point.name, point.x, point.y);
+  }
 };
 
 int main() {
-    Point p = {3, 4};
-    std::cout << fmt::format("The point is: {}", p) << std::endl;
+  Point p = {"P1", 3, 4};
+  std::cout << fmt::format("The point is: {}", p) << std::endl;
 
-    return 0;
+  return 0;
 }
 ```
 ```
-The point is: Point(3, 4)
+The point is: P1(3, 4)
 ```
