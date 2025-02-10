@@ -29,7 +29,8 @@ private:
   const char* _topic;
 };
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char * argv[])
+{
   string topic = "#";
   if(argc > 1) {
     topic = argv[1];

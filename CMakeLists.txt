@@ -2,12 +2,12 @@ cmake_minimum_required(VERSION 3.20)
 set(VERSION "0.0.1")
 project(CNCpp VERSION ${VERSION} LANGUAGES CXX)
 
-#   ____       _                         
-#  / ___|  ___| |_  __   ____ _ _ __ ___ 
+#   ____       _
+#  / ___|  ___| |_  __   ____ _ _ __ ___
 #  \___ \ / _ \ __| \ \ / / _` | '__/ __|
 #   ___) |  __/ |_   \ V / (_| | |  \__ \
 #  |____/ \___|\__|   \_/ \__,_|_|  |___/
-                                       
+
 if(CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build." FORCE)
 endif()
@@ -32,13 +32,13 @@ message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 
 
-#   _____         _   ____            _         
-#  |___ / _ __ __| | |  _ \ __ _ _ __| |_ _   _ 
+#   _____         _   ____            _
+#  |___ / _ __ __| | |  _ \ __ _ _ __| |_ _   _
 #    |_ \| '__/ _` | | |_) / _` | '__| __| | | |
 #   ___) | | | (_| | |  __/ (_| | |  | |_| |_| |
 #  |____/|_|  \__,_| |_|   \__,_|_|   \__|\__, |
-#                                         |___/ 
-                    
+#                                         |___/
+
 include(FetchContent)
 
 message(STATUS "Fetching dependencies...")
@@ -107,25 +107,25 @@ link_directories(
   ${mosquitto_BINARY_DIR}/lib/cpp
 )
 
-#    ____             __ _                          _    __ _ _           
-#   / ___|___  _ __  / _(_) __ _ _   _ _ __ ___  __| |  / _(_) | ___  ___ 
+#    ____             __ _                          _    __ _ _
+#   / ___|___  _ __  / _(_) __ _ _   _ _ __ ___  __| |  / _(_) | ___  ___
 #  | |   / _ \| '_ \| |_| |/ _` | | | | '__/ _ \/ _` | | |_| | |/ _ \/ __|
 #  | |__| (_) | | | |  _| | (_| | |_| | | |  __/ (_| | |  _| | |  __/\__ \
 #   \____\___/|_| |_|_| |_|\__, |\__,_|_|  \___|\__,_| |_| |_|_|\___||___/
-#                          |___/                                          
+#                          |___/
 
 configure_file(
-  ${SRC_DIR}/defines.hpp.in 
+  ${SRC_DIR}/defines.hpp.in
   ${SRC_DIR}/defines.hpp
 )
 
-
-#   __  __                          
-#  |  \/  | __ _  ___ _ __ ___  ___ 
+#   __  __
+#  |  \/  | __ _  ___ _ __ ___  ___
 #  | |\/| |/ _` |/ __| '__/ _ \/ __|
 #  | |  | | (_| | (__| | | (_) \__ \
 #  |_|  |_|\__,_|\___|_|  \___/|___/
-#                                  
+#
+
 macro(create_example target)
   set(multiValueArgs SRCS LIBS DEFS)
   cmake_parse_arguments(ARG "" "" "${multiValueArgs}" ${ARGN})
@@ -138,26 +138,30 @@ macro(create_example target)
   target_compile_definitions(ex_${target} PRIVATE ${ARG_DEFS})
 endmacro()
 
-
-#   _____                           _        _                       _       
-#  | ____|_  ____ _ _ __ ___  _ __ | | ___  | |_ __ _ _ __ __ _  ___| |_ ___ 
+#   _____                           _        _                       _
+#  | ____|_  ____ _ _ __ ___  _ __ | | ___  | |_ __ _ _ __ __ _  ___| |_ ___
 #  |  _| \ \/ / _` | '_ ` _ \| '_ \| |/ _ \ | __/ _` | '__/ _` |/ _ \ __/ __|
 #  | |___ >  < (_| | | | | | | |_) | |  __/ | || (_| | | | (_| |  __/ |_\__ \
 #  |_____/_/\_\__,_|_| |_| |_| .__/|_|\___|  \__\__,_|_|  \__, |\___|\__|___/
-#                            |_|                          |___/              
+#                            |_|                          |___/
 
 create_example(basics SRCS basics.cpp myobject.cpp)
-create_example(rang SRCS rang.cpp)
+create_example(fmt SRCS fmt.cpp LIBS fmt::fmt)
+create_example(rang SRCS rang.cpp LIBS fmt::fmt)
+create_example(stl_vector SRCS stl_vector.cpp)
+create_example(stl_list SRCS stl_list.cpp)
+create_example(stl_map SRCS stl_map.cpp)
+create_example(json SRCS json.cpp)
+create_example(yaml SRCS yaml.cpp LIBS yaml-cpp::yaml-cpp)
 create_example(mqtt_sub SRCS mqtt_sub.cpp LIBS mosquittopp_static mosquitto_static)
 add_dependencies(ex_mqtt_sub mosquitto)
 
-
-#   _____                    _       
-#  |_   _|_ _ _ __ __ _  ___| |_ ___ 
+#   _____                    _
+#  |_   _|_ _ _ __ __ _  ___| |_ ___
 #    | |/ _` | '__/ _` |/ _ \ __/ __|
 #    | | (_| | | | (_| |  __/ |_\__ \
 #    |_|\__,_|_|  \__, |\___|\__|___/
-#                 |___/              
+#                 |___/
 
 # main Library
 file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
@@ -193,13 +197,12 @@ list(APPEND TARGET_LIST machine_test)
 add_executable(cncpp ${MAIN_DIR}/cncpp.cpp)
 target_link_libraries(cncpp cncpp_lib)
 
-
-#   ___           _        _ _ 
+#   ___           _        _ _
 #  |_ _|_ __  ___| |_ __ _| | |
 #   | || '_ \/ __| __/ _` | | |
 #   | || | | \__ \ || (_| | | |
 #  |___|_| |_|___/\__\__,_|_|_|
-#  
+#
 
 install(TARGETS ${TARGET_LIST}
   BUNDLE DESTINATION bin
