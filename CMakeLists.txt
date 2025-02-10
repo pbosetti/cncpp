@@ -145,7 +145,8 @@ endmacro()
 #  |_____/_/\_\__,_|_| |_| |_| .__/|_|\___|  \__\__,_|_|  \__, |\___|\__|___/
 #                            |_|                          |___/
 
-create_example(basics SRCS basics.cpp myobject.cpp)
+create_example(basics SRCS basics.cpp Car.cpp)
+create_example(inheritance SRCS inheritance.cpp)
 create_example(fmt SRCS fmt.cpp LIBS fmt::fmt)
 create_example(rang SRCS rang.cpp LIBS fmt::fmt)
 create_example(stl_vector SRCS stl_vector.cpp)
