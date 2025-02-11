@@ -92,7 +92,7 @@ public:
   }
   
   void load_file(string file) {
-    _prog.reset();
+    _prog.rewind();
     _prog.load(file);
   }
   
