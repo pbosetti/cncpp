@@ -8,6 +8,8 @@ project(CNCpp VERSION ${VERSION} LANGUAGES CXX)
 #   ___) |  __/ |_   \ V / (_| | |  \__ \
 #  |____/ \___|\__|   \_/ \__,_|_|  |___/
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 if(CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build." FORCE)
 endif()
