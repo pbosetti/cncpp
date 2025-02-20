@@ -26,6 +26,7 @@ endmacro()
 
 create_example(basics SRCS basics.cpp Car.cpp)
 create_example(inheritance SRCS inheritance.cpp)
+create_example(lambda SRCS lambda.cpp)
 create_example(fmt SRCS fmt.cpp LIBS fmt::fmt)
 create_example(rang SRCS rang.cpp LIBS fmt::fmt)
 create_example(stl_vector SRCS stl_vector.cpp)

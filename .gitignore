@@ -4,3 +4,5 @@ usr/
 *.dgraph
 /*.csv
 .Rproj.user
+
+.vscode
