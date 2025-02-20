@@ -2,8 +2,6 @@
 #include <chrono>
 #include <thread>
 #include <array>
-#include <sched.h>
-#include <cstdlib>
 #include <sys/time.h>
 #include <unistd.h>
 
