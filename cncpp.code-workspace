@@ -24,7 +24,8 @@
 			"fstream": "cpp",
 			"istream": "cpp",
 			"locale": "cpp",
-			"streambuf": "cpp"
+			"streambuf": "cpp",
+			"ratio": "cpp"
 		},
 		"C_Cpp.default.defines": [
 			"POINT_MAIN",
