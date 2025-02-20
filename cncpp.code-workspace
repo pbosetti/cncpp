@@ -26,14 +26,10 @@
 			"locale": "cpp",
 			"streambuf": "cpp"
 		},
-		"C_Cpp.default.cppStandard": "c++17",
 		"C_Cpp.default.defines": [
 			"POINT_MAIN",
 			"BLOCK_MAIN",
 			"PROGRAM_MAIN"
 		],
-		"C_Cpp.default.compilerArgs": [
-			"-Wno-c++11-extensions"
-		]
 	}
 }
