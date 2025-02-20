@@ -43,11 +43,12 @@ vector<double> free_run(unsigned int n) {
       }
     }
   }
+  // remove the first delta, as it much smaller than the rest
+  deltas.erase(deltas.begin());
   return deltas;
 }
 
 void stats(vector<double> &x) {
-  x.erase(x.begin());
   double sum = 0;
   for (auto i : x) {
     sum += i;
