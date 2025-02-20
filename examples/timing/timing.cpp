@@ -1,9 +1,11 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include <array>
+#include <vector>
 #include <sys/time.h>
 #include <unistd.h>
+#include <csignal>
+#include <cmath>
 
 using namespace std;
 using namespace std::chrono;
