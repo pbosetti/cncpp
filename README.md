@@ -133,6 +133,7 @@ If you want to have both the main branch and the development branch on your loca
 ```sh
 # make your own development branch
 git branch devel
+git switch devel
 # create a new worktree in a folder named cncpp_dev
 git worktree add ../cncpp_main main
 ```
