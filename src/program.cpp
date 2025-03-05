@@ -80,7 +80,7 @@ std::string Program::desc(bool colored) const {
 int main(int argc, const char *argv[]) {
   Machine machine;
   try {
-    machine.load("machine.ini");
+    machine.load("machine.yml");
   } catch (exception &e) {
     cerr << fg::red << style::bold << "Error: " << e.what() << fg::reset
          << style::reset << endl;

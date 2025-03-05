@@ -25,5 +25,11 @@ public:
 
     setitimer(ITIMER_REAL, &timer, NULL);
   }
-  ~timer();
+
+  ~timer() {
+    struct itimerval timer;
+    timerclear(&timer.it_value);
+    timerclear(&timer.it_interval);
+    setitimer(ITIMER_REAL, &timer, NULL);
+  };
 };
