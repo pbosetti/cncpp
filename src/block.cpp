@@ -415,7 +415,7 @@ private:
 };
 
 int main() {
-  Machine machine("machine.ini");
+  Machine machine("machine.yml");
   Blocks blocks(&machine);
   Block *test_block = nullptr;
 
