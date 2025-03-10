@@ -1,3 +1,14 @@
+/*
+ _____ _           _
+|_   _(_)_ __ ___ (_)_ __   __ _
+  | | | | '_ ` _ \| | '_ \ / _` |
+  | | | | | | | | | | | | | (_| |
+  |_| |_|_| |_| |_|_|_| |_|\__, |
+                           |___/
+Measure time intervals with high resolution clocks
+Author: Polo Bosetti, 2025
+*/
+
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -11,8 +22,7 @@ using namespace std;
 using namespace std::chrono;
 using to_ms = duration<double, ratio<1, 1000>>;
 
-// using a template allows the compiler to optimize the code
-// by removing the if statement
+// Using a template allows the compiler to optimize the code by removing the if statement
 template <long period_ms=0, bool alrm=false>
 vector<double> free_run(unsigned int n) {
   auto start = high_resolution_clock::now();
@@ -20,7 +30,7 @@ vector<double> free_run(unsigned int n) {
   static auto last = start;
   vector<double> deltas;
   deltas.reserve(n);
-  // don't declare variables in loops!
+  // Do not declare variables in loops!
   duration<long long, std::nano> elapsed = 0s, delta = 0s;
 
   for (unsigned int i = 0; i < n; i++) {
@@ -30,11 +40,10 @@ vector<double> free_run(unsigned int n) {
     deltas.push_back(to_ms(now - last).count());
     last = now;
 
-    cout << i << ": " << to_ms(elapsed).count() 
+    cout << i << ": " << to_ms(elapsed).count()
          << " ms, " << deltas.back() << " ms" << endl;
 
-    // this is a compile-time if statement
-    // if false, it won't be compiled
+    // This is a compile-time if statement: if false, it will not be compiled
     if constexpr (period_ms > 0) {
       if constexpr (alrm) {
         usleep(period_ms * 1000 * 5);
@@ -43,7 +52,7 @@ vector<double> free_run(unsigned int n) {
       }
     }
   }
-  // remove the first delta, as it much smaller than the rest
+  // Remove the first delta, as it much smaller than the rest
   deltas.erase(deltas.begin());
   return deltas;
 }
@@ -63,8 +72,6 @@ void stats(vector<double> &x) {
   cout << "Stdev: " << stdev << " ms" << endl;
 }
 
-
-
 int main(int argc, const char *argv[]) {
   unsigned int n = 10;
   if (argc > 1) {
@@ -73,16 +80,15 @@ int main(int argc, const char *argv[]) {
 
   vector<double> deltas;
 
-  // desired interval in milliseconds
+  // Desired interval in milliseconds
   constexpr unsigned int period = 100;
 
-  // set up the recurring timer alarm
-  // this raises a SIGALRM signal every period
+  // Set up the recurring timer alarm: this raises a SIGALRM signal every period
   struct itimerval itimer;
-  // first interval:
+  // First interval:
   itimer.it_interval.tv_sec = 0;
   itimer.it_interval.tv_usec = period * 1000;
-  // subsequent intervals:
+  // Subsequent intervals:
   itimer.it_value.tv_sec = 0;
   itimer.it_value.tv_usec = period * 1000;
 
@@ -91,12 +97,12 @@ int main(int argc, const char *argv[]) {
   deltas = free_run(n);
   stats(deltas);
 
-  // pauses for period milliseconds every iteration
+  // Pauses for period milliseconds every iteration
   cout << endl << "Free run with period " << period << " ms" << endl;
   deltas = free_run<period>(n);
   stats(deltas);
 
-  // repeats every iteration every period milliseconds 
+  // Repeats every iteration every period milliseconds
   cout << endl << "Free run with ALRM " << period << " ms" << endl;
   setitimer(ITIMER_REAL, &itimer, NULL);
   signal(SIGALRM, [](int signo) {});

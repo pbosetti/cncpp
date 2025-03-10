@@ -9,7 +9,7 @@ This is the repository of the code developed during the _Digital Manufacturing_ 
 * `src`: contains the main project source code (library files)
 * `src/main`: contains executables code
 * `goodies`: useful stuff
-* 
+*
 
 ## Prerequisites
 
@@ -60,7 +60,7 @@ It there are already other items in the JSON file, just add (don't replace) the 
 
 
 ### 🪟 Windows (or 🐧 Ubuntu/Debian Linux)
-The project must be built with a linux toolchain. On Windows, we are using a WSL2 environment with Ubuntu OS. To install it, follow the instructions at <https://docs.microsoft.com/en-us/windows/wsl/install-win10>. 
+The project must be built with a linux toolchain. On Windows, we are using a WSL2 environment with Ubuntu OS. To install it, follow the instructions at <https://docs.microsoft.com/en-us/windows/wsl/install-win10>.
 
 To enable the compilation we need to install a few packages: on the linux console, type:
 
@@ -105,7 +105,7 @@ gem install gv_fsm
 Building a project with Cmake is a two-step process. The first step is called *configuration*, and it results in populating the `build` folder with all the contents needed for the compilation. The second step is called *compilation* and results in the products of the build to be created in the root of the `build` folder. There is an optional third step, *install*, that copies the build products into a destination folder. This project is configured to have the local `bin` forder as destination.
 
 1. (configuring) from the terminal, be sure to be in the project's toot directory and then issue the command `cmake	-Bbuild`: this means configure the project in the `build` directory, searching for the `CMakeLists.txt` file in the current directory
-2. (compilation) from the terminal, compile the project with the command `make -C build` 
+2. (compilation) from the terminal, compile the project with the command `make -C build`
 3. (optional install) if you want to install the build products, type `make -C build install`: this copies binaries into the `bin` and `lib` folders of the root project folder
 
 **Note 1.**: the `cmake` command must be run the first time, and then every time that you create, move, or rename source files. Conversely, if you only change contents of source files, then you only need to `make`. The `make` command is smart enough not to recompile files that have been already compiled and that are unchanged from the previous build: this reduces a lot the compilation time for large projects. The option `-Cbuild` (the space is optional) tells make to work in the directory `build`.
@@ -134,7 +134,7 @@ If you want to have both the main branch and the development branch on your loca
 # make your own development branch
 git branch devel
 git switch devel
-# create a new worktree in a folder named cncpp_dev
+# create a new worktree in a folder named cncpp_main
 git worktree add ../cncpp_main main
 ```
 
