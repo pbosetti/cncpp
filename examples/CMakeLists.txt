@@ -28,15 +28,3 @@ endmacro()
 #  |_____/_/\_\__,_|_| |_| |_| .__/|_|\___|  \__\__,_|_|  \__, |\___|\__|___/
 #                            |_|                          |___/
 
-create_example(basics SRCS basics.cpp Car.cpp)
-create_example(inheritance SRCS inheritance.cpp)
-create_example(lambda SRCS lambda.cpp)
-create_example(timing SRCS timing.cpp)
-create_example(fmt SRCS fmt.cpp LIBS fmt::fmt)
-create_example(rang SRCS rang.cpp LIBS fmt::fmt)
-create_example(stl_vector SRCS stl_vector.cpp)
-create_example(stl_list SRCS stl_list.cpp)
-create_example(stl_map SRCS stl_map.cpp)
-create_example(json SRCS json.cpp)
-create_example(yaml SRCS yaml.cpp LIBS yaml-cpp::yaml-cpp)
-create_example(mqtt_sub SRCS mqtt_sub.cpp LIBS mosquittopp_static mosquitto_static DEPENDS mosquitto)

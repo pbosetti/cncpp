@@ -116,10 +116,10 @@ link_directories(
 #   \____\___/|_| |_|_| |_|\__, |\__,_|_|  \___|\__,_| |_| |_|_|\___||___/
 #                          |___/
 
-configure_file(
-  ${SRC_DIR}/defines.hpp.in
-  ${SRC_DIR}/defines.hpp
-)
+# configure_file(
+#   ${SRC_DIR}/defines.hpp.in
+#   ${SRC_DIR}/defines.hpp
+# )
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 
@@ -133,36 +133,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 # main Library
 file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
-list(FILTER SRC_FILES EXCLUDE REGEX ".*fsm.*")
-add_library(cncpp_lib STATIC ${SRC_FILES})
-target_link_libraries(cncpp_lib PRIVATE fmt::fmt mosquittopp_static mosquitto_static yaml-cpp::yaml-cpp keystroker)
-set_target_properties(cncpp_lib PROPERTIES PUBLIC_HEADER "${HEADERS}")
-list(APPEND TARGET_LIST cncpp_lib)
 
-# Test executables
-add_executable(point_test ${SRC_DIR}/point.cpp)
-target_link_libraries(point_test PRIVATE cncpp_lib)
-target_compile_definitions(point_test PRIVATE POINT_MAIN)
-list(APPEND TARGET_LIST point_test)
-
-add_executable(block_test ${SRC_DIR}/block.cpp)
-target_link_libraries(block_test PRIVATE cncpp_lib)
-target_compile_definitions(block_test PRIVATE BLOCK_MAIN)
-list(APPEND TARGET_LIST block_test)
-
-add_executable(program_test ${SRC_DIR}/program.cpp)
-target_link_libraries(program_test PRIVATE cncpp_lib)
-target_compile_definitions(program_test PRIVATE PROGRAM_MAIN)
-list(APPEND TARGET_LIST program_test)
-
-add_executable(machine_test ${SRC_DIR}/machine.cpp)
-target_link_libraries(machine_test PRIVATE cncpp_lib)
-target_compile_definitions(machine_test PRIVATE MACHINE_MAIN)
-list(APPEND TARGET_LIST machine_test)
-
-# Main exec
-add_executable(cncpp ${MAIN_DIR}/cncpp.cpp)
-target_link_libraries(cncpp cncpp_lib)
 
 #   ___           _        _ _
 #  |_ _|_ __  ___| |_ __ _| | |
