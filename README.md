@@ -85,17 +85,14 @@ On MacOS, the command equivalent to `apt` is `brew`: you have to install it by f
 Then **close the terminal** and open a new one and proceed as follows:
 
 ```sh
-brew install figlet gsl clang-format graphviz gpg
+brew install figlet gsl clang-format graphviz gpg ruby@3.3
 brew install --cask cmake
-curl -sSL https://rvm.io/mpapis.asc | gpg --import -
-curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -
-curl -sSL https://get.rvm.io | bash -s stable --auto-dotfiles
+echo 'export PATH="/usr/local/opt/ruby@3.3/bin:$PATH"' >> ~/.zshrc
 ```
 
 Close and open a new terminal, again, then:
 
 ```sh
-rvm install ruby-3.0
 gem install gv_fsm
 ```
 
