@@ -135,10 +135,10 @@ If you want to have both the main branch and the development branch on your loca
 git branch devel
 git switch devel
 # create a new worktree in a folder named cncpp_main
-git worktree add ../cncpp_main main
+git worktree add ../cncpp_main main25
 ```
 
-This creates the folder `../cncpp_main` and checks out the `main` branch in it. You can then switch to the `dev` branch with `git worktree switch dev` and back to `main` with `git worktree switch main`.
+This creates the folder `../cncpp_main` and checks out the `main25` branch in it.
 
 You can regularly downoad the latest changes from the remote repository with `git pull` in the `../cncpp_main` folder.
 
