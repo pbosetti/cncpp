@@ -28,3 +28,5 @@ endmacro()
 #  |_____/_/\_\__,_|_| |_| |_| .__/|_|\___|  \__\__,_|_|  \__, |\___|\__|___/
 #                            |_|                          |___/
 
+create_example(lesson1 SRCS test.cpp)
+create_example(lesson2 SRCS test.cpp)
