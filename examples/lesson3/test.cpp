@@ -1,4 +1,5 @@
 #include <iostream> // use std::cout
+#include <vector> // use std::vector
 
 // Most generic class
 class Animal {
@@ -161,11 +162,63 @@ int main()
   animal_sound(&lion);
   animal_sound(&goat);
 
+  // VECTORS - CONTINUED
+
+  std::vector<double> v{1.0, 2.0, 3.0, 4.0, 5.0};
+
+  // std::vector<Class<double, 3, Derived<4, int>>>
+  
+  // Basic way to access the elements of a vecto in a forr loop
+  for (int i{0}; i < v.size(); ++i) {
+    std::cout << v.at(i) << std::endl;
+  }
+
+  // Use more advanced techniques...
+  for (double & v_i : v) {
+    ++v_i;
+    std::cout << v_i << std::endl;
+  }
+
+  for (double const & v_i : v) { // this does not allow to modify the vector v
+    std::cout << v_i << std::endl;
+  }
+
+  for (auto const & v_i : v) { // this does not allow to modify the vector v
+    std::cout << v_i << std::endl;
+  }
+
+  // Access through iterators
+  std::vector<double>::iterator it;
+  it = v.begin();
+  std::cout << "The variable it has a value of " << *it << std::endl;
+
+  // Forward iterator
+  for (auto itr = v.begin(); itr != v.end(); ++itr) {
+    std::cout << "itr1 = "<<  *itr << std::endl;
+  }
+
+  // Erase and insert the penultimate element
+  v.erase(v.end()-2, v.end()-1); // deletes entry v[5]
+  v.insert(v.end()-1, 5.0); // insert again v[5] = 5
+
+  // Reverse iterator
+  for (auto itr = v.rbegin(); itr != v.rend(); ++itr) {
+    std::cout << "itr2 = "<<  *itr << std::endl;
+  }
+
+  // Detes everything
+  v.clear();
+
   return 0;
 }
 
-
 /* Example
+Try to complete the class triangle with the proper function implementation, and 
+implement a class rectangle. Then write a funcion that computes the difference
+between the areas of 2 polygons.
+
+IMPORTANT: USE A std::vector to store the polygon points!
+
 class Polygon{
 public:
   Polygon() {}
@@ -174,21 +227,25 @@ public:
 };
 
 class Triangle : public Polygon {
-  double x_1;
-  double y_1;
-  double x_2;
-  double y_2;
-  double x_3;
-  double y_3;
+  using std::vector<double> = vec;
+  vec m_point_1;
+  vec m_point_2;
+  vec m_point_3;
 
   public:
-  Triangle(){}
+  Triangle() : m_point_1(2), m_point_2(2), m_point_3(2) 
+  {}
+
+  Trianglevec p1, vec p2, vec p3) :
+   : m_point_1(p1), m_point_2(p2), m_point_3(p3) 
+  {
+   }
 
   double area() override {
-    return x_1*x_2;
+    return x_1*x_2; // COMPLETE
   }
 
   double perimeter() override {
-    return x_1*x_2;
+    return x_1*x_2; // COMPLETE
   }
 };*/
