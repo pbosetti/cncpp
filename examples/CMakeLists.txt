@@ -30,3 +30,4 @@ endmacro()
 
 create_example(lesson1 SRCS test.cpp)
 create_example(lesson2 SRCS test.cpp)
+create_example(lesson3 SRCS test.cpp)
