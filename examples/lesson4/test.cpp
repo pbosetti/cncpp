@@ -119,8 +119,8 @@ int main() {
   std::list<int> lst2 = {0, 0, 1, 2, 3};
   std::list<int> lst3 = {4, 5, 6, 7};
   std::list<int> lst4;
-  lst4.merge(lst2);
-  lst4.merge(lst3);
+  lst4.merge(lst2); // lst2 is empty now!
+  lst4.merge(lst3); // lst3 is empty now!
   lst4.reverse(); // reverses the order of the list
   lst4.sort(); // ascending order
   lst4.sort([](int i1, int i2) -> bool {
@@ -128,29 +128,19 @@ int main() {
   });
   lst4.unique(); // removes duplicates concutive elements
 
-
-  cout << "lst4 =";
-  for (auto const & i : lst4) {cout << " " << i;}
-  cout << std::endl; // To equivalent to cout << "\n";
-  
   // Splicing of lists: moving elemnts from one list to the other
-  auto it2 = lst2.begin();
-  std::advance(it2, lst2.size()-2);
-  lst3.splice(it2, lst2);
+  auto it3 = lst3.begin();
+  lst3.splice(it3, lst4); // transfer the content of lst4 from it3 position into lst3
 
   cout << "lst2 =";
   for (auto const & i : lst2) {cout << " " << i;}
-  cout << std::endl; // To equivalent to cout << "\n";
+  cout << std::endl; // Equivalent to cout << "\n";
   cout << "lst3 =";
   for (auto const & i : lst3) {cout << " " << i;}
-  cout << std::endl; // To equivalent to cout << "\n";
-
-
-
-
-
-
-  
+  cout << std::endl;
+  cout << "lst4 =";
+  for (auto const & i : lst4) {cout << " " << i;}
+  cout << std::endl;
 
   return 0;
 }
