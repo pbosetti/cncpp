@@ -43,7 +43,7 @@ int main ()
 {
   string topic = "#";
   mosqpp::lib_init();
-  MqttClient("mqtt_cli", "localhost", 1883, topic.c_str());
+  MqttClient client("mqtt_cli", "localhost", 1883, topic.c_str());
   cout << "Press enter to quit ..." << endl;
   cin.get();
   mosqpp::lib_cleanup();
