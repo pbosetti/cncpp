@@ -1,0 +1,21 @@
+{
+  "name" : "John Doe",
+  "age" : 30,
+  "is_student": false,
+  "courses" : [
+    {
+      "name" : "Course 1",
+      "code" : "CS101",
+      "grade" : "A"
+    },
+    {
+      "name" : "Course 2",
+      "code" : "CS202",
+      "grade" : "B"
+    }
+  ],
+  "address" : {
+    "street" : "123 Main St.",
+    "city" : "Somewhere"
+  }
+}

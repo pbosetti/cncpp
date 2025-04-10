@@ -1,0 +1,10 @@
+name: John Doe
+age: 30
+person:
+  name: Bob Dylan
+  age: 60
+items:
+  - apple
+  - banana
+  - kiwi
+  - cherry
