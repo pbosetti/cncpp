@@ -34,3 +34,6 @@ create_example(lesson3 SRCS test.cpp)
 create_example(lesson4 SRCS test.cpp)
 create_example(lesson5 SRCS test.cpp LIBS fmt::fmt)
 create_example(lesson6 SRCS test.cpp LIBS yaml-cpp::yaml-cpp)
+create_example(lesson7 SRCS test.cpp)
+create_example(lesson7_mosquitto SRCS mosquitto_test.cpp 
+  LIBS mosquittopp_static mosquitto_static DEPENDS mosquitto)
