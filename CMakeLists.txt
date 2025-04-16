@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-set(VERSION "0.0.1")
+set(VERSION "0.0.2")
 project(CNCpp VERSION ${VERSION} LANGUAGES CXX)
 
 #   ____       _
@@ -116,10 +116,10 @@ link_directories(
 #   \____\___/|_| |_|_| |_|\__, |\__,_|_|  \___|\__,_| |_| |_|_|\___||___/
 #                          |___/
 
-# configure_file(
-#   ${SRC_DIR}/defines.hpp.in
-#   ${SRC_DIR}/defines.hpp
-# )
+configure_file(
+  ${SRC_DIR}/defines.hpp.in
+  ${SRC_DIR}/defines.hpp
+)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 
@@ -133,6 +133,10 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 # main Library
 file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
+
+
+add_executable(point_test ${SRC_DIR}/point.cpp)
+target_compile_definitions(point_test PRIVATE POINT_MAIN)
 
 
 #   ___           _        _ _
