@@ -26,7 +26,8 @@
 			"locale": "cpp",
 			"streambuf": "cpp",
 			"ratio": "cpp",
-			"exception": "cpp"
+			"exception": "cpp",
+			"*.in": "cpp"
 		},
 		"C_Cpp.default.defines": [
 			"POINT_MAIN",

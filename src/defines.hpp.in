@@ -14,6 +14,7 @@
 #define VERSION "@VERSION@"
 #define BUILD_TYPE "@CMAKE_BUILD_TYPE@"
 #define @BUILD_FLAG@
+#define NUMBERS_WIDTH "7"
 
 
 /*

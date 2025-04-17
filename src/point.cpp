@@ -10,9 +10,13 @@
 #include "point.hpp"
 #include <exception>
 #include <sstream>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+#include <fmt/color.h>
 
 using namespace std;
 using namespace cncpp;
+using namespace fmt;
 
 Point::Point(opt_data_t x, opt_data_t y, opt_data_t z) : _x(x), _y(y), _z(z) {}
 
@@ -67,13 +71,27 @@ data_t Point::length() const {
   );
 }
 
+
+using col_t = optional<color>;
+static string coord_str(opt_data_t coord,  col_t color = nullopt) {
+  string str;
+  if (coord && color) {
+    str = format("{:" NUMBERS_WIDTH ".3f}", styled(coord.value(), fg(color.value())));
+  } else if (coord) {
+    str = format("{:" NUMBERS_WIDTH ".3f}", coord.value());
+  } else {
+    str = format("{:>" NUMBERS_WIDTH "}", "-");
+  }
+  return str;
+}
+
 // descrition like: [100.0, 200.0, 123.2]
 string Point::desc() const {
   stringstream ss;
   ss << "["
-     << _x.value() << ", "
-     << _y.value() << ", "
-     << _z.value() << "]";
+     << coord_str(_x) << ", "
+     << coord_str(_y) << ", "
+     << coord_str(_z) << "]";
 
   return ss.str();
 }
@@ -91,9 +109,20 @@ string Point::desc() const {
 
 #ifdef POINT_MAIN
 
+#include <iostream>
 
 int main() {
-  Point p1(1, 2, 3);
+  Point p1(0, 0, 0);
+  Point p2(100);
+  Point p3(nullopt, 20, 30);
+
+  cout << "Before any change:" << endl;
+  cout << "p1: " << p1.desc() << endl;
+  cout << "p2: " << p2.desc() << endl;
+  cout << "p3: " << p3.desc() << endl;
+
+
+
   return 0;
 }
 

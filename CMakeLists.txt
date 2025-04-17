@@ -137,6 +137,7 @@ file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 
 add_executable(point_test ${SRC_DIR}/point.cpp)
 target_compile_definitions(point_test PRIVATE POINT_MAIN)
+target_link_libraries(point_test PRIVATE fmt::fmt)
 
 
 #   ___           _        _ _
