@@ -51,7 +51,7 @@ std::string version() {
 
 class Object {
 public:
-  virtual std::string desc() const = 0;
+  virtual std::string desc(bool colored = true) const = 0;
 
 protected:
 #ifdef RELEASE_BUILD
@@ -60,6 +60,20 @@ protected:
   const bool _debug = true;
 #endif
 
+};
+
+class CNCError : public std::exception {
+public:
+  CNCError(const char *m, const Object *o) : _msg(m), _obj(o) {}
+  CNCError(const std::string &m, const Object *o) : _msg(m), _obj(o) {}
+
+  const char *what() const noexcept override { return _msg.c_str(); }
+  std::string who() { return _obj->desc(); }
+
+
+private:
+  const std::string _msg;
+  const Object *_obj;
 };
 
 

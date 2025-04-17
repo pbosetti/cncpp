@@ -12,6 +12,7 @@ Represents a 3-D coordinate object
 #define POINT_HPP
 
 #include "defines.hpp"
+#include <vector>
 
 using namespace std;
 
@@ -37,13 +38,13 @@ public:
   void modal(const Point &other);
   data_t length() const;
   void reset();
-  string desc() const override;
+  string desc(bool colored = true) const override;
   bool is_complete() const {
     return _x.has_value() && _y.has_value() && _z.has_value();
   }
 
   // accessors
-
+  vector<data_t> vec() const;
   data_t x() const { return _x.value(); }
   data_t y() const { return _y.value(); }
   data_t z() const { return _z.value(); }
