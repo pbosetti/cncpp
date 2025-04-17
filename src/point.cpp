@@ -63,7 +63,7 @@ data_t Point::length() const {
   return sqrt(
     _x.value() * _x.value() +
     _y.value() * _y.value() +
-    _z.value() *_z.value()
+    _z.value() * _z.value()
   );
 }
 
