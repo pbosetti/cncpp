@@ -1,53 +1,57 @@
+/*
+  ____        __ _                   _
+ |  _ \  ___ / _(_)_ __   ___  ___  | |__  _ __  _ __
+ | | | |/ _ \ |_| | '_ \ / _ \/ __| | '_ \| '_ \| '_ \
+ | |_| |  __/  _| | | | |  __/\__ \_| | | | |_) | |_) |
+ |____/ \___|_| |_|_| |_|\___||___(_)_| |_| .__/| .__/
+                                          |_|   |_|
+*/
 #ifndef DEFINES_HPP
 #define DEFINES_HPP
 
+// INCLUDES AND DEFINES --------------------------------------------------------
 #include <optional>
 #include <string>
 
 /*
-  ____        __ _       _ _   _                 
- |  _ \  ___ / _(_)_ __ (_) |_(_) ___  _ __  ___ 
+  ____        __ _       _ _   _
+ |  _ \  ___ / _(_)_ __ (_) |_(_) ___  _ __  ___
  | | | |/ _ \ |_| | '_ \| | __| |/ _ \| '_ \/ __|
  | |_| |  __/  _| | | | | | |_| | (_) | | | \__ \
  |____/ \___|_| |_|_| |_|_|\__|_|\___/|_| |_|___/
-*/                                               
+*/
 #define VERSION "@VERSION@"
 #define BUILD_TYPE "@CMAKE_BUILD_TYPE@"
 #define @BUILD_FLAG@
 #define NUMBERS_WIDTH "7"
 
-
 /*
-  _____                      
- |_   _|   _ _ __   ___  ___ 
+  _____
+ |_   _|   _ _ __   ___  ___
    | || | | | '_ \ / _ \/ __|
    | || |_| | |_) |  __/\__ \
    |_| \__, | .__/ \___||___/
-       |___/|_|              
+       |___/|_|
 */
 
-//typedef float data_t;
+// typedef float data_t;
 
 using data_t = double;
 using opt_data_t = std::optional<data_t>;
 using opt_int_t = std::optional<int>;
 
-
 /*
-  _   _                                                
- | \ | | __ _ _ __ ___   ___  ___ _ __   __ _  ___ ___ 
+  _   _
+ | \ | | __ _ _ __ ___   ___  ___ _ __   __ _  ___ ___
  |  \| |/ _` | '_ ` _ \ / _ \/ __| '_ \ / _` |/ __/ _ \
  | |\  | (_| | | | | | |  __/\__ \ |_) | (_| | (_|  __/
  |_| \_|\__,_|_| |_| |_|\___||___/ .__/ \__,_|\___\___|
-                                 |_|                   
+                                 |_|
 */
-
 
 namespace cncpp {
 
-std::string version() {
-  return VERSION " (" BUILD_TYPE ")";
-}
+std::string version() { return VERSION " (" BUILD_TYPE ")"; }
 
 class Object {
 public:
@@ -56,29 +60,25 @@ public:
 protected:
 #ifdef RELEASE_BUILD
   const bool _debug = false;
-#else 
+#else
   const bool _debug = true;
 #endif
-
 };
 
+// Custom error class for CNC errors
 class CNCError : public std::exception {
 public:
   CNCError(const char *m, const Object *o) : _msg(m), _obj(o) {}
   CNCError(const std::string &m, const Object *o) : _msg(m), _obj(o) {}
 
   const char *what() const noexcept override { return _msg.c_str(); }
-  std::string who() { return _obj->desc(); }
-
+  std::string who() const { return _obj->desc(); }
 
 private:
   const std::string _msg;
   const Object *_obj;
 };
 
-
-
-}
-
+} // namespace cncpp
 
 #endif // DEFINES_HPP

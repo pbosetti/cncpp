@@ -5,16 +5,22 @@
  | |_) | | (_) | (__|   <  | (__| | (_| \__ \__ \
  |____/|_|\___/ \___|_|\_\  \___|_|\__,_|___/___/
                                                  
-*/
+Represents a block of G-code, including parsing and interpolation.
+The Block class is responsible for parsing a line of G-code, determining the 
+type of motion (linear, circular, etc.), and calculating the necessary 
+parameters for interpolation.
+ */
 #ifndef BLOCK_HPP
 #define BLOCK_HPP
 
+// INCLUDES AND DEFINES --------------------------------------------------------
 #include "defines.hpp"
 #include "point.hpp"
 #include "machine.hpp"
 #include <map>
 #include <functional>
 
+// NAMESPACES AND CONSTANTS ----------------------------------------------------
 using namespace std;
 
 namespace cncpp {
@@ -29,7 +35,7 @@ public:
     data_t dt_1, dt_m, dt_2;
     data_t dt;
     data_t current_acc;
-    data_t lambda(data_t t, data_t &s);
+    data_t lambda(data_t t, data_t &s) const;
   };
 
   enum class BlockType {
@@ -43,20 +49,20 @@ public:
   // types[BlockType::LINE] => "linear"
   static const map<BlockType, string> types;
 
-  // Lifecycle
+  // LIFECYCLE -----------------------------------------------------------------
   Block(string line);
   Block(string line, Block &prev);
   ~Block();
   string desc(bool colored = true) const override;
 
-  // Methods
+  // METHODS -------------------------------------------------------------------
   void parse(const Machine *m);
-  data_t lambda(data_t time, data_t &speed);
-  Point interpolate(data_t lambda);
-  Point interpolate(data_t time, data_t &lambda, data_t &speed);
-  void walk(std::function<void(Block &b, data_t t, data_t l, data_t s)> f);
+  data_t lambda(data_t time, data_t &speed) const;
+  Point interpolate(data_t lambda) const;
+  Point interpolate(data_t time, data_t &lambda, data_t &speed) const;
+  void walk(function<void(Block const &b, data_t t, data_t l, data_t s)> f) const;
 
-  // Accessors
+  // ACCESSORS -----------------------------------------------------------------
   string line() const { return _line; }
   size_t n() const { return _n; }
   size_t tool() const { return _tool; }

@@ -5,6 +5,7 @@
  |  __/ (_) | | | | | |_  | (__| | (_| \__ \__ \
  |_|   \___/|_|_| |_|\__|  \___|_|\__,_|___/___/
 
+ Implementation
 */
 
 #include "point.hpp"
@@ -17,26 +18,35 @@
 using namespace std;
 using namespace cncpp;
 using namespace fmt;
+using col_t = optional<color>;
 
+// FORWARD DECLARATIONS --------------------------------------------------------
+static string coord_str(opt_data_t const &coord, col_t const &color = nullopt);
+
+
+
+// LIFECYCLE -------------------------------------------------------------------
 Point::Point(opt_data_t x, opt_data_t y, opt_data_t z) : _x(x), _y(y), _z(z) {}
 
-// Set all coords to nullopt (undefined)
+// descrition like: [100.0, 200.0, 123.2]
+string Point::desc(bool col) const {
+  stringstream ss;
+  ss << "[" << coord_str(_x, col ? col_t(color::red) : nullopt) << ", "
+     << coord_str(_y, col ? col_t(color::green) : nullopt) << ", "
+     << coord_str(_z, col ? col_t(color::blue) : nullopt) << "]";
+
+  return ss.str();
+}
+
 void Point::reset() {
   _x.reset();
   _y.reset();
   _z.reset();
 }
 
-void Point::modal(const Point &p) {
-  if (p._x && !_x)
-    _x = p._x;
-  if (p._y && !_y)
-    _y = p._y;
-  if (p._z && !_z)
-    _z = p._z;
-}
 
-Point Point::operator+(const Point &other) const {
+// OPERATORS -------------------------------------------------------------------
+Point Point::operator+(Point const &other) const {
   if (!is_complete() || !other.is_complete())
     throw CNCError("Points are not complete", this);
 
@@ -45,13 +55,33 @@ Point Point::operator+(const Point &other) const {
   return out;
 }
 
-Point Point::delta(const Point &other) {
+Point& Point::operator=(Point const &other) {
+  if (this != &other) {
+    _x = other._x;
+    _y = other._y;
+    _z = other._z;
+  }
+  return *this;
+}
+
+
+// METHODS ---------------------------------------------------------------------
+Point Point::delta(Point const &other) {
   if (!is_complete() || !other.is_complete())
     throw CNCError("Points are not complete", this);
 
   Point out(_x.value() - other._x.value(), _y.value() - other._y.value(),
             _z.value() - other._z.value());
   return out;
+}
+
+void Point::modal(Point const &p) {
+  if (p._x && !_x)
+    _x = p._x;
+  if (p._y && !_y)
+    _y = p._y;
+  if (p._z && !_z)
+    _z = p._z;
 }
 
 data_t Point::length() const {
@@ -62,8 +92,26 @@ data_t Point::length() const {
               _z.value() * _z.value());
 }
 
-using col_t = optional<color>;
-static string coord_str(opt_data_t coord, col_t color = nullopt) {
+
+// ACCESSORS -------------------------------------------------------------------
+vector<data_t> Point::vec() const {
+  if (!is_complete())
+  throw CNCError("Point is not complete", this);
+  return vector<data_t>{_x.value(), _y.value(), _z.value()};
+}
+
+
+/*
+_   _ _   _ _ _ _   _           
+| | | | |_(_) (_) |_(_) ___  ___ 
+| | | | __| | | | __| |/ _ \/ __|
+| |_| | |_| | | | |_| |  __/\__ \
+\___/ \__|_|_|_|\__|_|\___||___/
+
+*/
+
+// Utility function to format coordinates (static = only visible here)
+static string coord_str(opt_data_t const &coord, col_t const &color) {
   string str;
   if (coord && color) {
     str = format("{:" NUMBERS_WIDTH ".3f}",
@@ -76,21 +124,7 @@ static string coord_str(opt_data_t coord, col_t color = nullopt) {
   return str;
 }
 
-// descrition like: [100.0, 200.0, 123.2]
-string Point::desc(bool col) const {
-  stringstream ss;
-  ss << "[" << coord_str(_x, col ? col_t(color::red) : nullopt) << ", "
-     << coord_str(_y, col ? col_t(color::green) : nullopt) << ", "
-     << coord_str(_z, col ? col_t(color::blue) : nullopt) << "]";
 
-  return ss.str();
-}
-
-vector<data_t> Point::vec() const {
-  if (!is_complete())
-    throw CNCError("Point is not complete", this);
-  return vector<data_t>{_x.value(), _y.value(), _z.value()};
-}
 
 /*
   _____         _
