@@ -29,13 +29,13 @@ class Block : Object {
 public:
 
   struct Profile {
-    data_t a, d;
-    data_t f, l;
-    data_t fs, fe;
-    data_t dt_1, dt_m, dt_2;
-    data_t dt;
-    data_t current_acc;
-    data_t lambda(data_t t, data_t &s) const;
+    data_t a, d;                              // acceleration and deceleration
+    data_t f, l;                              // feedrate and length
+    data_t fs, fe;                            // start and end feedrate
+    data_t dt_1, dt_m, dt_2;                  // partial times
+    data_t dt;                                // total time
+    data_t current_acc;                       // current acceleration on arc
+    data_t lambda(data_t t, data_t &s) const; // lambda function
   };
 
   enum class BlockType {
@@ -78,22 +78,22 @@ public:
   
 
 private:
-  Machine *_machine;
-  Profile _profile;
+  Machine *_machine;                //pointer to the machine object
+  Profile _profile;                 // speed profile of the block
   BlockType _type = BlockType::RAPID;
-  string _line;
-  size_t _n = 0;
-  size_t _tool = 0;
-  data_t _feedrate = 0;
-  data_t _arc_feedrate = 0;
-  data_t _spindle = 0;
-  Point _target = Point();
-  Point _center = Point();
-  Point _delta = Point();
-  data_t _length = 0;
-  data_t _i = 0, _j = 0, _r = 0;
-  data_t _theta_0 = 0, _dtheta = 0;
-  data_t _acc = 0;
+  string _line;                     // the original G-code line
+  size_t _n = 0;                    // block number
+  size_t _tool = 0;                 // tool number
+  data_t _feedrate = 0;             // feedrate
+  data_t _arc_feedrate = 0;         // feedrate for arcs
+  data_t _spindle = 0;              // spindle speed
+  Point _target = Point();          // target point
+  Point _center = Point();          // center point for arcs
+  Point _delta = Point();           // projections
+  data_t _length = 0;               // length of the block
+  data_t _i = 0, _j = 0, _r = 0;    // arc parameters
+  data_t _theta_0 = 0, _dtheta = 0; // arc angle parameters
+  data_t _acc = 0;                  // actual acceleration
 
 public:
   Block *prev, *next;
