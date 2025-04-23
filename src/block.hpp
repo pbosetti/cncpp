@@ -25,7 +25,7 @@ using namespace std;
 
 namespace cncpp {
 
-class Block : Object {
+class Block final : Object {
 public:
 
   struct Profile {
@@ -35,7 +35,7 @@ public:
     data_t dt_1, dt_m, dt_2;                  // partial times
     data_t dt;                                // total time
     data_t current_acc;                       // current acceleration on arc
-    data_t lambda(data_t t, data_t &s) const; // lambda function
+    data_t lambda(data_t t, data_t &s);       // lambda function
   };
 
   enum class BlockType {
@@ -57,7 +57,7 @@ public:
 
   // METHODS -------------------------------------------------------------------
   void parse(const Machine *m);
-  data_t lambda(data_t time, data_t &speed) const;
+  data_t lambda(data_t time, data_t &speed);
   Point interpolate(data_t lambda) const;
   Point interpolate(data_t time, data_t &lambda, data_t &speed) const;
   void walk(function<void(Block const &b, data_t t, data_t l, data_t s)> f) const;
@@ -73,30 +73,40 @@ public:
   Point target() const { return _target; }
   Point center() const { return _center; }
   Point delta() const { return _delta; }
+  size_t m() const { return _m; }
   // We'll be able to use it as: b.profile().dt
-  Profile profile() const { return _profile; }
+  const Profile &profile() const { return _profile; }
   
 
 private:
-  Machine *_machine;                //pointer to the machine object
-  Profile _profile;                 // speed profile of the block
+  const Machine *_machine = nullptr; //pointer to the machine object
+  Profile _profile;                  // speed profile of the block
   BlockType _type = BlockType::RAPID;
-  string _line;                     // the original G-code line
-  size_t _n = 0;                    // block number
-  size_t _tool = 0;                 // tool number
-  data_t _feedrate = 0;             // feedrate
-  data_t _arc_feedrate = 0;         // feedrate for arcs
-  data_t _spindle = 0;              // spindle speed
-  Point _target = Point();          // target point
-  Point _center = Point();          // center point for arcs
-  Point _delta = Point();           // projections
-  data_t _length = 0;               // length of the block
-  data_t _i = 0, _j = 0, _r = 0;    // arc parameters
-  data_t _theta_0 = 0, _dtheta = 0; // arc angle parameters
-  data_t _acc = 0;                  // actual acceleration
+  string _line;                      // the original G-code line
+  size_t _n = 0;                     // block number
+  size_t _tool = 0;                  // tool number
+  data_t _feedrate = 0;              // feedrate
+  data_t _arc_feedrate = 0;          // feedrate for arcs
+  data_t _spindle = 0;               // spindle speed
+  Point _target = Point();           // target point
+  Point _center = Point();           // center point for arcs
+  Point _delta = Point();            // projections
+  data_t _length = 0;                // length of the block
+  data_t _i = 0, _j = 0, _r = 0;     // arc parameters
+  data_t _theta_0 = 0, _dtheta = 0;  // arc angle parameters
+  data_t _acc = 0;                   // actual acceleration
+  size_t _m = 0;                     // M command
+  bool _parsed = false;              // block has been parsed?
+
+  // PRIVATE METHODS -----------------------------------------------------------
+  void parse_token(string token);
+  Point start_point(); // block starting point (prev target or machine init)
+  void compute();      // velocity profile
+  void calc_arc();     // calculate arc parameters
 
 public:
-  Block *prev, *next;
+  Block *prev = nullptr;
+  Block *next = nullptr;
 
 };
 

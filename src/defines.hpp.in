@@ -54,16 +54,16 @@ namespace cncpp {
 std::string version() { return VERSION " (" BUILD_TYPE ")"; }
 
 class Object {
-public:
-  virtual std::string desc(bool colored = true) const = 0;
-
-protected:
-#ifdef RELEASE_BUILD
-  const bool _debug = false;
-#else
-  const bool _debug = true;
-#endif
-};
+  public:
+    virtual std::string desc(bool colored = true) const = 0;
+  
+  protected:
+  #ifdef RELEASE_BUILD
+    bool _debug = false;
+  #else
+    bool _debug = true;
+  #endif
+  };
 
 // Custom error class for CNC errors
 class CNCError : public std::exception {
