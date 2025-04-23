@@ -23,7 +23,7 @@ namespace cncpp {
 class Point : Object {
 public:
   Point(opt_data_t x = nullopt, opt_data_t y = nullopt, opt_data_t z = nullopt);
-  Point& operator=(const Point& other) {
+  Point& operator=(const Point& other) noexcept {
     if (this != &other) {
       _x = other._x;
       _y = other._y;
@@ -50,9 +50,9 @@ public:
   data_t z(data_t v) { return (_z = v).value(); }
 
 private:
-  optional<data_t> _x = nullopt;
-  optional<data_t> _y = nullopt;
-  optional<data_t> _z = nullopt;
+  opt_data_t _x = nullopt;
+  opt_data_t _y = nullopt;
+  opt_data_t _z = nullopt;
 };
 
 } // namespace cncpp

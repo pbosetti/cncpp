@@ -28,8 +28,14 @@ Author: Paolo Bosetti, 2024
 #define @BUILD_FLAG@
 #define NUMBERS_WIDTH "8" // Must be a string
 
-typedef double data_t;
-typedef std::optional<data_t> opt_data_t;
+// Old C style:
+// typedef double data_t;
+// typedef std::optional<data_t> opt_data_t;
+
+// modern C++11 style:
+using data_t = double;
+using opt_data_t = std::optional<data_t>;
+using opt_int_t = std::optional<int>;
 
 /*
   _   _

@@ -76,7 +76,7 @@ public:
   string mqtt_host() const { return "mqtt://" + _mqtt_host + ":" + to_string(_mqtt_port); }
 
 private:
-  std::string _settings_file;
+  string _settings_file;
   data_t _A;                     // Maximum acceleration (m/s/s)
   data_t _tq;                    // Sampling time (s)
   data_t _max_error, _error;      // Maximum and actual positioning error (mm)

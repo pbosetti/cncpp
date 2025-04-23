@@ -67,11 +67,14 @@ data_t Point::length() const {
               _z.value_or(0) * _z.value_or(0));
 }
 
-string coord_str(opt_data_t coord, optional<fmt::color> color = nullopt) {
+
+using col_t = optional<fmt::color>;
+
+static string coord_str(opt_data_t coord, col_t color = nullopt) {
   string str;
   if (coord && color)
     str = format("{:" NUMBERS_WIDTH ".3f}",
-                 styled(coord.value(), fmt::fg(color.value())));
+                 styled(coord.value(), fg(color.value())));
   else if (coord)
     str = format("{:" NUMBERS_WIDTH ".3f}", coord.value());
   else
@@ -81,8 +84,8 @@ string coord_str(opt_data_t coord, optional<fmt::color> color = nullopt) {
 
 string Point::desc(bool colored) const {
   stringstream ss;
-  using col_t = optional<fmt::color>;
-  ss << "[" << coord_str(_x, colored ? col_t(color::red) : nullopt) << ", "
+  ss << "[" 
+     << coord_str(_x, colored ? col_t(color::red) : nullopt) << ", "
      << coord_str(_y, colored ? col_t(color::green) : nullopt) << ", "
      << coord_str(_z, colored ? col_t(color::blue) : nullopt) << "]";
   return ss.str();

@@ -22,18 +22,18 @@ using namespace std;
 namespace cncpp {
 
 class Block final : Object {
-
-  struct Profile {
-    data_t a, d;             // actual accelerations
-    data_t f, l;             // actual feedrate and length
-    data_t fs, fe;           // initial and final feedrate
-    data_t dt_1, dt_m, dt_2; // durations
-    data_t dt;               // total duration
-    data_t current_acc;       // current acceleration
-    data_t lambda(data_t t, data_t &s);         // lambda function
-  };
-
+  
 public:
+
+struct Profile {
+    data_t a, d;                        // actual accelerations
+    data_t f, l;                        // actual feedrate and length
+    data_t fs, fe;                      // initial and final feedrate
+    data_t dt_1, dt_m, dt_2;            // durations
+    data_t dt;                          // total duration
+    data_t current_acc;                 // current acceleration
+    data_t lambda(data_t t, data_t &s); // lambda function
+  };  
 
   enum class BlockType {
     RAPID = 0, 
@@ -68,7 +68,7 @@ public:
   data_t feedrate() const { return _feedrate; }
   Point center() const { return _center; }
   Point target() const { return _target; }
-  Profile profile() const { return _profile; }
+  const Profile &profile() const { return _profile; }
   void walk(std::function<void(Block &, data_t t, data_t l, data_t s)> f);
 
 
@@ -99,8 +99,8 @@ private:
   void arc();
 
 public:
-  Block *prev;
-  Block *next;
+  Block *prev = nullptr;
+  Block *next = nullptr;
 
 };
 
