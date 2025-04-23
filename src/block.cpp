@@ -69,18 +69,28 @@ Block::~Block() {
 
 string Block::desc(bool colored) const {
   if (!_parsed) {
-    // [  7] G00 x100 (not parsed yet)
     return format("[{:>3}] {:} (not parsed yet)", _n, _line);
   }
 
   stringstream ss;
-  auto color = color::red;
-  ss << format("[{:>3}] ", _n);
+  // a color to be used for different block types
+  auto color = color::red; // default for interpolated blocks
   if (_type == BlockType::NO_MOTION)
     color = color::gray;
   else if (_type == BlockType::RAPID)
     color = color::magenta;
+  
+  // fmt formatting fields:
+  // {:}      -> prints number or string as-is
+  // {:>3}    -> right align, 3 chars wide
+  // {:0>2}   -> pad with "0", right align, 2 chars wide
+  // {:-^9}   -> pad with "-", center align, 9 chars wide
+  // {:>5.0f} -> right align, 5 chars wide, 0 decimals float
+  ss << format("[{:>3}] ", _n);
+  if (colored)
   ss << format("G{:0>2} ", styled(static_cast<int>(_type), fmt::fg(color)));
+  else
+    ss << format("G{:0>2} ", static_cast<int>(_type));
   ss << format("({:-^9}) ", Block::types.at(_type)) << _target.desc();
   ss << format(" F{:>5.0f} S{:>4.0f} ", _feedrate, _spindle);
   ss << format("T{:0>2} M{:0>2} ", _tool, _m);
@@ -93,11 +103,14 @@ string Block::desc(bool colored) const {
 // METHODS -------------------------------------------------------------------
 void Block::parse(const Machine *m) {
   _machine = m;
+  // initilize a stringstream with _line:
   stringstream ss(_line);
   string token;
 
+  // ss >> token returns a word at a time; returns false at the end
   while (ss >> token) {
     try {
+      // this is gonna be long, we factor it out to a dedicated private method:
       parse_token(token);
     } catch (CNCError &e) {
       stringstream ss;
@@ -108,7 +121,7 @@ void Block::parse(const Machine *m) {
     }
   }
 
-  // Modal fields
+  // Modal (i.e. inherited) fields
   _target.modal(start_point());
   _delta = _target.delta(start_point());
   _acc = _machine->A();
@@ -133,10 +146,11 @@ void Block::parse(const Machine *m) {
     default:
       break;
   }
-
+  // done, set the flag:
   _parsed = true;
 }
 
+// Just a wrapper to the profile lambda:
 data_t Block::lambda(data_t time, data_t &speed) {
   return _profile.lambda(time, speed);
 }
@@ -172,7 +186,8 @@ void Block::parse_token(string token) {
 }
 
 Point Block::start_point() {
-
+  Point p = Point();
+  return p;
 }
 
 
