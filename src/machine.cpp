@@ -5,36 +5,18 @@
  | |  | | (_| | (__| | | | | | | |  __/ | (__| | (_| \__ \__ \
  |_|  |_|\__,_|\___|_| |_|_|_| |_|\___|  \___|_|\__,_|___/___/
                                                               
+Class implementation
 */
 
-#ifndef MACHINE_HPP
-#define MACHINE_HPP
-
-#include "defines.hpp"
-
-using namespace std;
+#include "machine.hpp"
 
 namespace cncpp {
 
-class Machine : Object {
-public:
-
-  data_t A() const { return _A; }
-  Point zero() const { return _zero; }
-  data_t tq() const { return _tq; }
-  data_t quantize(data_t t, data_t &dq) const;
-
-private:
-  data_t _A = 0.0;
-  Point _zero = Point();
-  data_t _tq; // sampling time (s)
-};
-
-
+data_t Machine::quantize(data_t t, data_t &dq) const {
+  data_t q;
+  q = static_cast<size_t>((t / _tq) + 1) * _tq;
+  dq = q - t;
+  return q;
 }
 
-
-
-
-
-#endif // MACHINE_HPP
+}

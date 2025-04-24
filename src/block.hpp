@@ -54,13 +54,14 @@ public:
   Block(string line, Block &prev);
   ~Block();
   string desc(bool colored = true) const override;
+  Block &operator=(Block &b); // b1 = b2; or b1.operator=(b2)
 
   // METHODS -------------------------------------------------------------------
   void parse(const Machine *m);
   data_t lambda(data_t time, data_t &speed);
-  Point interpolate(data_t lambda) const;
-  Point interpolate(data_t time, data_t &lambda, data_t &speed) const;
-  void walk(function<void(Block const &b, data_t t, data_t l, data_t s)> f) const;
+  Point interpolate(data_t lambda);
+  Point interpolate(data_t time, data_t &lambda, data_t &speed);
+  void walk(function<void(Block const &b, data_t t, data_t l, data_t s)> f);
 
   // ACCESSORS -----------------------------------------------------------------
   string line() const { return _line; }
@@ -81,7 +82,7 @@ public:
 private:
   const Machine *_machine = nullptr; //pointer to the machine object
   Profile _profile;                  // speed profile of the block
-  BlockType _type = BlockType::RAPID;
+  BlockType _type = BlockType::NO_MOTION;
   string _line;                      // the original G-code line
   size_t _n = 0;                     // block number
   size_t _tool = 0;                  // tool number

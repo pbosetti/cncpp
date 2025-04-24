@@ -59,11 +59,11 @@ class Object {
   
   protected:
   #ifdef RELEASE_BUILD
-    bool _debug = false;
+    const bool _debug = false;
   #else
-    bool _debug = true;
+    const bool _debug = true;
   #endif
-  };
+};
 
 // Custom error class for CNC errors
 class CNCError : public std::exception {
