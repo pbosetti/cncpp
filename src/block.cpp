@@ -89,7 +89,8 @@ Block::Block(string line, Block &p) : Block(line) {
 
 Block::~Block() {
   if (_debug) 
-    cerr << style::italic << format("Block {:>3} destroyed.", _n)
+    cerr << style::italic 
+         << format("Block {:>3} destroyed [{:p}].", _n, (void *)(this))
          << style::reset << endl;
 }
 
@@ -423,6 +424,7 @@ void Block::calc_arc() {
 using namespace cncpp;
 
 int main() {
+  cerr << "Version: " << cncpp::version() << endl;
   Machine m = Machine();
   auto b1 = Block("N10 G00 x100 y200 z10 F5000 S5000 T1").parse(&m);
   auto b2 = Block("N20 G01 X10 y20", b1).parse(&m);
