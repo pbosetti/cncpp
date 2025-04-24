@@ -57,11 +57,11 @@ public:
   Block &operator=(Block &b); // b1 = b2; or b1.operator=(b2)
 
   // METHODS -------------------------------------------------------------------
-  void parse(const Machine *m);
+  Block &parse(const Machine *m);
   data_t lambda(data_t time, data_t &speed);
   Point interpolate(data_t lambda);
   Point interpolate(data_t time, data_t &lambda, data_t &speed);
-  void walk(function<void(Block const &b, data_t t, data_t l, data_t s)> f);
+  void walk(function<void(Block &b, data_t t, data_t l, data_t s)> f);
 
   // ACCESSORS -----------------------------------------------------------------
   string line() const { return _line; }

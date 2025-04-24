@@ -51,7 +51,7 @@ using opt_int_t = std::optional<int>;
 
 namespace cncpp {
 
-std::string version() { return VERSION " (" BUILD_TYPE ")"; }
+static std::string version() { return VERSION " (" BUILD_TYPE ")"; }
 
 class Object {
   public:

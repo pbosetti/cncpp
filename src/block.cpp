@@ -16,6 +16,11 @@ Class Implementation
 #include <sstream>
 #include <cmath>
 
+// Only include iostream if DEBUG_BUILD is defined
+// then mark any line with: cout << "Check " << __LINE__ << endl;
+#ifdef DEBUG_BUILD
+#include <iostream>
+#endif
 
 using namespace std;
 using namespace cncpp;
@@ -89,6 +94,7 @@ Block::~Block() {
 }
 
 Block &Block::operator=(Block &b) {
+  if (!b._parsed) throw CNCError("Previous block has not been parsed", this);
   _tool = b._tool;
   _feedrate = b._feedrate;
   _spindle = b._spindle;
@@ -133,7 +139,7 @@ string Block::desc(bool colored) const {
 
 
 // METHODS -------------------------------------------------------------------
-void Block::parse(const Machine *m) {
+Block &Block::parse(const Machine *m) {
   _machine = m;
   // initilize a stringstream with _line:
   stringstream ss(_line);
@@ -180,6 +186,7 @@ void Block::parse(const Machine *m) {
   }
   // done, set the flag:
   _parsed = true;
+  return *this;
 }
 
 // Just a wrapper to the profile lambda:
@@ -218,11 +225,11 @@ Point Block::interpolate(data_t time, data_t &lambda, data_t &speed) {
   return interpolate(lambda);
 }
 
-void Block::walk(function<void(Block const &b, data_t t, data_t l, data_t s)> f) {
+void Block::walk(function<void(Block &b, data_t t, data_t l, data_t s)> f) {
   if (!_parsed) throw CNCError("Block not parsed", this);
   data_t t = 0.0, l, s;
   // 1.0 / 10.0 != 1.0
-  while (t < _profile.dt + _machine->tq() / 2.0) {
+  while (t < _profile.dt) {
     l = lambda(t, s);
     f(*this, t, l, s);
     t += _machine->tq();
@@ -346,8 +353,93 @@ void Block::compute() {
 }
 
 void Block::calc_arc() {
-  
+  data_t x0, y0, z0, xc, yc, xf, yf, zf;
+  Point p0 = start_point();
+  x0 = p0.x();
+  y0 = p0.y();
+  z0 = p0.z();
+  xf = _target.x();
+  yf = _target.y();
+  zf = _target.z();
+
+  if (_r) { // if the radius is given
+    data_t dx = _delta.x();
+    data_t dy = _delta.y();
+    data_t dxy2 = pow(dx, 2) + pow(dy, 2);
+    data_t sq = sqrt(-pow(dy, 2) * dxy2 * (dxy2 - 4 * _r * _r));
+    // signs table
+    // sign(r) | CW(-1) | CCW(+1)
+    // --------------------------
+    //      -1 |     +  |    -
+    //      +1 |     -  |    +
+    int s = (_r > 0) - (_r < 0);
+    s *= (_type == BlockType::CCWA ? 1 : -1);
+    xc = x0 + (dx - s * sq / dxy2) / 2.0;
+    yc = y0 + dy / 2.0 + s * (dx * sq) / (2 * dy * dxy2);
+  } else { // if I,J are given
+    data_t r2;
+    _r = hypot(_i, _j);
+    xc = x0 + _i;
+    yc = y0 + _j;
+    r2 = hypot(xf - xc, yf - yc);
+    if (fabs(_r - r2) > _machine->error()) {
+      throw CNCError(
+          fmt::format("Arc endpoints mismatch error ({:})", _r - r2).c_str(),
+          this);
+    }
+  }
+  _center.x(xc);
+  _center.y(yc);
+  _theta_0 = atan2(y0 - yc, x0 - xc);
+  _dtheta = atan2(yf - yc, xf - xc) - _theta_0;
+  // we need the net angle so we take the 2PI complement if negative
+  if (_dtheta < 0)
+    _dtheta = 2 * M_PI + _dtheta;
+  // if CW, take the negative complement
+  if (_type == BlockType::CWA)
+    _dtheta = -(2 * M_PI - _dtheta);
+  //
+  _length = hypot(zf - z0, _dtheta * _r);
+  // from now on, it's safer to drop the sign of radius angle
+  _r = fabs(_r);
+
 }
 
 
 
+/*
+  _____         _     __  __       _       
+ |_   _|__  ___| |_  |  \/  | __ _(_)_ __  
+   | |/ _ \/ __| __| | |\/| |/ _` | | '_ \ 
+   | |  __/\__ \ |_  | |  | | (_| | | | | |
+   |_|\___||___/\__| |_|  |_|\__,_|_|_| |_|
+                                           
+*/
+
+#ifdef BLOCK_MAIN
+
+#include <iostream>
+
+using namespace cncpp;
+
+int main() {
+  Machine m = Machine();
+  auto b1 = Block("N10 G00 x100 y200 z10 F5000 S5000 T1").parse(&m);
+  auto b2 = Block("N20 G01 X10 y20", b1).parse(&m);
+  
+  cerr << "b1: " << b1.desc() << endl;
+  cerr << "b2: " << b2.desc() << endl;
+  
+  // Walk along b2
+  b2.walk([&](Block &b, data_t t, data_t l, data_t s) {
+    Point pos = b.interpolate(l);
+    cout << format("{:} {:} {:} {:} {:} {:}", t, l, s, pos.x(), pos.y(), pos.z()) << endl;
+  });
+  
+  return 0;
+}
+
+
+
+
+#endif
