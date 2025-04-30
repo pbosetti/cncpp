@@ -79,7 +79,7 @@ int main(int argc, const char *argv[]) {
     return 1;
   }
 
-  cncpp::Machine machine = cncpp::Machine(argv[1]);
+  cncpp::Machine machine(argv[1]);
   cout << machine.desc() << endl;
   
   cncpp::Machine default_machine = cncpp::Machine();
@@ -88,7 +88,6 @@ int main(int argc, const char *argv[]) {
   default_machine.load(argv[1]);
   cout << "Default machine after loading:" << endl;
   cout << default_machine.desc() << endl;
-
 
 
   return 0;

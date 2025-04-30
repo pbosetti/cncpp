@@ -136,6 +136,8 @@ file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 
 add_library(cncpp_lib STATIC ${SRC_FILES})
 target_link_libraries(cncpp_lib PRIVATE fmt::fmt yaml-cpp::yaml-cpp)
+set_target_properties(cncpp_lib PROPERTIES PUBLIC_HEADER "${HEADERS}")
+list(APPEND TARGET_LIST cncpp_lib)
 
 # Now that we created the library, every executable needs to be 
 # linked with that library (that was why it was not liinkin during
