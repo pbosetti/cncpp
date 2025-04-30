@@ -1,0 +1,43 @@
+---
+machine:
+  A: 6.0 # max acceleration in m/s/s
+  tq: 0.005 # step time in ms
+  fmax: 10000 # m/min
+  max_error: 0.005 # in mm
+  zero: [500, 500, 500]
+  offset: [0, 0, 0]
+  axes:
+    X:
+      length: 1
+      friction: 1000
+      mass: 150
+      max_torque: 20
+      pitch: 0.01
+      gravity: 0
+      integration_dt: 1
+      p: 50
+      i: 0.0
+      d: 13
+    Y:
+      length: 1
+      friction: 1000
+      mass: 150
+      max_torque: 20
+      pitch: 0.01
+      gravity: 0
+      integration_dt: 1
+      p: 50
+      i: 0.0
+      d: 13
+    Z:
+      length: 1
+      friction: 1000
+      mass: 150
+      max_torque: 20
+      pitch: 0.01
+      gravity: 0
+      integration_dt: 1
+      p: 50
+      i: 0.0
+      d: 13
+

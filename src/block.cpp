@@ -433,6 +433,7 @@ int main() {
   cerr << "b2: " << b2.desc() << endl;
   
   // Walk along b2
+  cout << "t lambda s x y z" << endl;
   b2.walk([&](Block &b, data_t t, data_t l, data_t s) {
     Point pos = b.interpolate(l);
     cout << format("{:} {:} {:} {:} {:} {:}", t, l, s, pos.x(), pos.y(), pos.z()) << endl;

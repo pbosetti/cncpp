@@ -134,15 +134,23 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 
+add_library(cncpp_lib STATIC ${SRC_FILES})
+target_link_libraries(cncpp_lib PRIVATE fmt::fmt yaml-cpp::yaml-cpp)
 
+# Now that we created the library, every executable needs to be 
+# linked with that library (that was why it was not liinkin during
+# the lesson on 20250430)
 add_executable(point_test ${SRC_DIR}/point.cpp)
 target_compile_definitions(point_test PRIVATE POINT_MAIN)
-target_link_libraries(point_test PRIVATE fmt::fmt)
+target_link_libraries(point_test PRIVATE cncpp_lib)
 
 add_executable(block_test ${SRC_DIR}/point.cpp  ${SRC_DIR}/block.cpp  ${SRC_DIR}/machine.cpp)
 target_compile_definitions(block_test PRIVATE BLOCK_MAIN)
-target_link_libraries(block_test PRIVATE fmt::fmt)
+target_link_libraries(block_test PRIVATE cncpp_lib)
 
+add_executable(machine_test ${SRC_DIR}/machine.cpp)
+target_compile_definitions(machine_test PRIVATE MACHINE_MAIN)
+target_link_libraries(machine_test PRIVATE cncpp_lib)
 
 #   ___           _        _ _
 #  |_ _|_ __  ___| |_ __ _| | |
