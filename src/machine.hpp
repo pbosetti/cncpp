@@ -17,7 +17,7 @@ using namespace std;
 
 namespace cncpp {
 
-class Machine : Object {
+class Machine final : Object {
 public:
   // Lifecycle -----------------------------------------------------------------
   Machine(const string &settings_file);
