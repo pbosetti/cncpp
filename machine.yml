@@ -1,6 +1,6 @@
 ---
 machine:
-  A: 6.0 # max acceleration in m/s/s
+  A: 100.0 # max acceleration in mm/s/s
   tq: 0.005 # step time in ms
   fmax: 10000 # m/min
   max_error: 0.005 # in mm
