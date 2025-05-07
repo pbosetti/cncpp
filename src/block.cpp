@@ -92,6 +92,9 @@ Block::~Block() {
 }
 
 data_t Block::lambda(data_t t, data_t &s) {
+  if (!_parsed) {
+    throw CNCError("Block not parsed", this);
+  }
   return _profile.lambda(t, s);
 }
 
@@ -139,6 +142,9 @@ void Block::parse(const Machine *machine) {
 }
 
 Point Block::interpolate(data_t lambda) {
+  if (!_parsed) {
+    throw CNCError("Block not parsed", this);
+  }
   Point result = _machine->setpoint();
   Point p0 = start_point();
 
@@ -193,6 +199,9 @@ string Block::desc(bool colored) const {
 }
 
 void Block::walk(std::function<void(Block &, data_t t, data_t l, data_t s)> f) {
+  if (!_parsed) {
+    throw CNCError("Block not parsed", this);
+  }
   data_t t = 0, l, s;
   while (t < _profile.dt + _machine->tq()) {
     l = lambda(t, s);

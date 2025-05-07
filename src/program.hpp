@@ -24,25 +24,24 @@ class Program : Object, public std::list<Block> {
 public:
   Program(const std::string &filename, Machine *machine);
   Program(Machine *machine) : _machine(machine) {}
-  Program() : _machine() {}
   ~Program();
-  void load_machine(std::string machine_file);
-  void load(const std::string &filename);
-  std::string desc(bool colored) const override;
+  void load(const std::string &filename, bool append = false);
+  string desc(bool colored) const override;
 
   Program &operator<<(string line);
 
   // Iterating blocks
   using iterator = std::list<Block>::iterator;
-  using const_iterator = std::list<Block>::const_iterator;
-  void rewind() { _current = begin(); _current--; _done = false;}
-  Program::iterator load_next() { _current++; _done = _current == end(); return _current; }
-  Program::iterator current() { return _current; }
+
+  iterator load_next() { _current++; _done = _current == end(); return _current; }
+  void rewind() { _current = begin(); _done = false;}
+  void reset() { clear(); rewind(); }
+  iterator current() { return _current; }
   bool done() const { return _done; };
 
 private:
   Machine *_machine;
-  Program::iterator _current = begin();
+  iterator _current = begin();
   bool _done = false;
   std::string _filename;
 };

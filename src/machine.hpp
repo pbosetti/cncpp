@@ -36,18 +36,7 @@ public:
   void load(const string &settings_file);
   string desc(bool colored = true) const override;
   data_t quantize(data_t t, data_t &dq) const;
-
-  // MQTT related methods
-  int connect();
-  void sync(bool rapid = false);
-  void listen_start();
-  void listen_stop();
-  void on_connect(int rc) override;
-  void on_disconnect(int rc) override;
-	void on_message(const struct mosquitto_message *message) override;
-	void on_subscribe(int mid, int qos_count, const int *granted_qos) override;
-  void on_unsubscribe(int mid) override;
-
+  
   // Accessors
   Point position() const { return _position; }
   Point position(Point p) { _position = p; return _position; }
@@ -73,6 +62,16 @@ public:
   data_t tq() const { return _tq; }
   data_t A() const { return _A; }
 
+  // MQTT related methods
+  int connect();
+  void sync(bool rapid = false);
+  void listen_start();
+  void listen_stop();
+  void on_connect(int rc) override;
+  void on_disconnect(int rc) override;
+  void on_message(const struct mosquitto_message *message) override;
+  void on_subscribe(int mid, int qos_count, const int *granted_qos) override;
+  void on_unsubscribe(int mid) override;
   string mqtt_host() const { return "mqtt://" + _mqtt_host + ":" + to_string(_mqtt_port); }
 
 private:
@@ -84,6 +83,8 @@ private:
   Point _zero;                   // Initial machine position
   Point _setpoint, _position;     // Setpoint and actual position
   Point _offset;                 // Workpiece origin coordinates
+  
+  // MQTT-related
   string _mqtt_host = "localhost";
   int _mqtt_port = 1883;
   int _mqtt_keepalive = 60;

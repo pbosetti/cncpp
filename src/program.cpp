@@ -29,17 +29,15 @@ Program::~Program() {
          << rang::style::reset << endl;
 }
 
-void Program::load_machine(string machine_file) {
-  _machine->load(machine_file);
-}
-
-void Program::load(const std::string &filename) {
+void Program::load(const std::string &filename, bool append) {
   _filename = filename;
   ifstream file(_filename);
   if (!file.is_open()) {
     throw runtime_error("Could not open file: " + _filename);
   }
-  
+  if (!append) {
+    reset();
+  }
   string line;
   while (getline(file, line)) {
     *this << line;

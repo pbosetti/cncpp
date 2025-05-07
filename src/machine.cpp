@@ -21,6 +21,7 @@ namespace cncpp {
 
 Machine::Machine(const std::string &settings_file) : _settings_file(settings_file) {
   load(_settings_file);
+  // MQTT initialization
   mosqpp::lib_init();
   if (_debug) {
     int major, minor, revision;
@@ -37,15 +38,8 @@ Machine::~Machine() {
     cerr << fg::red << "Cannot disconnect from MQTT broker" << fg::reset 
          << endl;
   }
+  // MQTT cleanup
   mosqpp::lib_cleanup();
-}
-
-int Machine::connect() {
-  int rc = mosquittopp::connect(_mqtt_host.c_str(), _mqtt_port, _mqtt_keepalive);
-  if (rc != MOSQ_ERR_SUCCESS) {
-    throw CNCError("Cannot connect to MQTT broker", this);
-  }
-  return rc;
 }
 
 void Machine::load(const string &settings_file) {
@@ -65,6 +59,7 @@ void Machine::load(const string &settings_file) {
     data["machine"]["offset"][1].as<double>(), 
     data["machine"]["offset"][2].as<double>()
   );
+  // MQTT settings
   _mqtt_host = data["mqtt"]["host"].as<string>("localhost");
   _mqtt_port = data["mqtt"]["port"].as<int>(1883);
   _mqtt_keepalive = data["mqtt"]["keepalive"].as<int>(60);
@@ -82,6 +77,7 @@ string Machine::desc(bool colored) const {
   ss << "fmax=" << _fmax << ", ";
   ss << endl << "zero=" << _zero.desc(false) << ", ";
   ss << endl << "offset=" << _offset.desc(false) << ", ";
+  // MQTT settings
   ss << endl << "mqtt_host=" << _mqtt_host << ", ";
   ss << "mqtt_port=" << _mqtt_port;
   return ss.str();
@@ -94,7 +90,16 @@ data_t Machine::quantize(data_t t, data_t &dq) const {
   return q;
 }
 
-// MQTT related methods
+// MQTT related methods ========================================================
+
+
+int Machine::connect() {
+  int rc = mosquittopp::connect(_mqtt_host.c_str(), _mqtt_port, _mqtt_keepalive);
+  if (rc != MOSQ_ERR_SUCCESS) {
+    throw CNCError("Cannot connect to MQTT broker", this);
+  }
+  return rc;
+}
 
 void Machine::on_connect(int rc) {
   if (_debug) {
