@@ -34,7 +34,7 @@ Machine::Machine(const std::string &settings_file) : _settings_file(settings_fil
 }
 
 Machine::~Machine() {
-  if (disconnect() != MOSQ_ERR_SUCCESS) {
+  if (_connected && disconnect() != MOSQ_ERR_SUCCESS) {
     cerr << fg::red << "Cannot disconnect from MQTT broker" << fg::reset 
          << endl;
   }
@@ -107,6 +107,7 @@ void Machine::on_connect(int rc) {
          << _mqtt_host << ":" << _mqtt_port 
          << fg::reset << style::reset << endl;
   }
+  _connected = true;
 }
 
 void Machine::on_disconnect(int rc) {
@@ -114,6 +115,7 @@ void Machine::on_disconnect(int rc) {
     cerr << fg::yellow << style::italic << "Disconnected from MQTT broker " 
          << _mqtt_host << ":" << _mqtt_port 
          << style::reset << fg::reset << endl;
+  _connected = false;
 }
 
 void Machine::on_subscribe(int mid, int qos_count, const int *granted_qos) {
@@ -194,10 +196,14 @@ void Machine::sync(bool rapid) {
 */
 
 #ifdef MACHINE_MAIN
-#include <csignal>
+#include <iostream>
 #include <thread>
+#include <chrono>
+#include <csignal>
 
-static bool Running = true;
+using namespace std;
+
+bool Running = true;
 
 int main(int argc, const char *argv[]) {
   if (argc < 2) {
@@ -205,22 +211,43 @@ int main(int argc, const char *argv[]) {
     return 1;
   }
 
-  std::signal(SIGINT, [](int sig) { Running = false; });
-
   cncpp::Machine machine(argv[1]);
-  machine.connect();
   cout << machine.desc() << endl;
-  machine.listen_start();
-
-  machine.setpoint(1, 2, 3);
-  machine.position(0, 0, 0);
-
-  while (Running) {
-    machine.sync();
-    machine.setpoint(machine.position());
-    this_thread::sleep_for(chrono::milliseconds(100));
+  
+  // We put the following in a separate scope {} so this second machine is 
+  // destriyed as soon as we exit this local scope
+  {
+    cncpp::Machine default_machine = cncpp::Machine();
+    cout << "Default machine:" << endl;
+    cout << default_machine.desc() << endl;
+    default_machine.load(argv[1]);
+    cout << "Default machine after loading:" << endl;
+    cout << default_machine.desc() << endl;
   }
-  cout << "Exiting..." << endl;
+
+  // Mosquitto
+
+  signal(SIGINT, [](int sig) { Running = false; });
+
+  machine.setpoint(0, 0, 0);
+  machine.connect();
+  cerr << "Connecting";
+  while (!machine.connected()) {
+    cerr << ".";
+    this_thread::sleep_for(chrono::milliseconds(1));
+    machine.sync(true);
+  }
+  cerr << endl;
+  machine.listen_start();
+  machine.setpoint(100, 200, 300);
+  machine.sync(true);
+
+  // bool running = true;
+  while (Running) {
+    machine.sync(true);
+    if (machine.error() < 0) Running = false;
+    this_thread::sleep_for(chrono::milliseconds(1));
+  }
   machine.listen_stop();
 
   return 0;

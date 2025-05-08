@@ -30,7 +30,8 @@
 		"C_Cpp.default.defines": [
 			"POINT_MAIN",
 			"BLOCK_MAIN",
-			"PROGRAM_MAIN"
+			"PROGRAM_MAIN",
+			"MACHINE_MAIN"
 		],
 	}
 }

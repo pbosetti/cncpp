@@ -64,6 +64,7 @@ public:
 
   // MQTT related methods
   int connect();
+  bool connected() const { return _connected; }
   void sync(bool rapid = false);
   void listen_start();
   void listen_stop();
@@ -91,6 +92,7 @@ private:
   string _pub_topic;
   string _sub_topic;
   char _msg_buffer[BUFLEN];
+  bool _connected = false;
 };
 
 

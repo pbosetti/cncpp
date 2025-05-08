@@ -62,6 +62,7 @@ struct Profile {
   data_t length() const { return _length; }
   data_t dtheta() const { return _dtheta; }
   BlockType type() const { return _type; }
+  string type_name() const { return Block::types.at(_type); }
   string line() const { return _line; }
   size_t n() const { return _n; }
   data_t r() const { return _r; }

@@ -26,7 +26,7 @@ public:
   Program(Machine *machine) : _machine(machine) {}
   ~Program();
   void load(const std::string &filename, bool append = false);
-  string desc(bool colored) const override;
+  string desc(bool colored = true) const override;
 
   Program &operator<<(string line);
 
