@@ -43,7 +43,7 @@ public:
   Point zero() const { return _zero; }
   Point offset() const { return _offset; }
 
-  Point postion() const { return _position; }
+  Point position() const { return _position; }
   Point setpoint() const { return _setpoint; }
   Point setpoint(Point p) { _setpoint = p; return _setpoint; }
   Point setpoint(data_t x, data_t y, data_t z) {
@@ -55,6 +55,7 @@ public:
 
   // MQTT-related methods
   int connect();
+  bool connected() { return _connected; }
   void listen_start();
   void listen_stop();
   void on_connect(int rc) override;
@@ -88,6 +89,7 @@ private:
   string _pub_topic; // publish set-points
   string _sub_topic; // get current postions
   char _msg_buffer[MQTT_BUFLEN];
+  bool _connected = false;
 
 };
 

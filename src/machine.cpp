@@ -24,11 +24,12 @@ Machine::Machine(const string &s) : _settings_file(s) {
 }
 
 Machine::~Machine() {
-  if (disconnect() != MOSQ_ERR_SUCCESS) {
+  if (_connected && disconnect() != MOSQ_ERR_SUCCESS) {
     cerr << fg::red << "Cannot disconnect from MQTT broker" << fg::reset 
          << endl;
   }
   mosqpp::lib_cleanup();
+  if (_debug) cerr << style::italic << "Destroyed machine " + _settings_file << endl;
 }
 
 
@@ -82,7 +83,7 @@ data_t Machine::quantize(data_t t, data_t &dq) const {
 int Machine::connect() {
   int rc = mosquittopp::connect(_mqtt_host.c_str(), _mqtt_port, _mqtt_keepalive);
   if (rc != MOSQ_ERR_SUCCESS) {
-    throw CNCError("Cannot connect to MQTT broker", this);
+    throw CNCError("Cannot connect to MQTT broker " + mqtt_host(), this);
   }
   return rc;
 }
@@ -104,6 +105,7 @@ void Machine::on_connect(int rc) {
     cerr << fg::yellow << style::italic << "Connected to broker "
          << mqtt_host() << fg::reset << style::reset << endl;
   }
+  _connected = true;
 }
 
 void Machine::on_disconnect(int rc) {
@@ -111,6 +113,7 @@ void Machine::on_disconnect(int rc) {
     cerr << fg::yellow << style::italic << "Disconnected from broker "
          << mqtt_host() << fg::reset << style::reset << endl;
   }
+  _connected = false;
 }
 
 void Machine::on_subscribe(int mid, int qos_count, const int *qos)  {
@@ -150,7 +153,10 @@ void Machine::sync(bool rapid) {
     j["z"] = pos.z();
     j["rapid"] = rapid;
     string payload = j.dump();
-    publish(NULL, _pub_topic.c_str(), payload.length(), payload.c_str(), 0, false);
+    int rc = publish(NULL, _pub_topic.c_str(), payload.length(), payload.c_str(), 0, false);
+    if (rc != MOSQ_ERR_SUCCESS) {
+      throw CNCError("Cannot publish to topic " + _pub_topic, this);
+    }
     loop();
 }
 
