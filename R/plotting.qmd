@@ -1,0 +1,42 @@
+---
+title: "plotting"
+format: html
+---
+
+```{r setup}
+library(tidyverse)
+```
+
+
+```{r}
+log <- read_csv("../log.csv") %>% 
+  mutate(n=factor(n)) %>% 
+  glimpse()
+```
+
+```{r}
+log %>% 
+  select(t_tot, feedrate, lambda)  %>%
+  pivot_longer(-t_tot) %>% 
+  ggplot(aes(x = t_tot, y = value)) +
+  geom_line() +
+  facet_wrap(~name, scales = "free_y", nrow = 2)
+```
+
+```{r}
+log %>% 
+  select(t_tot, feedrate) %>% 
+  mutate(feedrate=feedrate/60) %>%
+  filter(t_tot > 0.45 & t_tot < 1.2) %>% 
+  slice(c(1, n())) %>% 
+  summarise(across(everything(), diff)) %>% 
+  mutate(acc=feedrate/t_tot)
+```
+
+```{r}
+log %>% 
+  ggplot(aes(x=X, y=Y, color=n, group=n)) + 
+  geom_path() + 
+  coord_equal()
+```
+
