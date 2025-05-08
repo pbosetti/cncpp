@@ -66,6 +66,8 @@ public:
   // ACCESSORS -----------------------------------------------------------------
   string line() const { return _line; }
   size_t n() const { return _n; }
+  BlockType type() const { return _type; }
+  string type_name() const { return types.at(_type); }
   size_t tool() const { return _tool; }
   data_t feedrate() const { return _feedrate; }
   data_t arc_feedrate() const { return _arc_feedrate; }

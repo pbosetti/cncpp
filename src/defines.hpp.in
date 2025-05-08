@@ -24,6 +24,7 @@
 #define BUILD_TYPE "@CMAKE_BUILD_TYPE@"
 #define @BUILD_FLAG@
 #define NUMBERS_WIDTH "7"
+#define MQTT_BUFLEN 1024 // MQTT receive buffer size
 
 /*
   _____

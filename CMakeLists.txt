@@ -135,7 +135,7 @@ file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 
 add_library(cncpp_lib STATIC ${SRC_FILES})
-target_link_libraries(cncpp_lib PRIVATE fmt::fmt yaml-cpp::yaml-cpp)
+target_link_libraries(cncpp_lib PRIVATE fmt::fmt yaml-cpp::yaml-cpp mosquittopp_static mosquitto_static)
 set_target_properties(cncpp_lib PROPERTIES PUBLIC_HEADER "${HEADERS}")
 list(APPEND TARGET_LIST cncpp_lib)
 
@@ -159,6 +159,8 @@ target_compile_definitions(program_test PRIVATE PROGRAM_MAIN)
 target_link_libraries(program_test PRIVATE cncpp_lib)
 
 
+add_executable(simulate ${MAIN_DIR}/simulate.cpp)
+target_link_libraries(simulate PRIVATE cncpp_lib)
 
 
 #   ___           _        _ _
