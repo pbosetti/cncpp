@@ -49,7 +49,7 @@ private:
 };
 
 
-}
+} // namespace cncpp
 
 
 

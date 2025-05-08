@@ -114,6 +114,6 @@ public:
 };
 
 
-}
+} // namespace cncpp
 
 #endif // BLOCK_HPP
