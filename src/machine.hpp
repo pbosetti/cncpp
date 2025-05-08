@@ -26,7 +26,7 @@ public:
   // Lifecycle -----------------------------------------------------------------
   Machine(const string &settings_file);
   Machine() {}
-  ~Machine() {};
+  ~Machine();
 
   // Methods -------------------------------------------------------------------
   void load(const string &settings_file);
@@ -54,14 +54,15 @@ public:
   }
 
   // MQTT-related methods
-  // int connect();
-  // void listen_start();
-  // void listen_stop();
-  // void on_connect(int rc) override;
-  // void on_disconnect(int rc) override;
-  // void on_subscribe(int mid, int qos_count, const int *qos) override;
-  // void on_unsubscribe(int mid) override;
-  // void on_message(const struct mosquitto_message *message) override;
+  int connect();
+  void listen_start();
+  void listen_stop();
+  void on_connect(int rc) override;
+  void on_disconnect(int rc) override;
+  void on_subscribe(int mid, int qos_count, const int *qos) override;
+  void on_unsubscribe(int mid) override;
+  void on_message(const struct mosquitto_message *message) override;
+  void sync(bool rapid);
 
   // returns something like "mqtt://localhost:1883"
   string mqtt_host() const { return "mqtt://" + _mqtt_host + ":" + to_string(_mqtt_port); }

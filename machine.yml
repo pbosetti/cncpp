@@ -6,6 +6,13 @@ machine:
   max_error: 0.005 # in mm
   zero: [500, 500, 500]
   offset: [0, 0, 0]
+  mqtt:
+    host: localhost
+    port: 1883
+    keepalive: 60
+    topics:
+      pub: cnc/sepoint
+      sub: cnc/status/#
   axes:
     X:
       length: 1
