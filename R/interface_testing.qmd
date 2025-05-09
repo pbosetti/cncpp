@@ -1,0 +1,153 @@
+---
+title: "CNCpp testing"
+author: "Paolo Bosetti"
+format: 
+  html:
+    theme: cerulean
+    cache: false
+---
+
+# Prerequisites
+
+This project uses `renv` to manage dependencies. To install the required packages, run the following command in the console:
+
+```{r}
+#| eval: false
+#| include: true
+# Install renv 
+install.packages("renv")
+# install renv dependencies
+renv::restore()
+```
+
+
+```{r setup}
+#| include: false
+library(tidyverse)
+library(glue)
+library(Rcpp)
+library(plotly)
+Sys.setenv(PKG_CXXFLAGS = glue("-I{getwd()}/../usr/include -I{getwd()}/../build/_deps/json-src/include -I/opt/homebrew/include"))
+Sys.setenv(PKG_LIBS = glue("-L{getwd()}/../usr/lib -L{getwd()}/../build/_deps/yaml-cpp-build/ -L{getwd()}/../build/_deps/mosquitto-build/lib -L{getwd()}/../build/_deps/mosquitto-build/lib/cpp -L/opt/homebrew/lib -lcncpp_lib -lfmtd -lyaml-cppd -lmosquittopp_static -lmosquitto_static"))
+Sys.getenv("PKG_CXXFLAGS")
+Sys.getenv("PKG_LIBS")
+sourceCpp("interface.cpp")
+```
+
+
+# Testing the CNCpp library
+
+:::{.callout-warning title="Warning: prerequisites"}
+This notebook requires that the base CNCpp project is compiled **and installed**: do so by typing the following in the project root (i.e. one level above this file):
+```bash
+cmake --build build -j6 -t install
+```
+:::
+
+Create a program object, by passing the list of GCode commands and the path to a YML file with machine parameters:
+
+```{r}
+prog <-  list(
+  "N01 G01 X0 Y0 Z0 F2000", 
+  "N20 G01 X100 Y150",
+  "N30 G01 X200 Y0 F5000"
+)
+cnc <- new(CNCpp, prog, "../machine.yml")
+cnc$version()
+```
+
+Run the simulation and plot:
+
+```{r}
+cnc$simulate() %>% 
+  mutate(kind=cut(acc, c(-Inf, -1e-6, 1e-6, Inf), labels=c("acc", "cruise", "dec"))) %>%
+  ggplot(aes(x=t_time, y=lambda)) + 
+  geom_line(linewidth=0.2) +
+  geom_point(aes(color=kind), size=0.1) +
+  labs(x="Total time (s)")
+```
+
+Clear current program, load a new one and simulate again:
+
+```{r}
+cnc$reset()
+prog <-  list(
+  "N01 G01 X0 Y0 Z0 F2000", 
+  "N20 G01 X100 Y150",
+  "N30 G01 X500 Y0 F5000",
+  "N40 G01 X0 Y0 Z0 F2000",
+  "N50 G02 y50 i0 j25",
+  "N60 G03 x25 y75 r25"
+)
+cnc$load(prog)
+cnc$program() %>% cat()
+path <- cnc$simulate() %>% 
+  mutate(n=factor(n))
+```
+
+Plot the lambda profile:
+
+```{r}
+path %>% 
+  mutate(kind=cut(acc, c(-Inf, -1e-6, 1e-6, Inf), labels=c("acc", "cruise", "dec"))) %>%
+  ggplot(aes(x=t_time, y=lambda)) + 
+  geom_line(linewidth=0.2) +
+  geom_point(aes(color=kind), size=0.1) +
+  labs(x="Total time (s)")
+```
+
+Plot the toolpath in XY and XZ projections:
+
+```{r}
+path %>% 
+  select(n, X=x, Y=y, Z=z) %>% 
+  pivot_longer(-(n:X)) %>% 
+  ggplot(aes(x=X, y=value)) + 
+  geom_path(aes(color=n)) +
+  facet_wrap(~name, nrow=1) +
+  coord_equal()
+```
+
+Plot the trajectory (position vs. time):
+
+```{r}
+path %>% 
+  select(n, t = t_time, X=x, Y=y, Z=z, speed) %>% 
+  pivot_longer((-(n:t))) %>% 
+  ggplot(aes(x=t, color=n)) +
+  geom_line(aes(y=value)) +
+  facet_wrap(~name, scales="free_y")
+```
+
+In 3D:
+
+```{r}
+path %>% 
+  plot_ly(
+    x=~x, 
+    y=~y, 
+    z=~z,
+    color=~n,
+    mode ='lines',
+    type = 'scatter3d')
+```
+
+
+Now let's try and load a GCode file. We create a new instance by passing only the machine YAML file, then load the GCode file and simulate:
+
+```{r}
+cnc <- new(CNCpp, "../machine.yml")
+cnc$load_file("../test.gcode")
+path <- cnc$simulate() %>% 
+  mutate(n=factor(n))
+
+cnc$program() %>% cat()
+
+path %>% 
+  select(n, t = t_time, X=x, Y=y, Z=z, speed) %>% 
+  pivot_longer((-(n:t))) %>% 
+  ggplot(aes(x=t, color=n)) +
+  geom_line(aes(y=value)) +
+  facet_wrap(~name, scales="free_y")
+```
+

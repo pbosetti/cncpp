@@ -22,3 +22,11 @@ sudo dpkg -i rstudio-2024.12.1-563-amd64.deb
 rstudio
 ```
 Then, in RStudio open the project in the `R` folder of the cncpp repository, open the `cncpp_test.qmd` file and follow the instructions in there.
+
+
+## Contents
+
+Use the following notebooks:
+
+- `direct_plotting.qmd`: to make plots by reading a CSV file generated with the `simulate` command
+- `interface_test.qmd`: to test the CNCpp library by direct interface from R
