@@ -11,7 +11,7 @@ machine:
     port: 1883
     keepalive: 60
     topics:
-      pub: cnc/sepoint
+      pub: cnc/setpoint
       sub: cnc/status/#
   axes:
     X:

@@ -176,7 +176,12 @@ void Machine::sync(bool rapid) {
 
 #ifdef MACHINE_MAIN
 #include <iostream>
+#include <csignal>
+#include <chrono>
+#include <thread>
 using namespace std;
+
+bool Running = true;
 
 int main(int argc, const char *argv[]) {
   if (argc < 2) {
@@ -193,6 +198,18 @@ int main(int argc, const char *argv[]) {
   default_machine.load(argv[1]);
   cout << "Default machine after loading:" << endl;
   cout << default_machine.desc() << endl;
+
+  signal(SIGINT, [](int s) { Running = false; });
+
+  machine.setpoint(0, 0, 0);
+  machine.connect();
+  machine.listen_start();
+  while(Running) {
+    this_thread::sleep_for(chrono::seconds(1));
+    machine.sync(false);
+    cout << "Error: " << machine.error() << endl;
+  }
+  machine.listen_stop();
 
 
   return 0;
