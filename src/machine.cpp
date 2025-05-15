@@ -141,8 +141,8 @@ void Machine::on_message(const struct mosquitto_message *message)  {
          << style::reset << fg::reset << endl;
     return;
   }
-  _position = Point(j.value("x", 0)*1000, j.value("y", 0) * 1000, j.value("z", 0) * 1000);
-  _error = j.value("error", 0) * 1000;
+  _position = Point(j.value<data_t>("x", 0)*1000, j.value<data_t>("y", 0) * 1000, j.value<data_t>("z", 0) * 1000);
+  _error = j.value<data_t>("error", 0) * 1000;
 }
 
 void Machine::sync(bool rapid) {
@@ -199,18 +199,18 @@ int main(int argc, const char *argv[]) {
   cout << "Default machine after loading:" << endl;
   cout << default_machine.desc() << endl;
 
+  // Test MQTT communication
   signal(SIGINT, [](int s) { Running = false; });
 
   machine.setpoint(0, 0, 0);
   machine.connect();
   machine.listen_start();
   while(Running) {
-    this_thread::sleep_for(chrono::seconds(1));
+    std::this_thread::sleep_for(chrono::milliseconds(500));
     machine.sync(false);
     cout << "Error: " << machine.error() << endl;
   }
   machine.listen_stop();
-
 
   return 0;
 
