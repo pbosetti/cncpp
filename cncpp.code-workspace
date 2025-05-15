@@ -33,7 +33,8 @@
 			"POINT_MAIN",
 			"BLOCK_MAIN",
 			"PROGRAM_MAIN",
-			"MACHINE_MAIN"
+			"MACHINE_MAIN",
+			"TEST_MAIN"
 		],
 	}
 }
