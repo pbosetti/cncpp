@@ -6,7 +6,7 @@
 #include <rang.hpp>
 
 #include "../fsm.cpp"
-#include "../timer.cpp"
+#include "../timer.hpp"
 
 using namespace std;
 using namespace cncpp;
