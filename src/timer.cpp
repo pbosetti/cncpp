@@ -66,17 +66,28 @@ public:
     signal(SIGALRM, SIG_DFL);
   }
 
-  DurationType wait() {
-    int rv = nanosleep(&_rqtp, &_rmtp);
-    if (rv == 0)
-      return DurationType(0);
-    else {
-      // Convert remaining time from timespec to appropriate duration
-      auto sec = seconds(_rmtp.tv_sec);
-      auto nsec = nanoseconds(_rmtp.tv_nsec);
-      auto total_duration = sec + nsec;
-      return duration_cast<DurationType>(total_duration);
+  DurationType remaining() {
+    auto sec = seconds(_rmtp.tv_sec);
+    auto nsec = nanoseconds(_rmtp.tv_nsec);
+    return duration_cast<DurationType>(sec + nsec);
+  }
+
+  DurationType elapsed() {
+    return _max_wait - remaining();
+  }
+
+  int wait() {
+    if (nanosleep(&_rqtp, &_rmtp) == 0) {
+      _rmtp.tv_sec = _rmtp.tv_nsec = 0;
+      return 0;
+    } else {
+      return -1;
     }
+  }
+
+  void wait_throw() {
+    if (wait() == 0) 
+      throw runtime_error("Timer: max allocated time exceeded");
   }
 
   ~Timer() { stop(); };
@@ -126,7 +137,7 @@ int main(int argc, const char *argv[]) {
   signal(SIGINT, [](int signo) { Running = false; });
 
   duration<double> d(delay);
-  duration<double> max_d(1.0); // 1 second
+  duration<double> max_d(delay * 2); // 1 second
 
   Timer t(d, max_d); // Default template parameter is duration<double>
 
@@ -134,7 +145,8 @@ int main(int argc, const char *argv[]) {
   t.start();
 
   while (Running) {
-    cout << "Elapsed (s): " << (max_d - t.wait()).count() << " s" << endl;
+    t.wait();
+    cout << "Elapsed (s): " << t.elapsed().count() << " s" << endl;
   }
 
   t.stop();
