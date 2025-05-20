@@ -158,10 +158,6 @@ add_executable(program_test ${SRC_DIR}/program.cpp)
 target_compile_definitions(program_test PRIVATE PROGRAM_MAIN)
 target_link_libraries(program_test PRIVATE cncpp_lib)
 
-add_executable(timer_test ${SRC_DIR}/timer.cpp)
-target_compile_definitions(timer_test PRIVATE TIMER_MAIN)
-target_link_libraries(timer_test PRIVATE cncpp_lib)
-
 
 add_executable(simulate ${MAIN_DIR}/simulate.cpp)
 target_link_libraries(simulate PRIVATE cncpp_lib)
