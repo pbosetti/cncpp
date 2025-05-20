@@ -53,7 +53,7 @@ public:
     itimer.it_value.tv_usec = 250 * 1000;
 
     if (setitimer(ITIMER_REAL, &_rep, NULL) != 0) {
-      throw runtime_error(strerror(errno));
+      throw runtime_error(std::strerror(errno));
     }
     signal(SIGALRM, [](int signo) {});
   }

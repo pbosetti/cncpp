@@ -34,11 +34,16 @@ public:
     CharacterVector type;
     data_t dt = _machine.tq();
     size_t i = 0;
-    
+
+    // We want to make a dataframe, one line per time step
+    // Loop on all blocks, skipping NO_MOTION and dealing with rapid ones
     for (auto &b : _prog) {
+      // Skip over NO_MOTION
       if (b.type() == Block::BlockType::NO_MOTION) {
         continue;
-      } else if (b.type() == Block::BlockType::RAPID) {
+      } 
+      // Only one line for rapid blocks
+      else if (b.type() == Block::BlockType::RAPID) {
         type.push_back(Block::types.at(b.type()));
         Point pos = b.target();
         n.push_back(b.n());
@@ -52,6 +57,7 @@ public:
         z.push_back(pos.z());
         continue;
       }
+      // for normal blocks walk allong and add one line per step
       b.walk([&](Block &b, data_t t, data_t l, data_t s) {
         type.push_back(Block::types.at(b.type()));
         Point pos = b.interpolate(l);
@@ -67,6 +73,7 @@ public:
       });
     }
     
+    // Finally, collect the vectors into a data frame
     DataFrame df = DataFrame::create(
       _["n"] = n,
       _["type"] = type,
@@ -105,13 +112,15 @@ private:
 
 
 // R interface
-
+// This is where C++ class methods is mapped to an R Object and its methods
+// R class will be CNCpp, created as cnc <- new(CNCpp, args)
+// Methods are acessed as cnc$load_file(filename)
 RCPP_MODULE(cncpp) {
   using namespace Rcpp;
 
     class_<CNCpp>("CNCpp")
-    .constructor<List, string>()
-    .constructor<string>()
+    .constructor<List, string>()  // cnc <- new(CNCpp, blocks, machine_filename)
+    .constructor<string>()        // cnc <- new(machine_filename)
     .method("simulate", &CNCpp::simulate)
     .method("load", &CNCpp::load)
     .method("load_file", &CNCpp::load_file)
