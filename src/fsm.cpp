@@ -14,9 +14,14 @@ The finite state machine has:
 ******************************************************************************/
 
 #include "fsm.hpp"
+#include "cncpp.hpp"
+#include <keystroker.h>
+#include <rang.hpp>
+#include <fmt/base.h>
     
 using namespace std;
-    
+using namespace rang;
+using namespace fmt;
 
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
 
@@ -80,7 +85,7 @@ state_t do_idle(T &data) {
 
   // 2. select next state according to keypress
   char key = keystroker::read_key();
-  swict(key) {
+  switch(key) {
   case ' ':
     next_state = STATE_LOAD_BLOCK;
     data.program.rewind();

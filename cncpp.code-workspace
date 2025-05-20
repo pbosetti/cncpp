@@ -34,7 +34,8 @@
 			"BLOCK_MAIN",
 			"PROGRAM_MAIN",
 			"MACHINE_MAIN",
-			"TEST_MAIN"
+			"TEST_MAIN",
+			"TIMER_MAIN"
 		],
 	}
 }
