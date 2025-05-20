@@ -139,7 +139,9 @@ int main(int argc, const char *argv[]) {
   duration<double> d(delay);
   duration<double> max_d(delay * 2); // 1 second
 
-  Timer t(d, max_d); // Default template parameter is duration<double>
+  Timer t(d, max_d); // Default template parameter is duration<double> in secs
+  // Or:
+  // Timer<milliseconds> t(milliseconds(200), milliseconds(1000));
 
   cout << t.what();
   t.start();
