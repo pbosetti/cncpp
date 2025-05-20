@@ -79,7 +79,8 @@ private:
   string _settings_file;
   data_t _A;                     // Maximum acceleration (m/s/s)
   data_t _tq;                    // Sampling time (s)
-  data_t _max_error, _error;      // Maximum and actual positioning error (mm)
+  data_t _error = INFINITY;      // Actual positioning error (mm)
+  data_t _max_error;
   data_t _fmax;                  // Maximum feedrate (mm/min)
   Point _zero;                   // Initial machine position
   Point _setpoint, _position;     // Setpoint and actual position

@@ -115,7 +115,9 @@ state_t do_stop(T &data) {
   signal(SIGINT, SIG_DFL);
 
   // 2. Disconnect from machine
+  data.machine.sync(false);
   data.machine.listen_stop();
+
 
   // 3. Message user
   cerr << fg::red << style::bold << "STOP" << fg::reset << style::reset << endl;

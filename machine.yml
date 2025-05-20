@@ -5,7 +5,7 @@ machine:
   max_error: 0.005
   fmax: 1000
   zero: [500, 1000, 500]
-  offset: [200, 200, 500]
+  offset: [0, 0, 0]
   axes:
     X:
       length: 1

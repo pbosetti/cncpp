@@ -150,8 +150,11 @@ void Machine::on_message(const struct mosquitto_message *message) {
          << style::reset << fg::reset << endl;
     return;
   }
-  _position = Point(j.value("x", 0)*1000, j.value("y", 0)*1000, j.value("z", 0)*1000);
-  _error = j.value("error", 0) * 1000;
+
+  _position.x(j.value<data_t>("x", 0) * 1000);
+  _position.y(j.value<data_t>("y", 0) * 1000);
+  _position.z(j.value<data_t>("z", 0) * 1000);
+  _error = j.value<data_t>("error", 0) * 1000;
 }
 
 

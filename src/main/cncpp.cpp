@@ -6,6 +6,7 @@
 #include <rang.hpp>
 
 #include "../fsm.cpp"
+#include "../timer.cpp"
 
 using namespace std;
 using namespace cncpp;
@@ -23,8 +24,8 @@ struct FSMData {
 int main(int argc, char** argv) {
   FSMData data(argv[1]);
   FSM::FiniteStateMachine fsm(&data);
-  openlog("CCNC v" VERSION, LOG_PID, LOG_USER);
-  syslog(LOG_INFO, "Starting CNC program");
+  // openlog("CCNC v" VERSION, LOG_PID, LOG_USER);
+  // syslog(LOG_INFO, "Starting CNC program");
   try {
     data.program.load(argv[2]);
   } catch (exception &e) {
@@ -39,8 +40,12 @@ int main(int argc, char** argv) {
        << fg::reset << endl
        << data.program.desc(true) << endl;
 
-  fsm.set_timing_function([]() {
-    this_thread::sleep_for(chrono::milliseconds(5));
+  Timer timer(duration<double>(data.machine.tq()), duration<double>(data.machine.tq() * 2));
+  timer.start();
+
+  fsm.set_timing_function([&timer]() {
+    timer.wait();
+    // this_thread::sleep_for(chrono::milliseconds(5));
   });
 #ifdef DEBUG
   fsm.run();
@@ -50,5 +55,6 @@ int main(int argc, char** argv) {
 #else
   fsm.run();
 #endif
+  timer.stop();
   return 0;
 }

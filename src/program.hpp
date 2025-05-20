@@ -33,8 +33,16 @@ public:
   // Iterating blocks
   using iterator = std::list<Block>::iterator;
 
-  iterator load_next() { _current++; _done = _current == end(); return _current; }
-  void rewind() { _current = begin(); _done = false;}
+  iterator load_next() { 
+    if (_current == end()) {
+      _current = begin();
+    } else {
+      _current++;
+    }
+    _done = _current == end(); 
+    return _current; 
+  }
+  void rewind() { _current = end(); _done = false;}
   void reset() { clear(); rewind(); }
   iterator current() { return _current; }
   bool done() const { return _done; };

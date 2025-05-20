@@ -40,6 +40,9 @@ void Program::load(const std::string &filename, bool append) {
   }
   string line;
   while (getline(file, line)) {
+    if (line[0] == ';' or line[0] == '#') {
+      continue; // skip comments
+    }
     *this << line;
   }
   file.close();
