@@ -44,6 +44,7 @@ public:
   Point offset() const { return _offset; }
 
   Point position() const { return _position; }
+  Point position(Point p) { _position = p; return _position; }
   Point setpoint() const { return _setpoint; }
   Point setpoint(Point p) { _setpoint = p; return _setpoint; }
   Point setpoint(data_t x, data_t y, data_t z) {

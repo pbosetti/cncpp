@@ -66,6 +66,7 @@ public:
   // ACCESSORS -----------------------------------------------------------------
   string line() const { return _line; }
   size_t n() const { return _n; }
+  data_t dt() const { return _profile.dt; }
   BlockType type() const { return _type; }
   string type_name() const { return types.at(_type); }
   size_t tool() const { return _tool; }

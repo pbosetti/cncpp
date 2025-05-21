@@ -17,7 +17,7 @@ The finite state machine has:
 #include "cncpp.hpp"
 #include <keystroker.h>
 #include <rang.hpp>
-#include <fmt/base.h>
+#include <fmt/core.h>
     
 using namespace std;
 using namespace rang;
@@ -106,7 +106,7 @@ state_t do_idle(T &data) {
   data.t_tot = data.t_blk = 0.0;
 
   // 4. synchronize
-  data.machine.sync();
+  data.machine.sync(false);
   
   return next_state;
 }
@@ -122,6 +122,7 @@ state_t do_stop(T &data) {
   signal(SIGINT, SIG_DFL);
 
   // 2. Disconnect
+  data.machine.sync(false);
   data.machine.listen_stop();
 
   // 3. Message the user
@@ -145,7 +146,7 @@ state_t do_load_block(T &data) {
   }
 
   // 2. check block type
-  auto &b = data.program.current();
+  auto &b = *data.program.current();
   cerr << "Loading " << b.desc() << endl;
   switch (b.type()) {
   case Block::BlockType::NO_MOTION:
@@ -219,17 +220,39 @@ state_t do_no_motion(T &data) {
 template<class T> 
 state_t do_rapid_motion(T &data) {
   state_t next_state = cncpp::NO_CHANGE;
+  data_t duration;
+  Block &b = *data.program.current();
 
   // STEPS:
   // 1. Sync the machine
+  data.machine.sync(true);
 
   // 2. Exit if error is small or max time has elapsed
+  duration = b.length() / data.machine.fmax() * 60.0;
+  if (data.machine.error() < data.machine.max_error() || data.t_blk > duration) {
+    cerr << "Rapid block " << b.desc() << " completed." << endl;
+    cerr << "Duration: " << duration << " s" << endl;
+    cerr << "Elapsed time: " << data.t_blk << " s" << endl;
+    cerr << "Error: " << data.machine.error() << " mm" << endl;
+    next_state = cncpp::STATE_LOAD_BLOCK;
+  }
 
   // 3. Exit for CTRL-C
+  if (stop_requested) {
+    cerr << "Rapid block " << b.desc() << " skipped." << endl;
+    stop_requested = false;
+    next_state = cncpp::STATE_LOAD_BLOCK;
+  }
 
   // 4. Get current position and print values table
+  Point p = data.machine.position();
+  Point tgt = b.target();
+  data_t lambda = min(data.machine.error() / b.length(), 1.0);
+  cout << fmt::format("{:0>3d} {:0>2d} {:.3f} {:.3f} {:.3f} {:.3f} {:.1f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), data.machine.fmax(), b.profile().current_acc, tgt.x(), tgt.y(), tgt.z(), p.x(), p.y(), p.z()) << endl;
 
   // 5. Increment timings
+  data.t_tot += data.machine.tq();
+  data.t_blk += data.machine.tq();
   
   return next_state;
 }
@@ -239,8 +262,32 @@ state_t do_rapid_motion(T &data) {
 // SIGINT triggers an emergency transition to STATE_STOP
 template<class T> 
 state_t do_interp_motion(T &data) {
-  state_t next_state = cncpp::UNIMPLEMENTED;
-  /* Your Code Here */
+  state_t next_state = cncpp::NO_CHANGE;
+  Block &b = *data.program.current();
+  data_t lambda, speed;
+  data_t tq = data.machine.tq();
+
+  // STEPS:
+  // 1. Interpolate motion
+  Point p = data.machine.position();
+  Point tgt = b.interpolate(data.t_blk, lambda, speed);
+
+  // 2. Print values table
+  cout << fmt::format("{:0>3d} {:0>2d} {:.3f} {:.3f} {:.3f} {:.3f} {:.1f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), speed, b.profile().current_acc, tgt.x(), tgt.y(), tgt.z(), p.x(), p.y(), p.z()) << endl;
+
+  // 3. Sync the machine
+  data.machine.setpoint(tgt);
+  data.machine.sync(false);
+
+  // 4. Check if we are done
+  if (data.t_blk > b.dt() + tq / 10) {
+    next_state = cncpp::STATE_LOAD_BLOCK;
+  }
+
+
+  // 5. Increment times
+  data.t_tot += tq;
+  data.t_blk += tq;
   
   return next_state;
 }
@@ -263,49 +310,60 @@ state_t do_interp_motion(T &data) {
 // 1. from idle to load_block
 template<class T>
 void reset(T &data) {
-  /* Your Code Here */
+  data.t_tot = data.t_blk = 0.0;
+  cout << "n type, t_tot t_blk lambda s feedrate acc xr yr zr x y z" << endl;
 }
 
 // This function is called in 1 transition:
 // 1. from idle to go_to_zero
 template<class T>
 void begin_zero(T &data) {
-  /* Your Code Here */
+  data.machine.listen_start();
+  data.machine.setpoint(data.machine.zero());
+  data.machine.sync(true);
+  cerr << "Going to zero at " << data.machine.zero().desc() << endl;
 }
 
 // This function is called in 1 transition:
 // 1. from load_block to rapid_motion
 template<class T>
 void begin_rapid(T &data) {
-  /* Your Code Here */
+  Block &b = *data.program.current();
+  data.t_blk = 0.0;
+  data.machine.listen_start();
+  data.machine.setpoint(b.target());
+  data.machine.sync(true);
 }
 
 // This function is called in 1 transition:
 // 1. from load_block to interp_motion
 template<class T>
 void begin_interp(T &data) {
-  /* Your Code Here */
+  data.machine.sync(false);
+  data.t_blk = 0.0;
 }
 
 // This function is called in 1 transition:
 // 1. from rapid_motion to load_block
 template<class T>
 void end_rapid(T &data) {
-  /* Your Code Here */
+  data.machine.listen_stop();
+  data.machine.sync(false);
 }
 
 // This function is called in 1 transition:
 // 1. from interp_motion to load_block
 template<class T>
 void end_interp(T &data) {
-  /* Your Code Here */
+  data.machine.sync(false);
 }
 
 // This function is called in 1 transition:
 // 1. from go_to_zero to idle
 template<class T>
 void end_zero(T &data) {
-  /* Your Code Here */
+  data.machine.listen_stop();
+  data.machine.sync(false);
 }
 
 

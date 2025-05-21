@@ -38,6 +38,7 @@ public:
   void reset() { clear(); rewind(); }
 
   // ACCESSORS
+  iterator current() { return _current; }
   bool done() const { return _done; }
 
 

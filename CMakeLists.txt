@@ -133,9 +133,10 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 # main Library
 file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
+list(FILTER SRC_FILES EXCLUDE REGEX ".*fsm.*")
 
 add_library(cncpp_lib STATIC ${SRC_FILES})
-target_link_libraries(cncpp_lib PRIVATE fmt::fmt yaml-cpp::yaml-cpp mosquittopp_static mosquitto_static)
+target_link_libraries(cncpp_lib PRIVATE fmt::fmt yaml-cpp::yaml-cpp mosquittopp_static mosquitto_static keystroker)
 set_target_properties(cncpp_lib PROPERTIES PUBLIC_HEADER "${HEADERS}")
 list(APPEND TARGET_LIST cncpp_lib) # this target will be installed
 
@@ -162,6 +163,10 @@ target_link_libraries(program_test PRIVATE cncpp_lib)
 add_executable(simulate ${MAIN_DIR}/simulate.cpp)
 target_link_libraries(simulate PRIVATE cncpp_lib)
 list(APPEND TARGET_LIST simulate) # this target will be installed
+
+add_executable(cncpp ${MAIN_DIR}/cncpp.cpp)
+target_link_libraries(cncpp PRIVATE cncpp_lib)
+list(APPEND TARGET_LIST cncpp) # this target will be installed
 
 
 #   ___           _        _ _
