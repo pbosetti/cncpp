@@ -53,6 +53,9 @@ void Program::load(const string &f, bool append) {
   if (!append) reset();
   string line;
   while (getline(file, line)) {
+    if (line[0] == '#') {
+      continue;
+    }
     *this << line;
   }
   file.close();

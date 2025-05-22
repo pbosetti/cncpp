@@ -59,6 +59,11 @@ cnc$version()
 Run the simulation and plot:
 
 ```{r}
+cnc$simulate()
+```
+
+
+```{r}
 cnc$simulate() %>% 
   mutate(kind=cut(acc, c(-Inf, -1e-6, 1e-6, Inf), labels=c("acc", "cruise", "dec"))) %>%
   ggplot(aes(x=t_time, y=lambda)) + 
@@ -137,7 +142,7 @@ Now let's try and load a GCode file. We create a new instance by passing only th
 
 ```{r}
 cnc <- new(CNCpp, "../machine.yml")
-cnc$load_file("../test.gcode")
+cnc$load_file("../project_path.gcode")
 path <- cnc$simulate() %>% 
   mutate(n=factor(n))
 
@@ -151,3 +156,13 @@ path %>%
   facet_wrap(~name, scales="free_y")
 ```
 
+```{r}
+path %>% 
+  plot_ly(
+    x=~x, 
+    y=~y, 
+    z=~z,
+    color=~n,
+    mode ='lines',
+    type = 'scatter3d')
+```
