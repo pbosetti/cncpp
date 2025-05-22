@@ -62,7 +62,7 @@ state_t do_init(T &data) {
   data.machine.setpoint(data.machine.zero());
 
   // 3. Message the user
-  cerr << fg::green << "Connected to machine"
+  cerr << fg::green << "Connected to machine "
        << style::bold << data.machine.mqtt_host()
        << style::reset << fg::reset << endl;
 

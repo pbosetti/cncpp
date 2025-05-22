@@ -83,9 +83,10 @@ int main(int argc, const char *argv[]) {
   // Start FSM execution
 #ifdef DEBUG
   // when in debug, print a message every time you enter a state function
-  fsm.run([&fsm](FSMData &d){
-    cerr << "State: " << fsm.state_name() << endl;
-  });
+  fsm.run();
+  // fsm.run([&fsm](FSMData &d){
+  //   cerr << "State: " << fsm.state_name() << endl;
+  // });
 #else
   fsm.run();
 #endif

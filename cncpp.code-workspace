@@ -35,7 +35,8 @@
 			"PROGRAM_MAIN",
 			"MACHINE_MAIN",
 			"TEST_MAIN",
-			"TIMER_MAIN"
+			"TIMER_MAIN",
+			"DEBUG"
 		],
 	}
 }

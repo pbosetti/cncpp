@@ -33,8 +33,16 @@ public:
 
   using iterator = std::list<Block>::iterator;
 
-  iterator load_next() { _current++; _done = _current == end(); return _current; }
-  void rewind() { _current = begin(); _done = false; }
+  iterator load_next() {
+    if (_current == end()) {
+      _current = begin();
+    } else {
+      _current++;
+    }
+    _done = _current == end(); 
+    return _current; 
+  }
+  void rewind() { _current = end(); _done = false; }
   void reset() { clear(); rewind(); }
 
   // ACCESSORS
@@ -45,7 +53,7 @@ public:
 private:
   Machine *_machine = nullptr;
   std::string _filename;
-  iterator _current = begin();
+  iterator _current = end();
   bool _done = false;
 };
 

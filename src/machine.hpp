@@ -81,7 +81,7 @@ private:
   data_t _max_error = 0.005;
 
   // State variables
-  data_t _error = 0.0;
+  data_t _error = INFINITY;
 
   // MQTT-related params
   string _mqtt_host = "localhost";
