@@ -12,7 +12,7 @@ sudo apt install r-base
 ```
 2. Install RStudio by downloading the latest version from the [RStudio website](https://posit.co/download/rstudio-desktop/). You can use the following command to download and install RStudio:
 ```bash
-sudo apt install libssl-dev libclang-dev libnss3 libasound2t64
+sudo apt install libssl-dev libclang-dev libnss3 libasound2t64 libcurl4-openssl-dev
 sudo apt install --fix-broken
 wget https://download1.rstudio.org/electron/jammy/amd64/rstudio-2024.12.1-563-amd64.deb
 sudo dpkg -i rstudio-2024.12.1-563-amd64.deb
