@@ -9,7 +9,13 @@ format:
 
 # Prerequisites
 
-This project uses `renv` to manage dependencies. To install the required packages, run the following command in the console:
+In the **linux console** (i.e. the terminal), install the following packages:
+
+```sh
+sudo apt install libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
+```
+
+This project uses `renv` to manage dependencies. To install the required packages, run the following command in the R console (copy and paste, do not execute the block!):
 
 ```{r}
 #| eval: false
