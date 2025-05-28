@@ -15,6 +15,13 @@ In the **linux console** (i.e. the terminal), install the following packages:
 sudo apt install libcurl-openssl-dev libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
 ```
 
+And install the CNCpp library (still in the terminal from the CNCpp project folder):
+
+```sh
+cmake --build build -t install
+```
+
+
 This project uses `renv` to manage dependencies. To install the required packages, run the following command in the R console (copy and paste, do not execute the block!):
 
 ```{r}
