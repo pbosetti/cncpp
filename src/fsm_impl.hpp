@@ -13,7 +13,6 @@ The finite state machine has:
 
 ******************************************************************************/
 
-#include "fsm.hpp"
 #include "cncpp.hpp"
 #include <keystroker.h>
 #include <rang.hpp>

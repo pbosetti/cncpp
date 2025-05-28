@@ -16,8 +16,6 @@ Usage: cncpp <machine.yml> <program.gcode>
 #include <rang.hpp>
 #include <chrono>
 
-#include "../fsm.cpp"
-
 
 using namespace std;
 using namespace rang;
