@@ -238,31 +238,35 @@ state_t do_rapid_motion(T &data) {
   Block &b = *data.program.current();
 
   // STEPS:
-  // 1. Sync the machine
-  data.machine.sync(true);
+  try {
+    // 1. Sync the machine
+    data.machine.sync(true);
 
-  // 2. Exit if error is small or max time has elapsed
-  duration = b.length() / data.machine.fmax() * 60.0 * 2;
-  if (data.machine.error() < data.machine.max_error() || data.t_blk > duration) {
-    cerr << "Rapid block " << b.desc() << " completed." << endl;
-    cerr << "Duration: " << duration << " s" << endl;
-    cerr << "Elapsed time: " << data.t_blk << " s" << endl;
-    cerr << "Error: " << data.machine.error() << " mm" << endl;
-    next_state = cncpp::STATE_LOAD_BLOCK;
+    // 2. Exit if error is small or max time has elapsed
+    duration = b.length() / data.machine.fmax() * 60.0 * 2;
+    if (data.machine.error() < data.machine.max_error() || data.t_blk > duration) {
+      cerr << "Rapid block " << b.desc() << " completed." << endl;
+      cerr << "Duration: " << duration << " s" << endl;
+      cerr << "Elapsed time: " << data.t_blk << " s" << endl;
+      cerr << "Error: " << data.machine.error() << " mm" << endl;
+      next_state = cncpp::STATE_LOAD_BLOCK;
+    }
+
+    // 3. Exit for CTRL-C
+    if (stop_requested) {
+      cerr << "Rapid block " << b.desc() << " skipped." << endl;
+      stop_requested = false;
+      next_state = cncpp::STATE_LOAD_BLOCK;
+    }
+
+    // 4. Get current position and print values table
+    Point p = data.machine.position();
+    Point tgt = b.target();
+    data_t lambda = min(data.machine.error() / b.length(), 1.0);
+    cout << fmt::format("{:0>3d} {:0>2d} {:.3f} {:.3f} {:.3f} {:.3f} {:.1f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), data.machine.fmax(), b.profile().current_acc, tgt.x(), tgt.y(), tgt.z(), p.x(), p.y(), p.z()) << endl;
+  } catch (const bad_optional_access &e) {
+    cerr << fg::yellow << "Waiting for machine position" << fg::reset << endl;
   }
-
-  // 3. Exit for CTRL-C
-  if (stop_requested) {
-    cerr << "Rapid block " << b.desc() << " skipped." << endl;
-    stop_requested = false;
-    next_state = cncpp::STATE_LOAD_BLOCK;
-  }
-
-  // 4. Get current position and print values table
-  Point p = data.machine.position();
-  Point tgt = b.target();
-  data_t lambda = min(data.machine.error() / b.length(), 1.0);
-  cout << fmt::format("{:0>3d} {:0>2d} {:.3f} {:.3f} {:.3f} {:.3f} {:.1f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), data.machine.fmax(), b.profile().current_acc, tgt.x(), tgt.y(), tgt.z(), p.x(), p.y(), p.z()) << endl;
 
   // 5. Increment timings
   data.t_tot += data.machine.tq();
@@ -285,9 +289,14 @@ state_t do_interp_motion(T &data) {
   // 1. Interpolate motion
   Point p = data.machine.position();
   Point tgt = b.interpolate(data.t_blk, lambda, speed);
-
+  
   // 2. Print values table
-  cout << fmt::format("{:0>3d} {:0>2d} {:.3f} {:.3f} {:.3f} {:.3f} {:.1f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), speed, b.profile().current_acc, tgt.x(), tgt.y(), tgt.z(), p.x(), p.y(), p.z()) << endl;
+  // mind the possible missing data in machine.position()
+  try {
+    cout << fmt::format("{:0>3d} {:0>2d} {:.3f} {:.3f} {:.3f} {:.3f} {:.1f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), speed, b.profile().current_acc, tgt.x(), tgt.y(), tgt.z(), p.x(), p.y(), p.z()) << endl;
+  } catch (const bad_optional_access &e) {
+    cout << fmt::format("{:0>3d} {:0>2d} {:.3f} {:.3f} {:.3f} {:.3f} {:.1f} {:.3f} {:.3f} {:.3f} {:.3f} {:>3} {:>3} {:>3}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), speed, b.profile().current_acc, tgt.x(), tgt.y(), tgt.z(), "-", "-", "-") << endl;
+  }
 
   // 3. Sync the machine
   data.machine.setpoint(tgt);
@@ -343,9 +352,9 @@ template<class T>
 void begin_rapid(T &data) {
   Block &b = *data.program.current();
   data.t_blk = 0.0;
-  data.machine.listen_start();
   data.machine.setpoint(b.target());
-  data.machine.sync(true);
+  data.machine.listen_start();
+  data.machine.loop();
 }
 
 // This function is called in 1 transition:
@@ -353,6 +362,7 @@ void begin_rapid(T &data) {
 template<class T>
 void begin_interp(T &data) {
   data.machine.sync(false);
+  data.machine.listen_start();
   data.t_blk = 0.0;
 }
 
@@ -369,6 +379,7 @@ void end_rapid(T &data) {
 template<class T>
 void end_interp(T &data) {
   data.machine.sync(false);
+  data.machine.listen_stop();
 }
 
 // This function is called in 1 transition:
