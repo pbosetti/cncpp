@@ -227,7 +227,7 @@ state_t do_rapid_motion(T &data) {
   data.machine.sync(true);
 
   // 2. Exit if error is small or max time has elapsed
-  duration = b.length() / data.machine.fmax() * 60.0;
+  duration = b.length() / data.machine.fmax() * 60.0 * 2;
   if (data.machine.error() < data.machine.max_error() || data.t_blk > duration) {
     cerr << "Rapid block " << b.desc() << " completed." << endl;
     cerr << "Duration: " << duration << " s" << endl;

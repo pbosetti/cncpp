@@ -52,11 +52,11 @@ void Machine::load(const string &s) {
     machine["offset"][2].as<data_t>()
   );
   //MQTT parameters
-  _mqtt_host = data["mqtt"]["host"].as<string>("localhost");
-  _mqtt_port = data["mqtt"]["port"].as<int>(1883);
-  _mqtt_keepalive = data["mqtt"]["keepalive"].as<int>(60);
-  _pub_topic = data["mqtt"]["topics"]["pub"].as<string>("cnc/setpoint");
-  _sub_topic = data["mqtt"]["topics"]["sub"].as<string>("cnc/status/#");
+  _mqtt_host = machine["mqtt"]["host"].as<string>("localhost");
+  _mqtt_port = machine["mqtt"]["port"].as<int>(1883);
+  _mqtt_keepalive = machine["mqtt"]["keepalive"].as<int>(60);
+  _pub_topic = machine["mqtt"]["topics"]["pub"].as<string>("cnc/setpoint");
+  _sub_topic = machine["mqtt"]["topics"]["sub"].as<string>("cnc/status/#");
 }
 
 string Machine::desc(bool colored) const {

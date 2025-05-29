@@ -1,6 +1,6 @@
 ---
 machine:
-  A: 100.0 # max acceleration in mm/s/s
+  A: 10.0 # max acceleration in mm/s/s
   tq: 0.005 # step time in ms
   fmax: 10000 # m/min
   max_error: 0.005 # in mm
@@ -11,8 +11,8 @@ machine:
     port: 1883
     keepalive: 60
     topics:
-      pub: cnc/setpoint
-      sub: cnc/status/#
+      pub: "cnc/setpoint"
+      sub: "cnc/status/#"
   axes:
     X:
       length: 1
