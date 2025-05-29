@@ -104,8 +104,12 @@ state_t do_idle(T &data) {
   // 3. reset timings
   data.t_tot = data.t_blk = 0.0;
 
-  // 4. synchronize
-  data.machine.sync(false);
+  // 3. Receive pending messages
+  // We won't use sync(), because we don't want to publish the current
+  // setpoint: as soon the machine starts, no motion shall be performed!
+  // Also note: Machine inherits from mosquittopp, so it also had the 
+  // loop() method
+  data.machine.loop();
   
   return next_state;
 }
@@ -176,16 +180,27 @@ state_t do_load_block(T &data) {
 template<class T> 
 state_t do_go_to_zero(T &data) {
   state_t next_state = cncpp::NO_CHANGE;
-  
-  // STEPS:
-  // 1. synch machine setpoint
-  data.machine.sync(true);
+  data_t distance = INFINITY;
+  auto &m = data.machine;
 
+  // STEPS
+  // 1. synch machine setpoint
+  // m.listen_start resetd the current position, so we can be sure that 
+  // we are using an updated position when it is_complete again
+  data.machine.sync(true);
+  if (m.position().is_complete()) {
+    // Don't rely on error, for it is calculated ex-post, so we might get the
+    // error at the end of previous loop (ie too small)
+    distance = m.setpoint().delta(m.position()).length();
+  }
+  cerr << "Position: " << m.position().desc()
+      << " Distance: " << style::bold << distance << style::reset << endl;
+  
   // 2. check if zero has been reached
-  if (data.machine.error() < data.machine.max_error()) {
+  if (m.position().is_complete() && distance < m.max_error()) {
     next_state = STATE_IDLE;
   }
-
+  
   // 3. Check for CRTL-C
   if (stop_requested) {
     stop_requested = false;
@@ -317,10 +332,9 @@ void reset(T &data) {
 // 1. from idle to go_to_zero
 template<class T>
 void begin_zero(T &data) {
-  data.machine.listen_start();
   data.machine.setpoint(data.machine.zero());
-  data.machine.sync(true);
-  cerr << "Going to zero at " << data.machine.zero().desc() << endl;
+  data.machine.listen_start();
+  data.machine.loop();
 }
 
 // This function is called in 1 transition:

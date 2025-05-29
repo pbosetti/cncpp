@@ -105,6 +105,8 @@ void Machine::on_connect(int rc) {
     cerr << fg::yellow << style::italic << "Connected to broker "
          << mqtt_host() << fg::reset << style::reset << endl;
   }
+  _position.reset();
+  _error = INFINITY;
   _connected = true;
 }
 
@@ -121,6 +123,8 @@ void Machine::on_subscribe(int mid, int qos_count, const int *qos)  {
     cerr << fg::yellow << style::italic << "Subscribed to topic "
          << _sub_topic << fg::reset << style::reset << endl;
   }
+  _position.reset();
+  _error = INFINITY;
 }
 
 void Machine::on_unsubscribe(int mid)  {
@@ -128,6 +132,8 @@ void Machine::on_unsubscribe(int mid)  {
     cerr << fg::yellow << style::italic << "Unsubscribed from topic "
          << _sub_topic << fg::reset << style::reset << endl;
   }
+  _position.reset();
+  _error = INFINITY;
 }
 
 void Machine::on_message(const struct mosquitto_message *message)  {

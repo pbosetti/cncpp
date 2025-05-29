@@ -21,7 +21,7 @@ using json = nlohmann::json;
 
 namespace cncpp {
 
-class Machine final : Object, mosquittopp {
+class Machine final : Object, public mosquittopp {
 public:
   // Lifecycle -----------------------------------------------------------------
   Machine(const string &settings_file);
