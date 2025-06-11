@@ -58,8 +58,8 @@ FetchContent_Declare(fmt
 )
 
 FetchContent_Declare(rang
-  GIT_REPOSITORY https://github.com/agauniyal/rang.git
-  GIT_TAG        v3.2
+  GIT_REPOSITORY https://github.com/pbosetti/rang.git
+  GIT_TAG        HEAD
   GIT_SHALLOW    TRUE
 )
 
