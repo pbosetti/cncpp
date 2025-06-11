@@ -150,7 +150,7 @@ Block &Block::parse(const Machine *m) {
   while (ss >> token) {
     try {
       // this is gonna be long, we factor it out to a dedicated private method:
-      parse_token(token);
+      if (!parse_token(token)) break;
     } catch (CNCError &e) {
       stringstream ss;
       ss << "Parsing error at line: " << _line << endl;
@@ -249,9 +249,10 @@ void Block::walk(function<void(Block &b, data_t t, data_t l, data_t s)> f) {
  |_|   |_|  |_| \_/ \__,_|\__\___| |_| |_| |_|\___|\__|_| |_|\___/ \__,_|___/
                                                                              
 */
-void Block::parse_token(string token) {
+bool Block::parse_token(string token) {
   char cmd = toupper(token[0]);
   string arg = token.substr(1);
+  if (cmd == '#' || cmd == ';') return false;
   if (arg.empty()) throw CNCError("Empty command argument", this);
   // cover all possible/supported ISO commands:
   switch(cmd) {
@@ -313,6 +314,7 @@ void Block::parse_token(string token) {
     throw CNCError(ss.str(), this);
     break;
   }
+  return true;
 }
 
 Point Block::start_point() {

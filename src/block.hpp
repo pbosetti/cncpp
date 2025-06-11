@@ -103,7 +103,7 @@ private:
   bool _parsed = false;              // block has been parsed?
 
   // PRIVATE METHODS -----------------------------------------------------------
-  void parse_token(string token);
+  bool parse_token(string token);
   Point start_point(); // block starting point (prev target or machine init)
   void compute();      // velocity profile
   void calc_arc();     // calculate arc parameters
