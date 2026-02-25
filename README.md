@@ -1,4 +1,4 @@
-# CNCPP 2025
+# CNCPP 2026
 
 This is the repository of the code developed during the _Digital Manufacturing_ course, academic year 2022-23, Department of Industrial Engineering, University of Trento.
 
@@ -85,17 +85,14 @@ On MacOS, the command equivalent to `apt` is `brew`: you have to install it by f
 Then **close the terminal** and open a new one and proceed as follows:
 
 ```sh
-brew install figlet gsl clang-format graphviz gpg
+brew install figlet gsl clang-format graphviz gpg ruby@3.3
 brew install --cask cmake
-curl -sSL https://rvm.io/mpapis.asc | gpg --import -
-curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -
-curl -sSL https://get.rvm.io | bash -s stable --auto-dotfiles
+echo 'export PATH="/usr/local/opt/ruby@3.3/bin:$PATH"' >> ~/.zshrc
 ```
 
 Close and open a new terminal, again, then:
 
 ```sh
-rvm install ruby-2.7
 gem install gv_fsm
 ```
 
@@ -135,10 +132,10 @@ If you want to have both the main branch and the development branch on your loca
 git branch devel
 git switch devel
 # create a new worktree in a folder named cncpp_main
-git worktree add ../cncpp_main main
+git worktree add ../cncpp_main main25
 ```
 
-This creates the folder `../cncpp_main` and checks out the `main` branch in it. You can then switch to the `dev` branch with `git worktree switch dev` and back to `main` with `git worktree switch main`.
+This creates the folder `../cncpp_main` and checks out the `main25` branch in it.
 
 You can regularly downoad the latest changes from the remote repository with `git pull` in the `../cncpp_main` folder.
 
