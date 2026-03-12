@@ -83,9 +83,26 @@ On MacOS, the command equivalent to `apt` is `brew`: you have to install it by f
 Then **close the terminal** and open a new one and proceed as follows:
 
 ```sh
-brew install figlet gsl clang-format graphviz gpg
+brew install figlet gsl clang-format graphviz gpg wget
 brew install --cask cmake
 ```
+
+## Suggested workflow
+
+This repository will be regularly updated after each lesson. To have your own project together with the reference, the following workflow is suggested:
+
+0. work in `Develop` folder: `cd ~/Develop`
+1. download this repository with `wget https://github.com/pbosetti/cncpp/archive/refs/heads/main26.zip`
+2. unzip it twice:
+  - `unzip main26.zip && mv cncpp-main26 cncpp-reference`
+  - `unzip main26.zip && rm main26.zip`
+3. Now in `Develop` you have two identical folders: you'll work in `cncpp-main26`, while 'cncpp-reference` will be continuously updated with the instructor's version and used as a reference
+4. Open in VSCode the `cncpp-main26` project: `code cncpp-main26/cncpp.code-workspace`, then in the explorer side panel, right click in the blank space and select *Add folder to workspace...*
+5. before each lesson, update the reference version with `wget https://github.com/pbosetti/cncpp/archive/refs/heads/main26.zip && unzip main26.zip && rm main26.zip`
+
+Now you can keep side by side your development and the reference version.
+
+> **Note:** the double `&&` means "*ececute the forst command and if it succeeds then execute the second command*".
 
 ## Build with Cmake
 
