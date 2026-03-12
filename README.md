@@ -9,7 +9,6 @@ This is the repository of the code developed during the _Digital Manufacturing_ 
 * `src`: contains the main project source code (library files)
 * `src/main`: contains executables code
 * `goodies`: useful stuff
-*
 
 ## Prerequisites
 
