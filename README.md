@@ -66,8 +66,7 @@ To enable the compilation we need to install a few packages: on the linux consol
 
 ```bash
 sudo apt update
-sudo apt install build-essential make cmake cmake-curses-gui clang clang-format lldb libgsl-dev ruby figlet sshfs graphviz gnuplot
-sudo gem install gv_fsm
+sudo apt install build-essential make cmake cmake-curses-gui cmake-qt-gui clang clang-format lldb libgsl-dev figlet sshfs graphviz gnuplot
 sudo update-alternatives --set c++ /usr/bin/clang++
 sudo update-alternatives --set cc /usr/bin/clang
 ```
@@ -85,17 +84,9 @@ On MacOS, the command equivalent to `apt` is `brew`: you have to install it by f
 Then **close the terminal** and open a new one and proceed as follows:
 
 ```sh
-brew install figlet gsl clang-format graphviz gpg ruby@3.3
+brew install figlet gsl clang-format graphviz gpg
 brew install --cask cmake
-echo 'export PATH="/usr/local/opt/ruby@3.3/bin:$PATH"' >> ~/.zshrc
 ```
-
-Close and open a new terminal, again, then:
-
-```sh
-gem install gv_fsm
-```
-
 
 ## Build with Cmake
 
