@@ -98,7 +98,7 @@ This repository will be regularly updated after each lesson. To have your own pr
   - `unzip main26.zip && rm main26.zip`
 3. Now in `Develop` you have two identical folders: you'll work in `cncpp-main26`, while 'cncpp-reference` will be continuously updated with the instructor's version and used as a reference
 4. Open in VSCode the `cncpp-main26` project: `code cncpp-main26/cncpp.code-workspace`, then in the explorer side panel, right click in the blank space and select *Add folder to workspace...*
-5. before each lesson, update the reference version with `wget https://github.com/pbosetti/cncpp/archive/refs/heads/main26.zip && unzip main26.zip && rm main26.zip`
+5. before each lesson, update the reference version with `wget https://github.com/pbosetti/cncpp/archive/refs/heads/main26.zip && unzip main26.zip && rm main26.zip` **from the `Develop` folder**
 
 Now you can keep side by side your development and the reference version.
 
