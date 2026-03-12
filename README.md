@@ -134,7 +134,7 @@ You can regularly downoad the latest changes from the remote repository with `gi
 
 Paolo Bosetti (`paolo dot bosetti at unitn dot it`).
 
-Davide Stocco (`davide dot stocco at unitn dot it`) contributed to exercises and examples.
+Filippo Faccini (`filippo dot faccini at unitn dot it`) contributed to exercises and examples.
 
 
 ## License
