@@ -46,9 +46,8 @@ include(FetchContent)
 message(STATUS "Fetching dependencies...")
 
 FetchContent_Declare(json
-  GIT_REPOSITORY https://github.com/nlohmann/json.git
-  GIT_TAG        HEAD
-  GIT_SHALLOW    TRUE
+  URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 
 FetchContent_Declare(fmt
