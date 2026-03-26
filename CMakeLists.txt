@@ -28,6 +28,8 @@ set(MAIN_DIR ${SRC_DIR}/main)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/usr CACHE PATH "Install path prefix" FORCE)
 
+include(CTest)
+
 message(STATUS "SRC_DIR: ${SRC_DIR}")
 message(STATUS "MAIN_DIR: ${MAIN_DIR}")
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
@@ -68,11 +70,6 @@ FetchContent_Declare(yaml-cpp
   GIT_TAG HEAD
 )
 
-FetchContent_Declare(keystroker
-  GIT_REPOSITORY https://github.com/pbosetti/keystroker.git
-  GIT_SHALLOW    TRUE
-  GIT_TAG HEAD
-)
 
 set(DOCUMENTATION OFF CACHE BOOL "")
 set(INC_BRIDGE_SUPPORT OFF CACHE BOOL "")
@@ -88,7 +85,7 @@ FetchContent_Declare(mosquitto
   GIT_TAG v2.0.20
 )
 
-FetchContent_MakeAvailable(fmt rang json yaml-cpp keystroker mosquitto)
+FetchContent_MakeAvailable(fmt rang json yaml-cpp mosquitto)
 
 message(STATUS "Dependencies fetched.")
 
@@ -97,7 +94,6 @@ include_directories(
   ${rang_SOURCE_DIR}/include
   ${json_SOURCE_DIR}/include
   ${yaml-cpp_SOURCE_DIR}/include
-  ${keystroker_SOURCE_DIR}/include
   ${mosquitto_SOURCE_DIR}/include
   ${mosquitto_SOURCE_DIR}/lib/cpp
   # /opt/homebrew/include

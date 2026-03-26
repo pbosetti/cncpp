@@ -30,3 +30,23 @@ endmacro()
 
 create_example(example_1 SRCS test.cpp)
 create_example(example_2 SRCS test.cpp)
+create_example(example_3 SRCS example_3.cpp Vector2D.cpp)
+
+include(CTest)
+
+if(BUILD_TESTING)
+  add_executable(ex_example_3_unit_tests
+    ${CMAKE_CURRENT_LIST_DIR}/example_3/vector2d_unit_tests.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/example_3/Vector2D.cpp
+  )
+  set_target_properties(ex_example_3_unit_tests PROPERTIES OUTPUT_NAME example_3_unit_tests)
+
+  add_executable(ex_example_3_smoke_test
+    ${CMAKE_CURRENT_LIST_DIR}/example_3/vector2d_smoke_test.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/example_3/Vector2D.cpp
+  )
+  set_target_properties(ex_example_3_smoke_test PROPERTIES OUTPUT_NAME example_3_smoke_test)
+
+  add_test(NAME example_3_unit_tests COMMAND ex_example_3_unit_tests)
+  add_test(NAME example_3_smoke_test COMMAND ex_example_3_smoke_test)
+endif()

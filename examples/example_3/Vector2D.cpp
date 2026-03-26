@@ -1,23 +1,25 @@
-#include "Vector2D.h"
-#include <hypot.h> // For some platforms, but usually <cmath> is enough
+#include "Vector2D.hpp"
 #include <iomanip>
 #include <sstream>
+#include <cmath>
+#include <iostream>
 
 // Initialize static member
-int Vector2D::_vector_count = 0;
+size_t Vector2D::_vector_count = 0;
 
-Vector2D::Vector2D() : _x(0.0), _y(0.0), _label("") {}
+Vector2D::Vector2D() : Vector2D(0.0, 0.0) {}
 
-Vector2D::Vector2D(double x, double y) : _x(x), _y(y) {
-  _label = "vec_" + std::to_string(++_vector_count);
-}
+Vector2D::Vector2D(double x, double y) : 
+  Vector2D("vec_" + std::to_string(++_vector_count), x, y) {}
 
-Vector2D::Vector2D(double x, double y, const std::string &label)
+Vector2D::Vector2D(const std::string label, double x, double y)
     : _x(x), _y(y), _label(label) {}
 
 double Vector2D::x() const { return _x; }
 
 double Vector2D::y() const { return _y; }
+
+std::string Vector2D::label() const { return _label; }
 
 double Vector2D::norm() const { return std::hypot(_x, _y); }
 
@@ -35,6 +37,11 @@ Vector2D Vector2D::operator-(const Vector2D &other) const {
 
 Vector2D Vector2D::operator*(double scalar) const {
   return Vector2D(_x * scalar, _y * scalar);
+}
+
+void Vector2D::set(double x, double y) {
+  _x = x;
+  _y = y;
 }
 
 std::string Vector2D::to_csv_row() const {
