@@ -31,6 +31,8 @@ endmacro()
 create_example(example_1 SRCS test.cpp)
 create_example(example_2 SRCS test.cpp)
 create_example(example_3 SRCS example_3.cpp Vector2D.cpp)
+create_example(example_4 SRCS example_4.cpp)
+target_compile_options(ex_example_4 PRIVATE "-O0")
 
 include(CTest)
 
