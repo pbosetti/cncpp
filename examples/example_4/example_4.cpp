@@ -1,6 +1,6 @@
 #include <iostream>
 
-// One possible implementation of sqare by copying both
+// One possible implementation of square by copying both
 // the argument and the returned value
 double square_copy(double number) {
   return number * number;
@@ -88,7 +88,7 @@ std::string &get_name() {
 void break_code() {
   // Here you can try the difference between initializing 
   // x_ptr to nullptr or not. By setting it to nullptr
-  // we will not enter in the if, instead if we do not inialize it,
+  // we will not enter in the if, instead if we do not initialize it,
   // it is POSSIBLE (different pc or even the same pc in different times can
   // behave differently) that we enter the if and we make the program crash
   // when dereferencing the pointer
