@@ -28,5 +28,5 @@ protected:
 
 private:
   double _k = 100.0; // Spring stiffness N/m
-  double _m = 3.0;   // Mass
+  double _m = 3.0;   // Mass Kg
 };
