@@ -3,6 +3,7 @@
 #include "types.hpp"
 
 #include <fstream>
+#include <map>
 #include <string>
 
 class Model {
@@ -13,6 +14,19 @@ public:
    * @param n_inputs Number of inputs
    */
   Model(std::string name, size_t n_states, size_t n_inputs);
+
+  /**
+   * @brief Loads the configuration from: path/<model_name>.txt
+   * @param path the folder where to find the <model_name>.txt
+   */
+  bool load_config(std::string path);
+  /**
+   * @brief Saves the configuration in an already existing file called:
+   * path/<model_name>.txt
+   * @param path the folder where to find the <model_name>.txt
+   * @return true if it was possible to create and store the configuration
+   */
+  bool save_config(std::string path);
 
   /**
    * @brief Set the initial state of the model.
@@ -26,6 +40,23 @@ public:
    * @param inputs vector holding the input variables (forces/controls)
    */
   void step(double dt, Vec inputs);
+
+  /**
+   * @brief performs an integration step of the model.
+   * @param dt integration step in seconds
+   * @param inputs vector holding the input variables (forces/controls)
+   * @param integrator function that performs the integration.
+   */
+  void step(double dt, Vec inputs,
+            std::function<void(double dt, Vec states, Vec x_dot)> integrator) {
+    Vec x_dot = compute_x_dot(dt, inputs, _states);
+
+    integrator(dt, _states, x_dot);
+
+    _t += dt;
+    // Log current states
+    log();
+  }
 
   /**
    * @brief Enable and starts logging in CSV format.
@@ -59,6 +90,23 @@ protected:
    * @returns vector of states derivatives
    */
   virtual Vec compute_x_dot_impl(double dt, Vec inputs, Vec states) = 0;
+
+  /**
+   * @brief From the config, update the model parameters
+   * @param config the config itself
+   * @return if successful or not
+   */
+  virtual bool set_config(std::map<std::string, double> config) {
+    return true;
+  };
+
+  /**
+   * @brief Gets the default configuration if available
+   * @return either nullopt (aka empty optional) or the config.
+   */
+  virtual std::optional<std::map<std::string, double>> get_config() {
+    return std::nullopt;
+  }
 
 private:
   /**
