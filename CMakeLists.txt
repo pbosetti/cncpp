@@ -130,6 +130,11 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 
+add_library(cncpp STATIC ${SRC_FILES})
+target_include_directories(cncpp PUBLIC ${SRC_DIR})
+target_link_libraries(cncpp PUBLIC fmt::fmt)
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/tests)
 
 #   ___           _        _ _
 #  |_ _|_ __  ___| |_ __ _| | |
