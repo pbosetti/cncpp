@@ -4,10 +4,12 @@ Point class
 
 #include "point.hpp"
 #include <cmath>
+#include <unistd.h>
 #include <fmt/color.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <sstream>
+#include <iostream>
 
 using namespace std;
 using namespace cncpp;
@@ -21,9 +23,9 @@ Point::Point(opt_data_t x, opt_data_t y, opt_data_t z) : _x(x), _y(y), _z(z) {}
 
 string Point::desc(bool colored) const {
   stringstream ss;
-  ss << "[" << coord_str(_x, col_t(color::red)) << ", "
-     << coord_str(_y, col_t(color::green)) << ", "
-     << coord_str(_z, col_t(color::blue)) << "]";
+  ss << "[" << coord_str(_x, colored ? col_t(color::red) : nullopt) << ", "
+     << coord_str(_y, colored ? col_t(color::green) : nullopt) << ", "
+     << coord_str(_z, colored ? col_t(color::blue) : nullopt) << "]";
   return ss.str();
 }
 
@@ -77,6 +79,13 @@ Point Point::operator+(Point const &o) const {
 
 // ACCESSORS
 
+std::vector<data_t> Point::vec() const {
+  if (!is_complete()) {
+    throw runtime_error("Point is not complete, can't convert to vector");
+  }
+  return {_x.value(), _y.value(), _z.value()};
+}
+
 // UTILITY FUNCTIONS
 
 static string coord_str(opt_data_t const &coord, col_t const &color) {
@@ -91,3 +100,30 @@ static string coord_str(opt_data_t const &coord, col_t const &color) {
   }
   return str;
 }
+
+std::ostream &cncpp::operator<<(std::ostream &os, const Point &v) {
+  bool is_terminal = (&os == &std::cout && isatty(STDOUT_FILENO)) ||
+                     (&os == &std::cerr && isatty(STDERR_FILENO));
+  os << v.desc(is_terminal);
+  return os;
+}
+
+
+#ifdef CNCPP_TEST_MAIN
+#include <iostream>
+
+int main() {
+  Point p1(1.0, 2.0, 3.0);
+  cout << "p1: " << p1 << endl;
+  Point p2(4.0, 5.0);
+  cout << "p2: " << p2 << endl;
+  p2.modal(p1);
+  cout << "p2 after modal with p1: " << p2 << endl;
+  Point p3 = p1 + p2;
+  cout << "p3 (p1 + p2): " << p3 << endl;
+  cout << "p3 length: " << p3.length() << endl;
+  cerr << "p3 delta p1: " << p3.delta(p1) << endl;
+  return 0;
+}
+
+#endif // CNCPP_TEST_MAIN
