@@ -1,5 +1,10 @@
 /*
-Point class
+  ____       _       _          _
+ |  _ \ ___ (_)_ __ | |_    ___| | __ _ ___ ___
+ | |_) / _ \| | '_ \| __|  / __| |/ _` / __/ __|
+ |  __/ (_) | | | | | |_  | (__| | (_| \__ \__ \
+ |_|   \___/|_|_| |_|\__|  \___|_|\__,_|___/___/
+
 
 Represents a 3-D coordinate position in space with
 optional components and basic operations
@@ -17,13 +22,13 @@ namespace cncpp {
 class Point {
 
 public:
-  // LIFECYCLE
+  // LIFECYCLE =================================================================
   Point(opt_data_t x = std::nullopt, opt_data_t y = std::nullopt,
         opt_data_t z = std::nullopt);
   std::string desc(bool colored = true) const;
   void reset();
 
-  // OPERATORS/OPERATIONS
+  // OPERATORS/OPERATIONS ======================================================
   Point delta(Point const &other) const;
   data_t length() const;
   void modal(Point const &other);
@@ -33,7 +38,7 @@ public:
 
   bool is_complete() const { return _x && _y && _z; }
 
-  // ACCESSORS
+  // ACCESSORS =================================================================
   data_t x() const { return _x.value(); }
   data_t y() const { return _y.value(); }
   data_t z() const { return _z.value(); }
@@ -43,8 +48,7 @@ public:
   data_t z(data_t v) { return (_z = v).value(); }
   std::vector<data_t> vec() const;
 
-  friend 
-  std::ostream &operator<<(std::ostream &os, const Point &v);
+  friend std::ostream &operator<<(std::ostream &os, const Point &v);
 
 private:
   opt_data_t _x = std::nullopt;

@@ -16,7 +16,7 @@ Block class implementation
  using namespace cncpp;
 
 
- // LIFECYCLE
+ // LIFECYCLE ==================================================================
 Block::Block(string line) : _line(line), _n(0) {}
 
 Block::Block(string line, Block &prev) : Block(line) {
@@ -44,7 +44,7 @@ Block &Block::operator=(Block &b) {
 
 
 
- // OPERATIONS/OPERATORS
+ // OPERATIONS/OPERATORS =======================================================
 
 Block &Block::parse(const Machine *m) {
   _machine = m;
@@ -127,13 +127,13 @@ void Block::walk(std::function<void(Block &b, data_t t, data_t l, data_t s)> fun
 
 
 
- // ACCESSORS
+ // ACCESSORS ==================================================================
 
 
 
 
 
- // PRIVATE METHODS
+ // PRIVATE METHODS ============================================================
 
 bool Block::parse_token(string &token) {
   bool res = true;

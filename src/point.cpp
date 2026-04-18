@@ -1,15 +1,20 @@
 /*
-Point class
+  ____       _       _          _
+ |  _ \ ___ (_)_ __ | |_    ___| | __ _ ___ ___
+ | |_) / _ \| | '_ \| __|  / __| |/ _` / __/ __|
+ |  __/ (_) | | | | | |_  | (__| | (_| \__ \__ \
+ |_|   \___/|_|_| |_|\__|  \___|_|\__,_|___/___/
+
 */
 
 #include "point.hpp"
 #include <cmath>
-#include <unistd.h>
 #include <fmt/color.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
-#include <sstream>
 #include <iostream>
+#include <sstream>
+#include <unistd.h>
 
 using namespace std;
 using namespace cncpp;
@@ -18,7 +23,7 @@ using col_t = optional<color>;
 
 static string coord_str(opt_data_t const &coord, col_t const &color = nullopt);
 
-// LIFECYCLE
+// LIFECYCLE ===================================================================
 Point::Point(opt_data_t x, opt_data_t y, opt_data_t z) : _x(x), _y(y), _z(z) {}
 
 string Point::desc(bool colored) const {
@@ -35,7 +40,7 @@ void Point::reset() {
   _z.reset();
 }
 
-// OPERATORS/OPERATIONS
+// OPERATORS/OPERATIONS ========================================================
 Point Point::delta(Point const &o) const {
   if (!is_complete() || !o.is_complete()) {
     throw runtime_error("Points are not complete, can't do delta");
@@ -77,7 +82,7 @@ Point Point::operator+(Point const &o) const {
   return out;
 }
 
-// ACCESSORS
+// ACCESSORS ===================================================================
 
 std::vector<data_t> Point::vec() const {
   if (!is_complete()) {
@@ -86,7 +91,7 @@ std::vector<data_t> Point::vec() const {
   return {_x.value(), _y.value(), _z.value()};
 }
 
-// UTILITY FUNCTIONS
+// UTILITY FUNCTIONS ===========================================================
 
 static string coord_str(opt_data_t const &coord, col_t const &color) {
   string str;
@@ -107,7 +112,6 @@ std::ostream &cncpp::operator<<(std::ostream &os, const Point &v) {
   os << v.desc(is_terminal);
   return os;
 }
-
 
 #ifdef CNCPP_TEST_MAIN
 #include <iostream>
