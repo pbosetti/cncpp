@@ -19,9 +19,14 @@ can have multiple parameters.
 
 namespace cncpp {
 
-class Machine {};
+class Machine {
+  public:
+  Point zero() const { return Point(0,0,0); }
+  data_t tq() const { return 0.001; }
+  data_t A() const { return 1000; }
+};
 
-class Block {
+class Block : public Object {
 public:
   enum class BlockType { RAPID = 0, LINE, CWA, CCWA, NO_MOTION };
 
@@ -90,7 +95,11 @@ private:
   Machine const *_machine = nullptr;      // machine we're running on
 
   // UTILITIES =================================================================
-  bool parse_token(string &token);
+  bool parse_token(std::string &token);
+  Point start_point();
+  void compute();
+  void calc_arc();
+
 
 }; // class Block
 

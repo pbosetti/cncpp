@@ -106,13 +106,6 @@ static string coord_str(opt_data_t const &coord, col_t const &color) {
   return str;
 }
 
-std::ostream &cncpp::operator<<(std::ostream &os, const Point &v) {
-  bool is_terminal = (&os == &std::cout && isatty(STDOUT_FILENO)) ||
-                     (&os == &std::cerr && isatty(STDERR_FILENO));
-  os << v.desc(is_terminal);
-  return os;
-}
-
 #ifdef CNCPP_TEST_MAIN
 #include <iostream>
 
