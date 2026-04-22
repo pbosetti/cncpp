@@ -119,6 +119,39 @@ link_directories(
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 
+#  ____                       _             _        _   _
+# |  _ \  ___   ___ _   _ _ __ ___   ___ _ __ | |_ __ _| |_(_) ___  _ __
+# | | | |/ _ \ / __| | | | '_ ` _ \ / _ \ '_ \| __/ _` | __| |/ _ \| '_ \
+# | |_| | (_) | (__| |_| | | | | | |  __/ | | | || (_| | |_| | (_) | | | |
+# |____/ \___/ \___|\__,_|_| |_| |_|\___|_| |_|\__\__,_|\__|_|\___/|_| |_|
+
+find_package(Doxygen)
+
+if(DOXYGEN_FOUND)
+  set(DOXYGEN_PROJECT_NAME "${PROJECT_NAME}")
+  set(DOXYGEN_PROJECT_VERSION "${PROJECT_VERSION}")
+  set(DOXYGEN_INPUT_DIR "${SRC_DIR}")
+  set(DOXYGEN_OUTPUT_DIR "${CMAKE_CURRENT_LIST_DIR}/doc")
+  set(DOXYGEN_FILE_PATTERNS "*.hpp")
+  set(DOXYGEN_RECURSIVE YES)
+
+  configure_file(
+    ${CMAKE_CURRENT_LIST_DIR}/doc/Doxyfile.in
+    ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+    @ONLY
+  )
+
+  add_custom_target(doc
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${DOXYGEN_OUTPUT_DIR}
+    COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    COMMENT "Generating API documentation with Doxygen"
+    VERBATIM
+  )
+else()
+  message(STATUS "Doxygen not found: 'doc' target will not be available")
+endif()
+
 #   _____                    _
 #  |_   _|_ _ _ __ __ _  ___| |_ ___
 #    | |/ _` | '__/ _` |/ _ \ __/ __|
