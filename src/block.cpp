@@ -25,7 +25,7 @@ Block::Block(string line, Block &prev) : Block(line) { *this = prev; }
 
 Block::~Block() { cerr << "Block " << _line << " destroyed." << endl; }
 
-std::string Block::desc(bool colored) {
+std::string Block::desc(bool colored) const {
   if (!_parsed) {
     throw runtime_error("Block not parsed yet");
   }
@@ -172,6 +172,42 @@ void Block::walk(
     t += _machine->tq();
   }
 }
+
+
+// Profile struct methods ======================================================
+
+data_t Block::Profile::lambda(data_t t, data_t &s) {
+  data_t r;
+  current_acc = 0.0;
+
+  if (t < 0) {
+    r = 0.0;
+    s = 0.0;
+  } else if (t < dt_1) {
+    r = a * pow(t , 2) / 2.0;
+    s = a * t;
+    current_acc = a;
+  } else if (t < dt_1 + dt_m) {
+    r = f * (dt_1 / 2.0 + (t - dt_1));
+    s = f;
+    current_acc = 0;
+  } else if (t < dt_1 + dt_m + dt_2) {
+    data_t t_2 = dt_1 + dt_m;
+    r = f * dt_1 / 2.0 + f * (dt_m + t - t_2) + 
+        d / 2.0 * (pow(t, 2) + pow(t_2, 2)) - d * t * t_2;
+    s = f + d * (t - t_2);
+    current_acc = d;
+  } else {
+    r = l;
+    s = 0.0;
+  }
+
+  r /= l;
+  s *= 60;
+  return r;
+}
+
+
 
 // PRIVATE METHODS ============================================================
 
@@ -332,3 +368,33 @@ void Block::calc_arc() {
   // from now on, it's safer to drop the sign of radius angle
   _r = fabs(_r);
 }
+
+
+
+/*
+  _____         _                     _       
+ |_   _|__  ___| |_   _ __ ___   __ _(_)_ __  
+   | |/ _ \/ __| __| | '_ ` _ \ / _` | | '_ \ 
+   | |  __/\__ \ |_  | | | | | | (_| | | | | |
+   |_|\___||___/\__| |_| |_| |_|\__,_|_|_| |_|
+                                              
+*/
+
+#ifdef CNCPP_TEST_BLOCK
+#include <iostream>
+
+int main() {
+  Machine m{};
+
+  Block b1{"N01 G00 X100 Y100 z200"};
+  Block b2{"N02 G00 Z150", b1.parse(&m)};
+  Block b3{"n03 G01 x50 y20 T1 f5000 s200 M3", b2.parse(&m)};
+  b3.parse(&m); 
+  cout << b1 << endl
+       << b2 << endl
+       << b3 << endl;
+
+  return 0;
+}
+
+#endif // CNCPP_TEST_BLOCK

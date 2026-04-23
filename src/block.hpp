@@ -22,8 +22,18 @@ namespace cncpp {
 class Machine {
   public:
   Point zero() const { return Point(0,0,0); }
-  data_t tq() const { return 0.001; }
+  data_t tq() const { return _tq; }
   data_t A() const { return 1000; }
+  data_t error() const { return 1e-3; }
+  data_t quantize(data_t t, data_t &dq) const {
+    data_t q;
+    q = static_cast<size_t>((t / _tq) + 1) * _tq;
+    dq = q - t;
+    return q;
+  }
+
+  private:
+  data_t _tq = 0.001; // 1 ms
 };
 
 class Block : public Object {
@@ -31,11 +41,11 @@ public:
   enum class BlockType { RAPID = 0, LINE, CWA, CCWA, NO_MOTION };
 
   struct Profile {
-    data_t a, d;
-    data_t f, l;
-    data_t fs, fe;
-    data_t dt_1, dt_m, dt_2;
-    data_t dt;
+    data_t a = 0.0, d = 0.0;
+    data_t f = 0.0, l = 0.0;
+    data_t fs = 0.0, fe = 0.0;
+    data_t dt_1 = 0.0, dt_m = 0.0, dt_2 = 0.0;
+    data_t dt = 0.0;
     data_t current_acc; // along an arc
     data_t lambda(data_t t, data_t &s);
   };
@@ -44,7 +54,7 @@ public:
   Block(std::string line);
   Block(std::string line, Block &prev);
   ~Block();
-  std::string desc(bool colored = true);
+  std::string desc(bool colored = true) const override;
   Block &operator=(Block &b);
 
   // OPERATIONS/OPERATORS ======================================================

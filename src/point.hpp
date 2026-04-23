@@ -43,7 +43,7 @@ public:
    * @param colored If true, enable colored formatting in the output string.
    * @return String description of the point.
    */
-   std::string desc(bool colored = true) const;
+   std::string desc(bool colored = true) const override;
 
   /**
    * @brief Resets all coordinates to std::nullopt.

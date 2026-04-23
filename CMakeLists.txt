@@ -170,8 +170,12 @@ target_link_libraries(cncpp PUBLIC fmt::fmt)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/tests)
 
 add_executable(point_test ${SRC_DIR}/point.cpp)
-target_compile_definitions(point_test PRIVATE CNCPP_TEST_MAIN)
+target_compile_definitions(point_test PRIVATE CNCPP_TEST_POINT)
 target_link_libraries(point_test PRIVATE cncpp fmt::fmt)
+
+add_executable(block_test ${SRC_DIR}/block.cpp)
+target_compile_definitions(block_test PRIVATE CNCPP_TEST_BLOCK)
+target_link_libraries(block_test PRIVATE cncpp fmt::fmt)
 
 #   ___           _        _ _
 #  |_ _|_ __  ___| |_ __ _| | |

@@ -30,7 +30,7 @@ namespace cncpp {
 
 class Object {
 public:
-  virtual std::string desc(bool colored = true) = 0;
+  virtual std::string desc(bool colored = true) const = 0;
 
   /**
    * @brief Streams a textual representation of the point.
@@ -41,7 +41,7 @@ public:
   friend std::ostream &operator<<(std::ostream &os, const Object &v);
 };
 
-std::ostream &operator<<(std::ostream &os, const Object &v) {
+inline std::ostream &operator<<(std::ostream &os, const Object &v) {
   bool is_terminal = (&os == &std::cout && isatty(STDOUT_FILENO)) ||
                      (&os == &std::cerr && isatty(STDERR_FILENO));
   os << v.desc(is_terminal);
