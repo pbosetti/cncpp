@@ -390,9 +390,18 @@ int main() {
   Block b2{"N02 G00 Z150", b1.parse(&m)};
   Block b3{"n03 G01 x50 y20 T1 f5000 s200 M3", b2.parse(&m)};
   b3.parse(&m); 
-  cout << b1 << endl
+  cerr << b1 << endl
        << b2 << endl
        << b3 << endl;
+
+  // walk along b3 and routinely print the time, coordinates, and feedrate
+  // first: print a header line
+  cout << "t,lambda,s,x,y,z" << endl;
+  b3.walk([&](Block &b, data_t t, data_t l, data_t s){
+    Point pos = b.interpolate(l);
+    cout << format("{:},{:},{:},{:},{:},{:}", t, l, s, pos.x(), pos.y(), pos.z()) << endl;
+  });
+
 
   return 0;
 }
