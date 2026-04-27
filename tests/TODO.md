@@ -1,6 +1,6 @@
 # Unit tests to be implemented
 
-Skip sections and subsections marked as `[DONE]` or `[IGNORE]` in the code, as they have already been implemented.
+Skip sections and subsections marked as `[DONE]` or `[IGNORE]` in the code, as they have already been implemented. When a subsection is marked as `[DONE]` or `[IGNORE]`, it means that all the tests in that subsection and its sub-subsections have been implemented or must be ignored
 
 ## Block class
 
