@@ -82,14 +82,7 @@ include_directories(
   ${rang_SOURCE_DIR}/include
   ${json_SOURCE_DIR}/include
   ${yaml-cpp_SOURCE_DIR}/include
-  ${mosquitto_SOURCE_DIR}/include
-  ${mosquitto_SOURCE_DIR}/lib/cpp
   # /opt/homebrew/include
-)
-
-link_directories(
-  ${mosquitto_BINARY_DIR}/lib
-  ${mosquitto_BINARY_DIR}/lib/cpp
 )
 
 #    ____             __ _                          _    __ _ _
