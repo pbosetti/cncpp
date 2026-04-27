@@ -9,6 +9,7 @@ project(CNCpp VERSION ${VERSION} LANGUAGES CXX)
 #  |____/ \___|\__|   \_/ \__,_|_|  |___/
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 if(CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build." FORCE)
