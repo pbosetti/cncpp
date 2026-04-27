@@ -26,8 +26,8 @@ Program::Program(Machine *m) : _machine(m) {}
 Program::~Program() {}
 
 
-std::string Program::desc(bool colored = true) const {
-
+std::string Program::desc(bool colored) const {
+ return "";
 }
 
 void Program::load(const string &filename, bool append) {
