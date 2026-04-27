@@ -34,7 +34,7 @@ void Program::load(const string &filename, bool append) {
   _filename = filename;
 
   ifstream file(_filename);
-  if (! file.is-open()) {
+  if (! file.is_open()) {
     throw runtime_error("Could not open " + _filename);
   }
   if (!append) reset();

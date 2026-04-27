@@ -162,6 +162,8 @@ public:
   const Profile &profile() const { return _profile; }
   /** @brief Returns true when the block has been parsed. */
   bool parsed() const { return _parsed; }
+  /** @brief Returns the radius of the arc. */
+  data_t r() const { return _r; }
 
   /// Previous block in the linked sequence, or nullptr.
   Block *prev = nullptr;
