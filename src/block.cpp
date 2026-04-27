@@ -166,7 +166,7 @@ Point Block::interpolate(data_t time, data_t &lambda, data_t &speed) {
 void Block::walk(
     std::function<void(Block &b, data_t t, data_t l, data_t s)> func) {
   data_t t = 0.0, l, s;
-  while (t < _profile.dt) {
+  while (t <= _profile.dt) {
     l = lambda(t, s);
     func(*this, t, l, s);
     t += _machine->tq();
