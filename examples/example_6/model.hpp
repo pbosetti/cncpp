@@ -5,6 +5,8 @@
 #include <fstream>
 #include <map>
 #include <string>
+#include <functional>
+#include <optional>
 
 class Model {
 public:
