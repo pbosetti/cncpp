@@ -23,7 +23,7 @@ Block::Block(string line) : _line(line), _n(0) {}
 
 Block::Block(string line, Block &prev) : Block(line) { *this = prev; }
 
-Block::~Block() { cerr << "Block " << _line << " destroyed." << endl; }
+Block::~Block() = default;
 
 std::string Block::desc(bool colored) const {
   if (!_parsed) {
@@ -173,7 +173,6 @@ void Block::walk(
   }
 }
 
-
 // Profile struct methods ======================================================
 
 data_t Block::Profile::lambda(data_t t, data_t &s) {
@@ -184,7 +183,7 @@ data_t Block::Profile::lambda(data_t t, data_t &s) {
     r = 0.0;
     s = 0.0;
   } else if (t < dt_1) {
-    r = a * pow(t , 2) / 2.0;
+    r = a * pow(t, 2) / 2.0;
     s = a * t;
     current_acc = a;
   } else if (t < dt_1 + dt_m) {
@@ -193,7 +192,7 @@ data_t Block::Profile::lambda(data_t t, data_t &s) {
     current_acc = 0;
   } else if (t < dt_1 + dt_m + dt_2) {
     data_t t_2 = dt_1 + dt_m;
-    r = f * dt_1 / 2.0 + f * (dt_m + t - t_2) + 
+    r = f * dt_1 / 2.0 + f * (dt_m + t - t_2) +
         d / 2.0 * (pow(t, 2) + pow(t_2, 2)) - d * t * t_2;
     s = f + d * (t - t_2);
     current_acc = d;
@@ -206,8 +205,6 @@ data_t Block::Profile::lambda(data_t t, data_t &s) {
   s *= 60;
   return r;
 }
-
-
 
 // PRIVATE METHODS ============================================================
 
@@ -319,14 +316,12 @@ void Block::compute() {
 }
 
 void Block::calc_arc() {
-  data_t x0, y0, z0, xc, yc, xf, yf, zf;
+  data_t x0, y0, xc, yc, xf, yf;
   Point p0 = start_point();
   x0 = p0.x();
   y0 = p0.y();
-  z0 = p0.z();
   xf = _target.x();
   yf = _target.y();
-  zf = _target.z();
 
   if (_r) { // if the radius is given
     data_t dx = _delta.x();
@@ -339,9 +334,9 @@ void Block::calc_arc() {
     int s = (_r > 0) - (_r < 0);
     s *= (_type == BlockType::CCWA ? 1 : -1);
     data_t d = hypot(dx, dy);
-    data_t sq = sqrt(pow(_r, 2) - pow(d, 2)/4.0) / d;
-    xc = (x0 + xf)/2.0 - s * dy * sq;
-    yc = (y0 + yf)/2.0 + s * dx * sq;
+    data_t sq = sqrt(pow(_r, 2) - pow(d, 2) / 4.0) / d;
+    xc = (x0 + xf) / 2.0 - s * dy * sq;
+    yc = (y0 + yf) / 2.0 + s * dx * sq;
 
   } else { // if I,J are given
     data_t r2;
@@ -370,15 +365,13 @@ void Block::calc_arc() {
   _r = fabs(_r);
 }
 
-
-
 /*
-  _____         _                     _       
- |_   _|__  ___| |_   _ __ ___   __ _(_)_ __  
-   | |/ _ \/ __| __| | '_ ` _ \ / _` | | '_ \ 
+  _____         _                     _
+ |_   _|__  ___| |_   _ __ ___   __ _(_)_ __
+   | |/ _ \/ __| __| | '_ ` _ \ / _` | | '_ \
    | |  __/\__ \ |_  | | | | | | (_| | | | | |
    |_|\___||___/\__| |_| |_| |_|\__,_|_|_| |_|
-                                              
+
 */
 
 #ifdef CNCPP_TEST_BLOCK
@@ -390,19 +383,18 @@ int main() {
   Block b1{"N01 G00 X100 Y100 z200"};
   Block b2{"N02 G00 Z150", b1.parse(&m)};
   Block b3{"n03 G01 x50 y20 T1 f5000 s200 M3", b2.parse(&m)};
-  b3.parse(&m); 
-  cerr << b1 << endl
-       << b2 << endl
-       << b3 << endl;
+  b3.parse(&m);
+  cerr << b1 << endl << b2 << endl << b3 << endl;
 
   // walk along b3 and routinely print the time, coordinates, and feedrate
   // first: print a header line
   cout << "t,lambda,s,x,y,z" << endl;
-  b3.walk([&](Block &b, data_t t, data_t l, data_t s){
+  b3.walk([&](Block &b, data_t t, data_t l, data_t s) {
     Point pos = b.interpolate(l);
-    cout << format("{:},{:},{:},{:},{:},{:}", t, l, s, pos.x(), pos.y(), pos.z()) << endl;
+    cout << format("{:},{:},{:},{:},{:},{:}", t, l, s, pos.x(), pos.y(),
+                   pos.z())
+         << endl;
   });
-
 
   return 0;
 }

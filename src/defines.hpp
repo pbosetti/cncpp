@@ -1,17 +1,17 @@
 /*
-   ____                                            _       __ _                 
-  / ___|___  _ __ ___  _ __ ___   ___  _ __     __| | ___ / _(_)_ __   ___  ___ 
+   ____                                            _       __ _
+  / ___|___  _ __ ___  _ __ ___   ___  _ __     __| | ___ / _(_)_ __   ___  ___
  | |   / _ \| '_ ` _ \| '_ ` _ \ / _ \| '_ \   / _` |/ _ \ |_| | '_ \ / _ \/ __|
  | |__| (_) | | | | | | | | | | | (_) | | | | | (_| |  __/  _| | | | |  __/\__ \
   \____\___/|_| |_| |_|_| |_| |_|\___/|_| |_|  \__,_|\___|_| |_|_| |_|\___||___/
-                                                                                
+
 Author: Paolo Bosetti, 2026
 */
 
 #pragma once
 
-#include <optional>
 #include <iostream>
+#include <optional>
 #include <sstream>
 #include <unistd.h>
 
@@ -30,6 +30,8 @@ namespace cncpp {
 
 class Object {
 public:
+  virtual ~Object() = default;
+
   virtual std::string desc(bool colored = true) const = 0;
 
   /**
