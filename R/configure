@@ -1,0 +1,16 @@
+#!/bin/sh
+
+ROOT_DIR=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
+
+FMT_INCLUDE="$ROOT_DIR/build/_deps/fmt-src/include"
+JSON_INCLUDE="$ROOT_DIR/build/_deps/json-src/include"
+
+if [ ! -f "$FMT_INCLUDE/fmt/format.h" ] ||
+   [ ! -f "$JSON_INCLUDE/nlohmann/json.hpp" ]; then
+  echo "cncppr requires CNCpp CMake dependencies before installation." >&2
+  echo "Run this from the repository root first:" >&2
+  echo "  cmake -B build -G Ninja" >&2
+  exit 1
+fi
+
+exit 0
