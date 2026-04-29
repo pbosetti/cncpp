@@ -48,6 +48,10 @@ void Program::load(const string &filename, bool append) {
   file.close();
 }
 
+// NOTE on begin/end and front/back:
+// - begin() and end() are used for iteration and return iterators
+// - front() and back() are used for accessing the first and last elements directly
+
 Program &Program::operator<<(const std::string &line) {
   if (size() > 0) { // this is not the first block
     emplace_back(line, back());
