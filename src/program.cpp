@@ -15,7 +15,6 @@ using namespace std;
 using namespace cncpp;
 
 
-
 Program::Program(const std::string &f, Machine *m) : _filename(f), _machine(m) {
   load(_filename);
 }
@@ -27,7 +26,11 @@ Program::~Program() {}
 
 
 std::string Program::desc(bool colored) const {
- return "";
+  ostringstream ss;
+  for (auto &current_block : *this) {
+    ss << current_block << endl;
+  }
+  return ss.str();
 }
 
 void Program::load(const string &filename, bool append) {
@@ -44,4 +47,34 @@ void Program::load(const string &filename, bool append) {
     *this << line;
   }
   file.close();
+}
+
+Program &Program::operator<<(const std::string &line) {
+  if (size() > 0) { // this is not the first block
+    emplace_back(line, back());
+  } else { // this is the first block
+    emplace_back(line);
+  }
+  back().parse(_machine);
+  return *this;
+}
+
+block_iterator Program::load_next() {
+  if (_current == end()) {
+    _current = begin();
+  } else {
+    _current++;
+  }
+  _done = (_current == end());
+  return _current;
+}
+
+void Program::rewind() {
+  _current = begin(); 
+  _done = false; 
+}
+
+void Program::reset() {
+  clear();
+  rewind();
 }

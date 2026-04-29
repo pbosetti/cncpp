@@ -17,6 +17,7 @@ Class representing a G-code program, as a list of Block instances
 #include <list>
 
 namespace cncpp {
+using block_iterator = std::list<Block>::iterator;
 
 class Program : public Object, public std::list<Block> {
   public:
@@ -30,14 +31,13 @@ class Program : public Object, public std::list<Block> {
   // OPERATORS/OPERATIONS ======================================================
   void load(const std::string &filename, bool append = false);
   Program &operator<<(const std::string &line);
-  using iterator = std::list<Block>::iterator;
   iterator load_next();
   void rewind();
   void reset();
 
   // ACCESSORS =================================================================
-  iterator current();
-  bool done();
+  block_iterator current() { return _current; }
+  bool done() { return _done; };
 
   private:
   Machine *_machine = nullptr;
