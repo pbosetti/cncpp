@@ -160,6 +160,10 @@ add_executable(program_test ${SRC_DIR}/program.cpp)
 target_compile_definitions(program_test PRIVATE CNCPP_TEST_PROGRAM)
 target_link_libraries(program_test PRIVATE cncpp fmt::fmt)
 
+add_executable(machine_test ${SRC_DIR}/machine.cpp)
+target_compile_definitions(machine_test PRIVATE CNCPP_TEST_MACHINE)
+target_link_libraries(machine_test PRIVATE cncpp fmt::fmt)
+
 #   ___           _        _ _
 #  |_ _|_ __  ___| |_ __ _| | |
 #   | || '_ \/ __| __/ _` | | |
