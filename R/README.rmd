@@ -14,14 +14,27 @@ You need to install R and some base packages on the linux OS:
 
 ```sh
 sudo apt update
-sudo apt install r-base r-core 
+sudo apt install r-base r-base-core r-base-dev r-cran-tidyverse r-cran-rcpp
 ```
+
+Then enter the R shell and **install at least one package**:
+
+```sh
+$ R
+> install("adas.utils")
+> q()
+```
+
+This is needed to setup the packages installation paths.
+
+Then I suggest to install in Windows the [Positron](https://positron.posit.co/) IDE: it is a VSCode clone that has embedded R and Python interface, similar to RStudio but it can work with the intepreter running within WSL, while the GUI runs on Windows.
+
 
 ## On MacOS
 
-You need a working installation of R (<https://www.r-project.org/>).
+You need a working installation of R (<https://www.r-project.org/>). Then you can use RStudio or Positron (see the above section) as you prefer.
 
-## Installation
+## Wrapper installation
 
 Install from the **repository root** after CMake has fetched the C++ dependencies:
 
@@ -32,15 +45,12 @@ R CMD INSTALL R
 
 ## Usage
 
-Use the R interpreter:
-
-* If you are on macOS or on Linux, you can use RStudio
-* If you are on Windows/WSL, you cannot use the RStudio installed on the Windows side, because you need an R interpreter running in the Linux WSL environment.
 
 Example:
 
-```r
+```{r}
 library(cncppr)
+library(tidyverse)
 
 p <- Point(1, 2, 3)
 point_length(p)
@@ -53,4 +63,13 @@ block_parse(b1)
 
 block_summary(b1)
 head(block_walk(b1))
+
+m <- Machine()
+prg <- Program("test.g", m)
+df <- program_walk(df)
+df %>%
+  ggplot(aes(x=time, y=lambda)) +
+  geom_line()
+
+
 ```
