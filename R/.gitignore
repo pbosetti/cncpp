@@ -1,0 +1,5 @@
+src/*.dll
+src/*.dylib
+src/*.o
+src/*.so
+src/symbols.rds
