@@ -10,20 +10,45 @@
 
 namespace {
 
+using RMachineHandle = std::shared_ptr<cncpp::Machine>;
+
 struct RBlock {
   explicit RBlock(std::string line)
       : block(std::move(line)), machine(std::make_shared<cncpp::Machine>()) {}
+
+  RBlock(std::string line, RMachineHandle machine)
+      : block(std::move(line)), machine(std::move(machine)) {}
 
   RBlock(std::string line, std::shared_ptr<RBlock> previous_block)
       : block(std::move(line), previous_block->block),
         machine(previous_block->machine), previous(std::move(previous_block)) {}
 
   cncpp::Block block;
-  std::shared_ptr<cncpp::Machine> machine;
+  RMachineHandle machine;
   std::shared_ptr<RBlock> previous;
 };
 
 using RBlockHandle = std::shared_ptr<RBlock>;
+
+struct RProgram {
+  explicit RProgram(RMachineHandle machine)
+      : machine(std::move(machine)), program(this->machine.get()) {
+    current = program.end();
+  }
+
+  RProgram(std::string filename, RMachineHandle machine)
+      : machine(std::move(machine)), program(this->machine.get()) {
+    program.load(filename);
+    current = program.end();
+  }
+
+  RMachineHandle machine;
+  cncpp::Program program;
+  cncpp::block_iterator current;
+  bool started = false;
+};
+
+using RProgramHandle = std::shared_ptr<RProgram>;
 
 opt_data_t optional_scalar(SEXP value, const char *name) {
   if (Rf_isNull(value)) {
@@ -37,6 +62,18 @@ opt_data_t optional_scalar(SEXP value, const char *name) {
   return static_cast<data_t>(vector[0]);
 }
 
+std::optional<std::string> optional_string(SEXP value, const char *name) {
+  if (Rf_isNull(value)) {
+    return std::nullopt;
+  }
+
+  Rcpp::CharacterVector vector(value);
+  if (vector.size() != 1 || Rcpp::CharacterVector::is_na(vector[0])) {
+    Rcpp::stop("%s must be NULL or a non-missing character scalar", name);
+  }
+  return Rcpp::as<std::string>(vector[0]);
+}
+
 cncpp::Point &point_ref(SEXP point) {
   if (!Rf_inherits(point, "cncpp_point")) {
     Rcpp::stop("Expected a cncpp_point external pointer");
@@ -45,6 +82,18 @@ cncpp::Point &point_ref(SEXP point) {
   Rcpp::XPtr<cncpp::Point> ptr(point);
   if (ptr.get() == nullptr) {
     Rcpp::stop("Point external pointer is null");
+  }
+  return *ptr;
+}
+
+RMachineHandle machine_ref(SEXP machine) {
+  if (!Rf_inherits(machine, "cncpp_machine")) {
+    Rcpp::stop("Expected a cncpp_machine external pointer");
+  }
+
+  Rcpp::XPtr<RMachineHandle> ptr(machine);
+  if (ptr.get() == nullptr || !*ptr) {
+    Rcpp::stop("Machine external pointer is null");
   }
   return *ptr;
 }
@@ -61,6 +110,18 @@ RBlockHandle block_ref(SEXP block) {
   return *ptr;
 }
 
+RProgramHandle program_ref(SEXP program) {
+  if (!Rf_inherits(program, "cncpp_program")) {
+    Rcpp::stop("Expected a cncpp_program external pointer");
+  }
+
+  Rcpp::XPtr<RProgramHandle> ptr(program);
+  if (ptr.get() == nullptr || !*ptr) {
+    Rcpp::stop("Program external pointer is null");
+  }
+  return *ptr;
+}
+
 SEXP make_point(cncpp::Point point) {
   Rcpp::XPtr<cncpp::Point> ptr(new cncpp::Point(std::move(point)), true);
   ptr.attr("class") =
@@ -68,10 +129,24 @@ SEXP make_point(cncpp::Point point) {
   return ptr;
 }
 
+SEXP make_machine(RMachineHandle machine) {
+  Rcpp::XPtr<RMachineHandle> ptr(new RMachineHandle(std::move(machine)), true);
+  ptr.attr("class") =
+      Rcpp::CharacterVector::create("cncpp_machine", "externalptr");
+  return ptr;
+}
+
 SEXP make_block(RBlockHandle block) {
   Rcpp::XPtr<RBlockHandle> ptr(new RBlockHandle(std::move(block)), true);
   ptr.attr("class") =
       Rcpp::CharacterVector::create("cncpp_block", "externalptr");
+  return ptr;
+}
+
+SEXP make_program(RProgramHandle program) {
+  Rcpp::XPtr<RProgramHandle> ptr(new RProgramHandle(std::move(program)), true);
+  ptr.attr("class") =
+      Rcpp::CharacterVector::create("cncpp_program", "externalptr");
   return ptr;
 }
 
@@ -105,6 +180,49 @@ bool is_motion_type(cncpp::Block::BlockType type) {
          type == cncpp::Block::BlockType::CCWA;
 }
 
+Rcpp::List block_summary(cncpp::Block const &block) {
+  auto type = block.type();
+  return Rcpp::List::create(
+      Rcpp::_["line"] = block.line(),
+      Rcpp::_["n"] = static_cast<R_xlen_t>(block.n()),
+      Rcpp::_["parsed"] = block.parsed(),
+      Rcpp::_["type_code"] = static_cast<int>(type),
+      Rcpp::_["type"] = block_type_name(type),
+      Rcpp::_["tool"] = static_cast<R_xlen_t>(block.tool()),
+      Rcpp::_["feedrate"] = block.feedrate(),
+      Rcpp::_["arc_feedrate"] = block.arc_feedrate(),
+      Rcpp::_["spindle"] = block.spindle(), Rcpp::_["length"] = block.length(),
+      Rcpp::_["dt"] = block.dt(),
+      Rcpp::_["m"] = static_cast<R_xlen_t>(block.m()),
+      Rcpp::_["r"] = block.r());
+}
+
+RBlockHandle make_parsed_block(std::string const &line, RMachineHandle machine,
+                               RBlockHandle previous = nullptr) {
+  auto block = previous == nullptr
+                   ? std::make_shared<RBlock>(line, std::move(machine))
+                   : std::make_shared<RBlock>(line, std::move(previous));
+  block->block.parse(block->machine.get());
+  return block;
+}
+
+RBlockHandle program_block_at(RProgram &program,
+                              cncpp::block_iterator target_block) {
+  RBlockHandle block;
+  for (auto it = program.program.begin(); it != program.program.end(); ++it) {
+    block = make_parsed_block(it->line(), program.machine, block);
+    if (it == target_block) {
+      return block;
+    }
+  }
+  return nullptr;
+}
+
+void rewind_program_cursor(RProgram &program) {
+  program.current = program.program.end();
+  program.started = false;
+}
+
 void require_interpolatable(RBlock const &block) {
   if (!block.block.parsed()) {
     Rcpp::stop("Block must be parsed before interpolation");
@@ -121,6 +239,102 @@ void require_interpolatable(RBlock const &block) {
 }
 
 } // namespace
+
+// [[Rcpp::export]]
+SEXP cncpp_machine_create(SEXP filename) {
+  auto machine = std::make_shared<cncpp::Machine>();
+  auto path = optional_string(filename, "filename");
+  if (path.has_value()) {
+    machine->load(*path);
+  }
+  return make_machine(std::move(machine));
+}
+
+// [[Rcpp::export]]
+std::string cncpp_machine_desc(SEXP machine, bool colored) {
+  return machine_ref(machine)->desc(colored);
+}
+
+// [[Rcpp::export]]
+void cncpp_machine_load(SEXP machine, std::string filename) {
+  machine_ref(machine)->load(filename);
+}
+
+// [[Rcpp::export]]
+Rcpp::List cncpp_machine_quantize(SEXP machine, double time) {
+  data_t delta = 0.0;
+  data_t quantized = machine_ref(machine)->quantize(time, delta);
+  return Rcpp::List::create(Rcpp::_["time"] = quantized,
+                            Rcpp::_["delta"] = delta);
+}
+
+// [[Rcpp::export]]
+double cncpp_machine_A(SEXP machine) { return machine_ref(machine)->A(); }
+
+// [[Rcpp::export]]
+double cncpp_machine_tq(SEXP machine) { return machine_ref(machine)->tq(); }
+
+// [[Rcpp::export]]
+double cncpp_machine_fmax(SEXP machine) { return machine_ref(machine)->fmax(); }
+
+// [[Rcpp::export]]
+double cncpp_machine_error(SEXP machine) {
+  return machine_ref(machine)->error();
+}
+
+// [[Rcpp::export]]
+double cncpp_machine_max_error(SEXP machine) {
+  return machine_ref(machine)->max_error();
+}
+
+// [[Rcpp::export]]
+SEXP cncpp_machine_zero(SEXP machine) {
+  return make_point(machine_ref(machine)->zero());
+}
+
+// [[Rcpp::export]]
+SEXP cncpp_machine_offset(SEXP machine) {
+  return make_point(machine_ref(machine)->offset());
+}
+
+// [[Rcpp::export]]
+SEXP cncpp_machine_setpoint(SEXP machine) {
+  return make_point(machine_ref(machine)->setpoint());
+}
+
+// [[Rcpp::export]]
+SEXP cncpp_machine_position(SEXP machine) {
+  return make_point(machine_ref(machine)->position());
+}
+
+// [[Rcpp::export]]
+void cncpp_machine_set_setpoint(SEXP machine, SEXP point) {
+  machine_ref(machine)->setpoint(point_ref(point));
+}
+
+// [[Rcpp::export]]
+void cncpp_machine_set_setpoint_xyz(SEXP machine, double x, double y,
+                                    double z) {
+  machine_ref(machine)->setpoint(x, y, z);
+}
+
+// [[Rcpp::export]]
+void cncpp_machine_set_position(SEXP machine, SEXP point) {
+  machine_ref(machine)->position(point_ref(point));
+}
+
+// [[Rcpp::export]]
+Rcpp::List cncpp_machine_summary(SEXP machine) {
+  auto handle = machine_ref(machine);
+  return Rcpp::List::create(
+      Rcpp::_["A"] = handle->A(), Rcpp::_["tq"] = handle->tq(),
+      Rcpp::_["fmax"] = handle->fmax(), Rcpp::_["error"] = handle->error(),
+      Rcpp::_["max_error"] = handle->max_error(),
+      Rcpp::_["zero"] = point_vector(handle->zero()),
+      Rcpp::_["offset"] = point_vector(handle->offset()),
+      Rcpp::_["setpoint"] = point_vector(handle->setpoint()),
+      Rcpp::_["position"] = point_vector(handle->position()));
+}
 
 // [[Rcpp::export]]
 SEXP cncpp_point_create(SEXP x, SEXP y, SEXP z) {
@@ -346,20 +560,167 @@ Rcpp::DataFrame cncpp_block_walk(SEXP block) {
 
 // [[Rcpp::export]]
 Rcpp::List cncpp_block_summary(SEXP block) {
-  auto handle = block_ref(block);
-  auto type = handle->block.type();
-  return Rcpp::List::create(
-      Rcpp::_["line"] = handle->block.line(),
-      Rcpp::_["n"] = static_cast<R_xlen_t>(handle->block.n()),
-      Rcpp::_["parsed"] = handle->block.parsed(),
-      Rcpp::_["type_code"] = static_cast<int>(type),
-      Rcpp::_["type"] = block_type_name(type),
-      Rcpp::_["tool"] = static_cast<R_xlen_t>(handle->block.tool()),
-      Rcpp::_["feedrate"] = handle->block.feedrate(),
-      Rcpp::_["arc_feedrate"] = handle->block.arc_feedrate(),
-      Rcpp::_["spindle"] = handle->block.spindle(),
-      Rcpp::_["length"] = handle->block.length(),
-      Rcpp::_["dt"] = handle->block.dt(),
-      Rcpp::_["m"] = static_cast<R_xlen_t>(handle->block.m()),
-      Rcpp::_["r"] = handle->block.r());
+  return block_summary(block_ref(block)->block);
+}
+
+// [[Rcpp::export]]
+SEXP cncpp_program_create(SEXP filename, SEXP machine) {
+  auto machine_handle = Rf_isNull(machine) ? std::make_shared<cncpp::Machine>()
+                                           : machine_ref(machine);
+  auto path = optional_string(filename, "filename");
+  if (path.has_value()) {
+    return make_program(
+        std::make_shared<RProgram>(*path, std::move(machine_handle)));
+  }
+  return make_program(std::make_shared<RProgram>(std::move(machine_handle)));
+}
+
+// [[Rcpp::export]]
+std::string cncpp_program_desc(SEXP program, bool colored) {
+  return program_ref(program)->program.desc(colored);
+}
+
+// [[Rcpp::export]]
+void cncpp_program_load(SEXP program, std::string filename, bool append) {
+  auto handle = program_ref(program);
+  handle->program.load(filename, append);
+  rewind_program_cursor(*handle);
+}
+
+// [[Rcpp::export]]
+void cncpp_program_append(SEXP program, Rcpp::CharacterVector lines) {
+  auto handle = program_ref(program);
+  for (R_xlen_t i = 0; i < lines.size(); ++i) {
+    if (Rcpp::CharacterVector::is_na(lines[i])) {
+      Rcpp::stop("lines must not contain missing values");
+    }
+    handle->program << Rcpp::as<std::string>(lines[i]);
+  }
+  rewind_program_cursor(*handle);
+}
+
+// [[Rcpp::export]]
+void cncpp_program_reset(SEXP program) {
+  auto handle = program_ref(program);
+  handle->program.reset();
+  rewind_program_cursor(*handle);
+}
+
+// [[Rcpp::export]]
+R_xlen_t cncpp_program_size(SEXP program) {
+  return static_cast<R_xlen_t>(program_ref(program)->program.size());
+}
+
+// [[Rcpp::export]]
+bool cncpp_program_done(SEXP program) {
+  auto handle = program_ref(program);
+  return handle->started && handle->current == handle->program.end();
+}
+
+// [[Rcpp::export]]
+Rcpp::CharacterVector cncpp_program_lines(SEXP program) {
+  auto handle = program_ref(program);
+  Rcpp::CharacterVector output(handle->program.size());
+  R_xlen_t index = 0;
+  for (auto const &block : handle->program) {
+    output[index++] = block.line();
+  }
+  return output;
+}
+
+// [[Rcpp::export]]
+Rcpp::List cncpp_program_blocks(SEXP program) {
+  auto handle = program_ref(program);
+  Rcpp::List output(handle->program.size());
+  RBlockHandle previous;
+  R_xlen_t index = 0;
+  for (auto const &block : handle->program) {
+    previous = make_parsed_block(block.line(), handle->machine, previous);
+    output[index++] = make_block(previous);
+  }
+  return output;
+}
+
+// [[Rcpp::export]]
+Rcpp::List cncpp_program_summary(SEXP program) {
+  auto handle = program_ref(program);
+  Rcpp::List output(handle->program.size());
+  R_xlen_t index = 0;
+  for (auto const &block : handle->program) {
+    output[index++] = block_summary(block);
+  }
+  return output;
+}
+
+// [[Rcpp::export]]
+SEXP cncpp_program_current(SEXP program) {
+  auto handle = program_ref(program);
+  if (!handle->started || handle->current == handle->program.end()) {
+    return R_NilValue;
+  }
+
+  auto block = program_block_at(*handle, handle->current);
+  return block == nullptr ? R_NilValue : make_block(block);
+}
+
+// [[Rcpp::export]]
+SEXP cncpp_program_load_next(SEXP program) {
+  auto handle = program_ref(program);
+  if (!handle->started) {
+    handle->current = handle->program.begin();
+    handle->started = true;
+  } else if (handle->current != handle->program.end()) {
+    ++handle->current;
+  }
+
+  if (handle->current == handle->program.end()) {
+    return R_NilValue;
+  }
+
+  auto block = program_block_at(*handle, handle->current);
+  return block == nullptr ? R_NilValue : make_block(block);
+}
+
+// [[Rcpp::export]]
+void cncpp_program_rewind(SEXP program) {
+  rewind_program_cursor(*program_ref(program));
+}
+
+// [[Rcpp::export]]
+Rcpp::DataFrame cncpp_program_walk(SEXP program) {
+  auto handle = program_ref(program);
+
+  std::vector<R_xlen_t> n;
+  std::vector<double> time;
+  std::vector<double> block_time;
+  std::vector<double> lambda;
+  std::vector<double> speed;
+  std::vector<double> x;
+  std::vector<double> y;
+  std::vector<double> z;
+
+  data_t total_time = 0.0;
+  for (auto &block : handle->program) {
+    if (!is_motion_type(block.type())) {
+      continue;
+    }
+    block.walk([&](cncpp::Block &current_block, data_t t, data_t l, data_t s) {
+      cncpp::Point point = current_block.interpolate(l);
+      n.push_back(static_cast<R_xlen_t>(current_block.n()));
+      time.push_back(total_time);
+      block_time.push_back(t);
+      lambda.push_back(l);
+      speed.push_back(s);
+      x.push_back(point.x());
+      y.push_back(point.y());
+      z.push_back(point.z());
+      total_time += handle->machine->tq();
+    });
+  }
+
+  return Rcpp::DataFrame::create(
+      Rcpp::_["n"] = n, Rcpp::_["time"] = time,
+      Rcpp::_["block_time"] = block_time, Rcpp::_["lambda"] = lambda,
+      Rcpp::_["speed"] = speed, Rcpp::_["x"] = x, Rcpp::_["y"] = y,
+      Rcpp::_["z"] = z, Rcpp::_["stringsAsFactors"] = false);
 }

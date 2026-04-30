@@ -10,6 +10,197 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// cncpp_machine_create
+SEXP cncpp_machine_create(SEXP filename);
+RcppExport SEXP _cncppr_cncpp_machine_create(SEXP filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type filename(filenameSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_machine_create(filename));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_machine_desc
+std::string cncpp_machine_desc(SEXP machine, bool colored);
+RcppExport SEXP _cncppr_cncpp_machine_desc(SEXP machineSEXP, SEXP coloredSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    Rcpp::traits::input_parameter< bool >::type colored(coloredSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_machine_desc(machine, colored));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_machine_load
+void cncpp_machine_load(SEXP machine, std::string filename);
+RcppExport SEXP _cncppr_cncpp_machine_load(SEXP machineSEXP, SEXP filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
+    cncpp_machine_load(machine, filename);
+    return R_NilValue;
+END_RCPP
+}
+// cncpp_machine_quantize
+Rcpp::List cncpp_machine_quantize(SEXP machine, double time);
+RcppExport SEXP _cncppr_cncpp_machine_quantize(SEXP machineSEXP, SEXP timeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    Rcpp::traits::input_parameter< double >::type time(timeSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_machine_quantize(machine, time));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_machine_A
+double cncpp_machine_A(SEXP machine);
+RcppExport SEXP _cncppr_cncpp_machine_A(SEXP machineSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_machine_A(machine));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_machine_tq
+double cncpp_machine_tq(SEXP machine);
+RcppExport SEXP _cncppr_cncpp_machine_tq(SEXP machineSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_machine_tq(machine));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_machine_fmax
+double cncpp_machine_fmax(SEXP machine);
+RcppExport SEXP _cncppr_cncpp_machine_fmax(SEXP machineSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_machine_fmax(machine));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_machine_error
+double cncpp_machine_error(SEXP machine);
+RcppExport SEXP _cncppr_cncpp_machine_error(SEXP machineSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_machine_error(machine));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_machine_max_error
+double cncpp_machine_max_error(SEXP machine);
+RcppExport SEXP _cncppr_cncpp_machine_max_error(SEXP machineSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_machine_max_error(machine));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_machine_zero
+SEXP cncpp_machine_zero(SEXP machine);
+RcppExport SEXP _cncppr_cncpp_machine_zero(SEXP machineSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_machine_zero(machine));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_machine_offset
+SEXP cncpp_machine_offset(SEXP machine);
+RcppExport SEXP _cncppr_cncpp_machine_offset(SEXP machineSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_machine_offset(machine));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_machine_setpoint
+SEXP cncpp_machine_setpoint(SEXP machine);
+RcppExport SEXP _cncppr_cncpp_machine_setpoint(SEXP machineSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_machine_setpoint(machine));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_machine_position
+SEXP cncpp_machine_position(SEXP machine);
+RcppExport SEXP _cncppr_cncpp_machine_position(SEXP machineSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_machine_position(machine));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_machine_set_setpoint
+void cncpp_machine_set_setpoint(SEXP machine, SEXP point);
+RcppExport SEXP _cncppr_cncpp_machine_set_setpoint(SEXP machineSEXP, SEXP pointSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type point(pointSEXP);
+    cncpp_machine_set_setpoint(machine, point);
+    return R_NilValue;
+END_RCPP
+}
+// cncpp_machine_set_setpoint_xyz
+void cncpp_machine_set_setpoint_xyz(SEXP machine, double x, double y, double z);
+RcppExport SEXP _cncppr_cncpp_machine_set_setpoint_xyz(SEXP machineSEXP, SEXP xSEXP, SEXP ySEXP, SEXP zSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    Rcpp::traits::input_parameter< double >::type x(xSEXP);
+    Rcpp::traits::input_parameter< double >::type y(ySEXP);
+    Rcpp::traits::input_parameter< double >::type z(zSEXP);
+    cncpp_machine_set_setpoint_xyz(machine, x, y, z);
+    return R_NilValue;
+END_RCPP
+}
+// cncpp_machine_set_position
+void cncpp_machine_set_position(SEXP machine, SEXP point);
+RcppExport SEXP _cncppr_cncpp_machine_set_position(SEXP machineSEXP, SEXP pointSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type point(pointSEXP);
+    cncpp_machine_set_position(machine, point);
+    return R_NilValue;
+END_RCPP
+}
+// cncpp_machine_summary
+Rcpp::List cncpp_machine_summary(SEXP machine);
+RcppExport SEXP _cncppr_cncpp_machine_summary(SEXP machineSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_machine_summary(machine));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cncpp_point_create
 SEXP cncpp_point_create(SEXP x, SEXP y, SEXP z);
 RcppExport SEXP _cncppr_cncpp_point_create(SEXP xSEXP, SEXP ySEXP, SEXP zSEXP) {
@@ -448,8 +639,180 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cncpp_program_create
+SEXP cncpp_program_create(SEXP filename, SEXP machine);
+RcppExport SEXP _cncppr_cncpp_program_create(SEXP filenameSEXP, SEXP machineSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type machine(machineSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_program_create(filename, machine));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_program_desc
+std::string cncpp_program_desc(SEXP program, bool colored);
+RcppExport SEXP _cncppr_cncpp_program_desc(SEXP programSEXP, SEXP coloredSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type program(programSEXP);
+    Rcpp::traits::input_parameter< bool >::type colored(coloredSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_program_desc(program, colored));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_program_load
+void cncpp_program_load(SEXP program, std::string filename, bool append);
+RcppExport SEXP _cncppr_cncpp_program_load(SEXP programSEXP, SEXP filenameSEXP, SEXP appendSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type program(programSEXP);
+    Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< bool >::type append(appendSEXP);
+    cncpp_program_load(program, filename, append);
+    return R_NilValue;
+END_RCPP
+}
+// cncpp_program_append
+void cncpp_program_append(SEXP program, Rcpp::CharacterVector lines);
+RcppExport SEXP _cncppr_cncpp_program_append(SEXP programSEXP, SEXP linesSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type program(programSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type lines(linesSEXP);
+    cncpp_program_append(program, lines);
+    return R_NilValue;
+END_RCPP
+}
+// cncpp_program_reset
+void cncpp_program_reset(SEXP program);
+RcppExport SEXP _cncppr_cncpp_program_reset(SEXP programSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type program(programSEXP);
+    cncpp_program_reset(program);
+    return R_NilValue;
+END_RCPP
+}
+// cncpp_program_size
+R_xlen_t cncpp_program_size(SEXP program);
+RcppExport SEXP _cncppr_cncpp_program_size(SEXP programSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type program(programSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_program_size(program));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_program_done
+bool cncpp_program_done(SEXP program);
+RcppExport SEXP _cncppr_cncpp_program_done(SEXP programSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type program(programSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_program_done(program));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_program_lines
+Rcpp::CharacterVector cncpp_program_lines(SEXP program);
+RcppExport SEXP _cncppr_cncpp_program_lines(SEXP programSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type program(programSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_program_lines(program));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_program_blocks
+Rcpp::List cncpp_program_blocks(SEXP program);
+RcppExport SEXP _cncppr_cncpp_program_blocks(SEXP programSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type program(programSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_program_blocks(program));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_program_summary
+Rcpp::List cncpp_program_summary(SEXP program);
+RcppExport SEXP _cncppr_cncpp_program_summary(SEXP programSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type program(programSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_program_summary(program));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_program_current
+SEXP cncpp_program_current(SEXP program);
+RcppExport SEXP _cncppr_cncpp_program_current(SEXP programSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type program(programSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_program_current(program));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_program_load_next
+SEXP cncpp_program_load_next(SEXP program);
+RcppExport SEXP _cncppr_cncpp_program_load_next(SEXP programSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type program(programSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_program_load_next(program));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cncpp_program_rewind
+void cncpp_program_rewind(SEXP program);
+RcppExport SEXP _cncppr_cncpp_program_rewind(SEXP programSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type program(programSEXP);
+    cncpp_program_rewind(program);
+    return R_NilValue;
+END_RCPP
+}
+// cncpp_program_walk
+Rcpp::DataFrame cncpp_program_walk(SEXP program);
+RcppExport SEXP _cncppr_cncpp_program_walk(SEXP programSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type program(programSEXP);
+    rcpp_result_gen = Rcpp::wrap(cncpp_program_walk(program));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_cncppr_cncpp_machine_create", (DL_FUNC) &_cncppr_cncpp_machine_create, 1},
+    {"_cncppr_cncpp_machine_desc", (DL_FUNC) &_cncppr_cncpp_machine_desc, 2},
+    {"_cncppr_cncpp_machine_load", (DL_FUNC) &_cncppr_cncpp_machine_load, 2},
+    {"_cncppr_cncpp_machine_quantize", (DL_FUNC) &_cncppr_cncpp_machine_quantize, 2},
+    {"_cncppr_cncpp_machine_A", (DL_FUNC) &_cncppr_cncpp_machine_A, 1},
+    {"_cncppr_cncpp_machine_tq", (DL_FUNC) &_cncppr_cncpp_machine_tq, 1},
+    {"_cncppr_cncpp_machine_fmax", (DL_FUNC) &_cncppr_cncpp_machine_fmax, 1},
+    {"_cncppr_cncpp_machine_error", (DL_FUNC) &_cncppr_cncpp_machine_error, 1},
+    {"_cncppr_cncpp_machine_max_error", (DL_FUNC) &_cncppr_cncpp_machine_max_error, 1},
+    {"_cncppr_cncpp_machine_zero", (DL_FUNC) &_cncppr_cncpp_machine_zero, 1},
+    {"_cncppr_cncpp_machine_offset", (DL_FUNC) &_cncppr_cncpp_machine_offset, 1},
+    {"_cncppr_cncpp_machine_setpoint", (DL_FUNC) &_cncppr_cncpp_machine_setpoint, 1},
+    {"_cncppr_cncpp_machine_position", (DL_FUNC) &_cncppr_cncpp_machine_position, 1},
+    {"_cncppr_cncpp_machine_set_setpoint", (DL_FUNC) &_cncppr_cncpp_machine_set_setpoint, 2},
+    {"_cncppr_cncpp_machine_set_setpoint_xyz", (DL_FUNC) &_cncppr_cncpp_machine_set_setpoint_xyz, 4},
+    {"_cncppr_cncpp_machine_set_position", (DL_FUNC) &_cncppr_cncpp_machine_set_position, 2},
+    {"_cncppr_cncpp_machine_summary", (DL_FUNC) &_cncppr_cncpp_machine_summary, 1},
     {"_cncppr_cncpp_point_create", (DL_FUNC) &_cncppr_cncpp_point_create, 3},
     {"_cncppr_cncpp_point_desc", (DL_FUNC) &_cncppr_cncpp_point_desc, 2},
     {"_cncppr_cncpp_point_is_complete", (DL_FUNC) &_cncppr_cncpp_point_is_complete, 1},
@@ -489,6 +852,20 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cncppr_cncpp_block_interpolate_time", (DL_FUNC) &_cncppr_cncpp_block_interpolate_time, 2},
     {"_cncppr_cncpp_block_walk", (DL_FUNC) &_cncppr_cncpp_block_walk, 1},
     {"_cncppr_cncpp_block_summary", (DL_FUNC) &_cncppr_cncpp_block_summary, 1},
+    {"_cncppr_cncpp_program_create", (DL_FUNC) &_cncppr_cncpp_program_create, 2},
+    {"_cncppr_cncpp_program_desc", (DL_FUNC) &_cncppr_cncpp_program_desc, 2},
+    {"_cncppr_cncpp_program_load", (DL_FUNC) &_cncppr_cncpp_program_load, 3},
+    {"_cncppr_cncpp_program_append", (DL_FUNC) &_cncppr_cncpp_program_append, 2},
+    {"_cncppr_cncpp_program_reset", (DL_FUNC) &_cncppr_cncpp_program_reset, 1},
+    {"_cncppr_cncpp_program_size", (DL_FUNC) &_cncppr_cncpp_program_size, 1},
+    {"_cncppr_cncpp_program_done", (DL_FUNC) &_cncppr_cncpp_program_done, 1},
+    {"_cncppr_cncpp_program_lines", (DL_FUNC) &_cncppr_cncpp_program_lines, 1},
+    {"_cncppr_cncpp_program_blocks", (DL_FUNC) &_cncppr_cncpp_program_blocks, 1},
+    {"_cncppr_cncpp_program_summary", (DL_FUNC) &_cncppr_cncpp_program_summary, 1},
+    {"_cncppr_cncpp_program_current", (DL_FUNC) &_cncppr_cncpp_program_current, 1},
+    {"_cncppr_cncpp_program_load_next", (DL_FUNC) &_cncppr_cncpp_program_load_next, 1},
+    {"_cncppr_cncpp_program_rewind", (DL_FUNC) &_cncppr_cncpp_program_rewind, 1},
+    {"_cncppr_cncpp_program_walk", (DL_FUNC) &_cncppr_cncpp_program_walk, 1},
     {NULL, NULL, 0}
 };
 

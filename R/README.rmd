@@ -1,0 +1,56 @@
+---
+title: "R Wrapper to CNCPP class"
+author: "Paolo Bosetti"
+date: 2026-04-30
+---
+
+# Setup and installation
+
+Rcpp wrappers for the CNCpp `Point`, `Block`, `Machine`, and `Program` classes.
+
+## On Windows/WSL or on Linux
+
+You need to install R and some base packages on the linux OS:
+
+```sh
+sudo apt update
+sudo apt install r-base r-core 
+```
+
+## On MacOS
+
+You need a working installation of R (<https://www.r-project.org/>).
+
+## Installation
+
+Install from the **repository root** after CMake has fetched the C++ dependencies:
+
+```sh
+cmake -B build -G Ninja
+R CMD INSTALL R
+```
+
+## Usage
+
+Use the R interpreter:
+
+* If you are on macOS or on Linux, you can use RStudio
+* If you are on Windows/WSL, you cannot use the RStudio installed on the Windows side, because you need an R interpreter running in the Linux WSL environment.
+
+Example:
+
+```r
+library(cncppr)
+
+p <- Point(1, 2, 3)
+point_length(p)
+
+b0 <- Block("N1 G00 X0 Y0 Z0")
+block_parse(b0)
+
+b1 <- Block("N2 G01 X100 Y100 Z0 F1000", b0)
+block_parse(b1)
+
+block_summary(b1)
+head(block_walk(b1))
+```

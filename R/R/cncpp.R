@@ -1,3 +1,77 @@
+Machine <- function(filename = NULL) {
+  cncpp_machine_create(.nullable_string(filename, "filename"))
+}
+
+machine_desc <- function(machine, colored = FALSE) {
+  cncpp_machine_desc(machine, isTRUE(colored))
+}
+
+machine_load <- function(machine, filename) {
+  cncpp_machine_load(machine, .required_string(filename, "filename"))
+  invisible(machine)
+}
+
+machine_quantize <- function(machine, time) {
+  cncpp_machine_quantize(machine, .required_scalar(time, "time"))
+}
+
+machine_A <- function(machine) {
+  cncpp_machine_A(machine)
+}
+
+machine_tq <- function(machine) {
+  cncpp_machine_tq(machine)
+}
+
+machine_fmax <- function(machine) {
+  cncpp_machine_fmax(machine)
+}
+
+machine_error <- function(machine) {
+  cncpp_machine_error(machine)
+}
+
+machine_max_error <- function(machine) {
+  cncpp_machine_max_error(machine)
+}
+
+machine_zero <- function(machine) {
+  cncpp_machine_zero(machine)
+}
+
+machine_offset <- function(machine) {
+  cncpp_machine_offset(machine)
+}
+
+machine_setpoint <- function(machine) {
+  cncpp_machine_setpoint(machine)
+}
+
+machine_position <- function(machine) {
+  cncpp_machine_position(machine)
+}
+
+machine_set_setpoint <- function(machine, point = NULL, x = NULL, y = NULL,
+                                 z = NULL) {
+  if (!is.null(point)) {
+    cncpp_machine_set_setpoint(machine, point)
+  } else {
+    cncpp_machine_set_setpoint_xyz(machine, .required_scalar(x, "x"),
+                                   .required_scalar(y, "y"),
+                                   .required_scalar(z, "z"))
+  }
+  invisible(machine)
+}
+
+machine_set_position <- function(machine, point) {
+  cncpp_machine_set_position(machine, point)
+  invisible(machine)
+}
+
+machine_summary <- function(machine) {
+  cncpp_machine_summary(machine)
+}
+
 Point <- function(x = NULL, y = NULL, z = NULL) {
   cncpp_point_create(.nullable_scalar(x), .nullable_scalar(y),
                      .nullable_scalar(z))
@@ -163,6 +237,76 @@ block_summary <- function(block) {
   cncpp_block_summary(block)
 }
 
+Program <- function(filename = NULL, machine = NULL) {
+  cncpp_program_create(.nullable_string(filename, "filename"), machine)
+}
+
+program_desc <- function(program, colored = FALSE) {
+  cncpp_program_desc(program, isTRUE(colored))
+}
+
+program_load <- function(program, filename, append = FALSE) {
+  cncpp_program_load(program, .required_string(filename, "filename"),
+                     isTRUE(append))
+  invisible(program)
+}
+
+program_append <- function(program, lines) {
+  lines <- as.character(lines)
+  if (anyNA(lines)) {
+    stop("lines must not contain missing values", call. = FALSE)
+  }
+  cncpp_program_append(program, lines)
+  invisible(program)
+}
+
+program_reset <- function(program) {
+  cncpp_program_reset(program)
+  invisible(program)
+}
+
+program_rewind <- function(program) {
+  cncpp_program_rewind(program)
+  invisible(program)
+}
+
+program_size <- function(program) {
+  cncpp_program_size(program)
+}
+
+program_done <- function(program) {
+  cncpp_program_done(program)
+}
+
+program_lines <- function(program) {
+  cncpp_program_lines(program)
+}
+
+program_blocks <- function(program) {
+  cncpp_program_blocks(program)
+}
+
+program_summary <- function(program) {
+  cncpp_program_summary(program)
+}
+
+program_current <- function(program) {
+  cncpp_program_current(program)
+}
+
+program_load_next <- function(program) {
+  cncpp_program_load_next(program)
+}
+
+program_walk <- function(program) {
+  cncpp_program_walk(program)
+}
+
+print.cncpp_machine <- function(x, ...) {
+  cat(machine_desc(x, colored = FALSE), "\n", sep = "")
+  invisible(x)
+}
+
 print.cncpp_point <- function(x, ...) {
   cat(point_desc(x, colored = FALSE), "\n", sep = "")
   invisible(x)
@@ -173,6 +317,11 @@ print.cncpp_block <- function(x, ...) {
     paste0("<cncpp_block: ", block_line(x), " (unparsed)>")
   })
   cat(line, "\n", sep = "")
+  invisible(x)
+}
+
+print.cncpp_program <- function(x, ...) {
+  cat(program_desc(x, colored = FALSE), sep = "")
   invisible(x)
 }
 
@@ -188,4 +337,19 @@ print.cncpp_block <- function(x, ...) {
     stop(name, " must be a non-missing numeric scalar", call. = FALSE)
   }
   as.numeric(value)
+}
+
+.nullable_string <- function(value, name) {
+  if (is.null(value)) {
+    return(NULL)
+  }
+  .required_string(value, name)
+}
+
+.required_string <- function(value, name) {
+  value <- as.character(value)
+  if (length(value) != 1L || is.na(value)) {
+    stop(name, " must be a non-missing character scalar", call. = FALSE)
+  }
+  value
 }
