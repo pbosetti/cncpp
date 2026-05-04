@@ -3,6 +3,7 @@
 #include "defines.hpp"
 #include "point.hpp"
 #include <nlohmann/json.hpp>
+#include <toml++/toml.hpp>
 
 namespace cncpp {
 
@@ -56,8 +57,20 @@ class Machine : public Object {
   void load(nlohmann::json &j);
 
   /**
+   * @brief Loads machine configuration values from TOML data.
+   * @param t TOML table containing optional machine parameters.
+   *
+   * Recognized keys are `tq`, `A`, `fmax`, `max_error`, `zero`, and `offset`.
+   * Invalid value types raise std::runtime_error.
+   */
+  void load(toml::table &t);
+
+  /**
    * @brief Loads machine configuration values from a JSON file.
-   * @param filename Path to the JSON configuration file.
+   * 
+   * Note that if using the TOML format, the machine configuration must be nested under a `machine` table.
+   * 
+   * @param filename Path to the JSON/TOML configuration file.
    */
   void load(std::string &filename);
 
