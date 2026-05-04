@@ -1,0 +1,80 @@
+---
+title: "R Wrapper to CNCPP class"
+author: "Paolo Bosetti"
+date: 2026-04-30
+---
+
+```{r setup}
+#| include: false
+library(tidyverse)
+```
+
+# Setup and installation
+
+Rcpp wrappers for the CNCpp `Point`, `Block`, `Machine`, and `Program` classes.
+
+## On Windows/WSL or on Linux
+
+You need to install R and some base packages on the linux OS:
+
+```sh
+sudo apt update
+sudo apt install r-base r-base-core r-base-dev r-cran-tidyverse r-cran-rcpp
+```
+
+Then enter the R shell and **install at least one package**:
+
+```sh
+$ R
+> install("adas.utils")
+> q()
+```
+
+This is needed to setup the packages installation paths.
+
+Then I suggest to install in Windows the [Positron](https://positron.posit.co/) IDE: it is a VSCode clone that has embedded R and Python interface, similar to RStudio but it can work with the intepreter running within WSL, while the GUI runs on Windows.
+
+
+## On MacOS
+
+You need a working installation of R (<https://www.r-project.org/>). Then you can use RStudio or Positron (see the above section) as you prefer.
+
+## Wrapper installation
+
+Install from the **repository root** after CMake has fetched the C++ dependencies:
+
+```sh
+cmake -B build -G Ninja
+R CMD INSTALL R
+```
+
+## Usage
+
+
+Example:
+
+```{r}
+library(cncppr)
+library(tidyverse)
+
+p <- Point(1, 2, 3)
+point_length(p)
+
+b0 <- Block("N1 G00 X0 Y0 Z0")
+block_parse(b0)
+
+b1 <- Block("N2 G01 X100 Y100 Z0 F1000", b0)
+block_parse(b1)
+
+block_summary(b1)
+head(block_walk(b1))
+
+m <- Machine()
+prg <- Program("test.g", m)
+df <- program_walk(prg)
+df %>%
+  ggplot(aes(x=time, y=lambda)) +
+  geom_line()
+
+
+```

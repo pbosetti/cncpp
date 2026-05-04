@@ -1,79 +1,58 @@
-#include <iostream>
-#include <vector>
-#include <string>
+#include "Vector2D.hpp"
+#include <iomanip>
+#include <sstream>
 #include <cmath>
+#include <iostream>
 
-class Vector2D {
-public:
-  static size_t instance_count;
+// Initialize static member
+size_t Vector2D::_vector_count = 0;
 
-  Vector2D(double x, double y) : x(x), y(y) {
-    ++Vector2D::instance_count;
-    _label = "v" + std::to_string(Vector2D::instance_count);
-  }
-  Vector2D(std::string const &label, double x, double y) : Vector2D(x, y) {
-    _label = label;
-  }
-  Vector2D() : Vector2D(0.0, 0.0) {}
+Vector2D::Vector2D() : Vector2D(0.0, 0.0) {}
 
-  void set_label(std::string const &label) { _label = label; }
+Vector2D::Vector2D(double x, double y) : 
+  Vector2D("vec_" + std::to_string(++_vector_count), x, y) {}
 
-  void set(double x, double y) {
-    this->x = x;
-    this->y = y;
-  }
+Vector2D::Vector2D(const std::string label, double x, double y)
+    : _x(x), _y(y), _label(label) {}
 
-  void print(std::ostream &os = std::cout) const {
-    os << _label << ": (" << x << ", " << y << ")\n";
-  }
+double Vector2D::x() const { return _x; }
 
-  static void to_csv_header(std::ostream &os = std::cout) {
-    os << "label,x,y,norm\n";
-  }
+double Vector2D::y() const { return _y; }
 
-  void to_csv_row(std::ostream &os = std::cout) const {
-    os << _label << "," << x << "," << y << "," << norm() << "\n";
-  }
+std::string Vector2D::label() const { return _label; }
 
-  void scale(double factor = 1.0) {
-    x *= factor;
-    y *= factor;
-  }
+double Vector2D::norm() const { return std::hypot(_x, _y); }
 
-  double norm() const { return std::hypot(x, y); }
-  
-  void add(const Vector2D &other) {
-    x += other.x;
-    y += other.y;
-  }
-  
-  double x, y;
+double Vector2D::distance_to(const Vector2D &other) const {
+  return std::hypot(_x - other._x, _y - other._y);
+}
 
-private:
-  std::string _label{""};
-};
+Vector2D Vector2D::operator+(const Vector2D &other) const {
+  return Vector2D(_x + other._x, _y + other._y);
+}
 
-size_t Vector2D::instance_count = 0;
+Vector2D Vector2D::operator-(const Vector2D &other) const {
+  return Vector2D(_x - other._x, _y - other._y);
+}
 
-int main(int argc, char *argv[]) {
-  std::vector<Vector2D> vectors;
-  vectors.emplace_back("v1", 1.0, 2.0);
-  vectors.emplace_back(3.0, 4.0);
-  vectors.emplace_back("v3", 5.0, 6.0);
-  vectors.emplace_back("v4", 7.0, 8.0);
+Vector2D Vector2D::operator*(double scalar) const {
+  return Vector2D(_x * scalar, _y * scalar);
+}
 
-  std::cout << "Vector2D objects:\n";
-  Vector2D::to_csv_header();
-  for (auto v = vectors.begin(); v != vectors.end(); ++v) {
-    v->to_csv_row();
-  }
+void Vector2D::set(double x, double y) {
+  _x = x;
+  _y = y;
+}
 
-  std::cout << "\nScaled Vector2D objects (scaled by 2):\n";
-  Vector2D::to_csv_header();
-  for (auto &v : vectors) {
-    v.scale(2.0);
-    v.to_csv_row();
-  }
+std::string Vector2D::to_csv_row() const {
+  std::ostringstream oss;
+  oss << _label << ',' << std::setprecision(10) << _x << ',' << _y;
+  return oss.str();
+}
 
-  return 0;
+std::string Vector2D::to_csv_header() { return "label,x,y"; }
+
+std::ostream &operator<<(std::ostream &os, const Vector2D &v) {
+  os << "[" << v._label << "] (" << v._x << ", " << v._y << ")";
+  return os;
 }

@@ -28,9 +28,22 @@
 			"ratio": "cpp"
 		},
 		"C_Cpp.default.defines": [
-			"POINT_MAIN",
-			"BLOCK_MAIN",
-			"PROGRAM_MAIN"
+			"CNCPP_TEST_POINT",
+			"CNCPP_TEST_BLOCK",
+			"CNCPP_TEST_PROGRAM"
 		],
+		"C_Cpp.default.compileCommands": [
+			"${workspaceFolder}/build/compile_commands.json"
+		],
+		"chat.tools.terminal.terminalProfile.osx": {
+			"path": "bash",
+			"args": [],
+			"env": {"COPILOT": "1"}
+		},
+		"chat.tools.terminal.terminalProfile.linux": {
+			"path": "bash",
+			"args": [],
+			"env": {"COPILOT": "1"}
+		}
 	}
 }

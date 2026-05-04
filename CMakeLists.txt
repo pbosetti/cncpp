@@ -9,6 +9,7 @@ project(CNCpp VERSION ${VERSION} LANGUAGES CXX)
 #  |____/ \___|\__|   \_/ \__,_|_|  |___/
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 if(CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build." FORCE)
@@ -24,14 +25,18 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(MAIN_DIR ${SRC_DIR}/main)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/usr CACHE PATH "Install path prefix" FORCE)
+
+include(CTest)
 
 message(STATUS "SRC_DIR: ${SRC_DIR}")
 message(STATUS "MAIN_DIR: ${MAIN_DIR}")
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
+list(FILTER SRC_FILES EXCLUDE REGEX ".*/_.*\\.cpp$")
 
 
 #   _____         _   ____            _
@@ -68,27 +73,7 @@ FetchContent_Declare(yaml-cpp
   GIT_TAG HEAD
 )
 
-FetchContent_Declare(keystroker
-  GIT_REPOSITORY https://github.com/pbosetti/keystroker.git
-  GIT_SHALLOW    TRUE
-  GIT_TAG HEAD
-)
-
-set(DOCUMENTATION OFF CACHE BOOL "")
-set(INC_BRIDGE_SUPPORT OFF CACHE BOOL "")
-set(WITH_APPS OFF CACHE BOOL "")
-set(WITH_CLIENTS OFF CACHE BOOL "")
-set(WITH_PIC ON CACHE BOOL "")
-set(WITH_STATIC_LIBRARIES ON CACHE BOOL "")
-set(WITH_TLS OFF CACHE BOOL "")
-set(WITH_LIB_CPP ON CACHE BOOL "")
-FetchContent_Declare(mosquitto
-  GIT_REPOSITORY https://github.com/eclipse-mosquitto/mosquitto.git
-  GIT_SHALLOW    TRUE
-  GIT_TAG v2.0.20
-)
-
-FetchContent_MakeAvailable(fmt rang json yaml-cpp keystroker mosquitto)
+FetchContent_MakeAvailable(fmt rang json yaml-cpp)
 
 message(STATUS "Dependencies fetched.")
 
@@ -97,15 +82,7 @@ include_directories(
   ${rang_SOURCE_DIR}/include
   ${json_SOURCE_DIR}/include
   ${yaml-cpp_SOURCE_DIR}/include
-  ${keystroker_SOURCE_DIR}/include
-  ${mosquitto_SOURCE_DIR}/include
-  ${mosquitto_SOURCE_DIR}/lib/cpp
   # /opt/homebrew/include
-)
-
-link_directories(
-  ${mosquitto_BINARY_DIR}/lib
-  ${mosquitto_BINARY_DIR}/lib/cpp
 )
 
 #    ____             __ _                          _    __ _ _
@@ -122,6 +99,39 @@ link_directories(
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 
+#  ____                                        _        _   _
+# |  _ \  ___   ___ _   _ _ __ ___   ___ _ __ | |_ __ _| |_(_) ___  _ __
+# | | | |/ _ \ / __| | | | '_ ` _ \ / _ \ '_ \| __/ _` | __| |/ _ \| '_ \
+# | |_| | (_) | (__| |_| | | | | | |  __/ | | | || (_| | |_| | (_) | | | |
+# |____/ \___/ \___|\__,_|_| |_| |_|\___|_| |_|\__\__,_|\__|_|\___/|_| |_|
+
+find_package(Doxygen)
+
+if(DOXYGEN_FOUND)
+  set(DOXYGEN_PROJECT_NAME "${PROJECT_NAME}")
+  set(DOXYGEN_PROJECT_VERSION "${PROJECT_VERSION}")
+  set(DOXYGEN_INPUT_DIR "${SRC_DIR}")
+  set(DOXYGEN_OUTPUT_DIR "${CMAKE_CURRENT_LIST_DIR}/doc")
+  set(DOXYGEN_FILE_PATTERNS "*.hpp")
+  set(DOXYGEN_RECURSIVE YES)
+
+  configure_file(
+    ${CMAKE_CURRENT_LIST_DIR}/doc/Doxyfile.in
+    ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+    @ONLY
+  )
+
+  add_custom_target(doc
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${DOXYGEN_OUTPUT_DIR}
+    COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    COMMENT "Generating API documentation with Doxygen"
+    VERBATIM
+  )
+else()
+  message(STATUS "Doxygen not found: 'doc' target will not be available")
+endif()
+
 #   _____                    _
 #  |_   _|_ _ _ __ __ _  ___| |_ ___
 #    | |/ _` | '__/ _` |/ _ \ __/ __|
@@ -130,9 +140,29 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 #                 |___/
 
 # main Library
-file(GLOB SRC_FILES ${SRC_DIR}/*.cpp)
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 
+add_library(cncpp STATIC ${SRC_FILES})
+target_include_directories(cncpp PUBLIC ${SRC_DIR})
+target_link_libraries(cncpp PUBLIC fmt::fmt)
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/tests)
+
+add_executable(point_test ${SRC_DIR}/point.cpp)
+target_compile_definitions(point_test PRIVATE CNCPP_TEST_POINT)
+target_link_libraries(point_test PRIVATE cncpp fmt::fmt)
+
+add_executable(block_test ${SRC_DIR}/block.cpp)
+target_compile_definitions(block_test PRIVATE CNCPP_TEST_BLOCK)
+target_link_libraries(block_test PRIVATE cncpp fmt::fmt)
+
+add_executable(program_test ${SRC_DIR}/program.cpp)
+target_compile_definitions(program_test PRIVATE CNCPP_TEST_PROGRAM)
+target_link_libraries(program_test PRIVATE cncpp fmt::fmt)
+
+add_executable(machine_test ${SRC_DIR}/machine.cpp)
+target_compile_definitions(machine_test PRIVATE CNCPP_TEST_MACHINE)
+target_link_libraries(machine_test PRIVATE cncpp fmt::fmt)
 
 #   ___           _        _ _
 #  |_ _|_ __  ___| |_ __ _| | |

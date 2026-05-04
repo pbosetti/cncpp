@@ -1,0 +1,14 @@
+Package: cncppr
+Type: Package
+Title: Rcpp Wrappers for CNCpp
+Version: 0.0.1
+Authors@R: person("CNCpp", "Authors", role = c("aut", "cre"),
+    email = "cncpp@example.com")
+Description: Rcpp external pointer wrappers for the CNCpp Point, Machine,
+    Block and Program classes.
+License: GPL (>= 3)
+Encoding: UTF-8
+Imports:
+    Rcpp
+LinkingTo:
+    Rcpp

@@ -1,0 +1,2 @@
+CXX_STD = CXX17
+PKG_CPPFLAGS = -DFMT_HEADER_ONLY -I../../src -I../../build/_deps/fmt-src/include -I../../build/_deps/json-src/include
