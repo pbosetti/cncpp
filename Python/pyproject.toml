@@ -1,0 +1,15 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=3.0.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "cncpp"
+version = "0.0.1"
+description = "Python wrappers for the CNCpp CNC kernel"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "CC-BY-NC-SA-4.0" }
+
+[tool.scikit-build]
+cmake.source-dir = "."
+wheel.packages = ["cncpp"]
