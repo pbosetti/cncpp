@@ -1,0 +1,42 @@
+# director example configuration
+# Notes:
+# - [director] is optional global settings.
+# - Each top-level section name is the process name (mandatory).
+# - All options are shown below with defaults and purpose.
+
+[director] # optional: global director settings
+terminal = "" # optional, default="": terminal executable for detached attach windows
+sample_rate = 2.0 # optional, default=2.0: process metrics sampling period in seconds (fractions allowed)
+
+[broker] # process section name (mandatory)
+command = "mads broker" # mandatory: command line to execute
+# command supports variables: ${PWD}=resolved workdir, ${ID}=instance index (0-based)
+after = "" # optional, default="": start after this process name
+workdir = "" # optional, default="": working directory (uses director working directory)
+enabled = true # optional, default=true: when false, skip auto-start (manual start still allowed)
+scale = 1 # optional, default=1: number of instances to launch
+relaunch = true # optional, default=false: restart on non-zero exit status
+tty = true # optional, default=false: enable TTY/attach interaction
+# if workdir/.venv exists, director exposes it to launched Python commands
+
+[feedback]
+command = "mads feedback"
+after = "broker"
+workdir = ""
+enabled = true
+relaunch = false
+tty = false
+
+[perf_assess]
+command = "mads perf_assess -p50"
+after = "broker"
+workdir = ""
+enabled = false
+relaunch = false
+tty = false
+
+[fmu]
+command = "mads fmu models/fmu/machine_tool.fmu"
+after = "broker"
+workdir = "../FMU_agent"
+enabled = false

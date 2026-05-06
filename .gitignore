@@ -10,3 +10,5 @@ usr/
 out/
 
 doc/html
+
+imgui.ini
