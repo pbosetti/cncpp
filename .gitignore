@@ -4,8 +4,11 @@ usr/
 *.dgraph
 /*.csv
 .Rproj.user
+.venv
 
 .vscode
 out/
 
 doc/html
+
+imgui.ini
