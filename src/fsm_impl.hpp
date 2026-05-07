@@ -12,8 +12,15 @@ The finite state machine has:
   5 transition functions
 Generated with command:mads fsm -p cncpp --cpp -o src/fsm -k stop src/fsm.dot
 ******************************************************************************/
-    
+
+#include "cncpp.hpp"
+#include <rang.hpp>
+#include <fmt/format.h>
+#include <keystroker.h>
+
 using namespace std;
+using namespace fmt;
+using namespace rang;
     
 // SEARCH FOR Your Code Here FOR CODE INSERTION POINTS!
 
@@ -37,9 +44,15 @@ namespace cncpp {
 // valid return states: STATE_IDLE, STATE_STOP
 template<class T> 
 state_t do_init(T &data) {
-  state_t next_state = cncpp::UNIMPLEMENTED;
-  /* Your Code Here */
-  
+  state_t next_state = cncpp::STATE_IDLE;
+  try {
+    data.program = make_unique<cncpp::Program>(data.program_file, data.machine.get());
+    cerr << "Program loaded: " << endl
+         << *data.program << endl;
+  } catch (const exception &e) {
+    cerr << "Error loading program: " << e.what() << endl;
+    next_state = cncpp::STATE_STOP;
+  }
   return next_state;
 }
 
@@ -48,9 +61,41 @@ state_t do_init(T &data) {
 // SIGINT triggers an emergency transition to STATE_STOP
 template<class T> 
 state_t do_idle(T &data) {
-  state_t next_state = cncpp::UNIMPLEMENTED;
-  /* Your Code Here */
+  state_t next_state = cncpp::NO_CHANGE;
   
+  // 1. wait for user's input
+  cerr << "Press <SPACE> to run, Z to go to zero, R to reload program, Q to quit" << endl;
+
+  data.timer->stop();
+  char key = keystroker::read_key();
+  switch(key) {
+    case ' ':
+      next_state = cncpp::STATE_LOAD_BLOCK;
+      data.program->rewind();
+      break;
+    case 'r':
+    case 'R':
+      try {
+        data.program->load(data.program_file, false);
+        cerr << "Program reloaded:" << endl
+             << *data.program << endl;
+      } catch (const exception &e) {
+        cerr << "Error reloading program: " << e.what() << endl;
+      }
+      break;
+    case 'z':
+    case 'Z':
+      next_state = cncpp::STATE_GO_TO_ZERO;
+      break;
+    case 'q':
+    case 'Q':
+      next_state = cncpp::STATE_STOP;
+      break;
+    default:
+      cerr << "Wrong selection, pick another command" << endl;
+  }
+
+  data.timer->start();
   return next_state;
 }
 
@@ -59,7 +104,30 @@ state_t do_idle(T &data) {
 template<class T> 
 state_t do_load_block(T &data) {
   state_t next_state = cncpp::UNIMPLEMENTED;
-  /* Your Code Here */
+  data.program->load_next();
+  if (data.program->done()) {
+    return cncpp::STATE_IDLE;
+  }
+
+  auto &b = *data.program->current();
+  cerr << "Loading " << b << endl;
+  switch (b.type()) {
+    case Block::BlockType::NO_MOTION:
+      next_state = cncpp::STATE_NO_MOTION;
+      break;
+    case Block::BlockType::RAPID:
+      next_state = cncpp::STATE_RAPID_MOTION;
+      break;
+    case Block::BlockType::LINE:
+    case Block::BlockType::CWA:
+    case Block::BlockType::CCWA:
+      next_state = cncpp::STATE_INTERP_MOTION;
+      break;
+    default:
+      next_state = cncpp::STATE_IDLE;
+  }
+
+  data.t_tot += data.machine->tq();
   
   return next_state;
 }
@@ -69,9 +137,15 @@ state_t do_load_block(T &data) {
 // SIGINT triggers an emergency transition to STATE_STOP
 template<class T> 
 state_t do_rapid_motion(T &data) {
-  state_t next_state = cncpp::UNIMPLEMENTED;
-  /* Your Code Here */
+  state_t next_state = cncpp::NO_CHANGE;
+  auto &b = *data.program->current();
   
+  cerr << fg::cyan << "Rapid motion block: " << fg::reset
+       << b << endl;
+  next_state = cncpp::STATE_LOAD_BLOCK;
+  
+  data.t_tot += data.machine->tq();
+
   return next_state;
 }
 
@@ -80,9 +154,28 @@ state_t do_rapid_motion(T &data) {
 // SIGINT triggers an emergency transition to STATE_STOP
 template<class T> 
 state_t do_interp_motion(T &data) {
-  state_t next_state = cncpp::UNIMPLEMENTED;
-  /* Your Code Here */
+  state_t next_state = cncpp::NO_CHANGE;
   
+  auto &b = *data.program->current();
+  data_t lambda, speed;
+  data_t tq = data.machine->tq();
+
+  Point tgt = b.interpolate(data.t_blk, lambda, speed);
+  Point p = data.machine->position();
+
+  try {
+    cout << fmt::format("{:0>3d},{:0>2d},{:.3f},{:.3f},{:.3f},{:.3f},,{:.1f},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), speed, b.profile().current_acc, tgt.x(), tgt.y(), tgt.z(), p.x(), p.y(), p.z()) << endl;
+  } catch (const bad_optional_access &e) {
+    cout << fmt::format("{:0>3d},{:0>2d},{:.3f},{:.3f},{:.3f},{:.3f},,{:.1f},{:.3f},{:.3f},{:.3f},{:.3f},{:>3},{:>3},{:>3}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), speed, b.profile().current_acc, tgt.x(), tgt.y(), tgt.z(), "-", "-", "-") << endl;
+  }
+
+  if (data.t_blk > b.dt() + tq / 10.0) {
+    next_state = cncpp::STATE_LOAD_BLOCK;
+  }
+
+  data.t_tot += tq;
+  data.t_blk += tq;
+
   return next_state;
 }
 
@@ -90,9 +183,12 @@ state_t do_interp_motion(T &data) {
 // valid return states: STATE_LOAD_BLOCK
 template<class T> 
 state_t do_no_motion(T &data) {
-  state_t next_state = cncpp::UNIMPLEMENTED;
-  /* Your Code Here */
+  state_t next_state = cncpp::STATE_LOAD_BLOCK;
+  auto &b = *data.program->current();
+  cerr << fg::yellow << "No motion block: " << b << fg::reset << endl;
   
+  data.t_tot += data.machine->tq();
+
   return next_state;
 }
 
@@ -100,8 +196,12 @@ state_t do_no_motion(T &data) {
 // valid return states: NO_CHANGE
 template<class T> 
 state_t do_stop(T &data) {
-  state_t next_state = cncpp::UNIMPLEMENTED;
-  /* Your Code Here */
+  state_t next_state = cncpp::NO_CHANGE;
+
+  // reset SIGINT signal handler
+  signal(SIGINT, SIG_DFL);
+
+  cerr << fg::red << style::bold << "STOP!" << style::reset << fg::reset << endl;
   
   return next_state;
 }
@@ -135,7 +235,11 @@ state_t do_go_to_zero(T &data) {
 // 1. from idle to load_block
 template<class T>
 void reset(T &data) {
-  /* Your Code Here */
+  auto &p = data.program;
+  p->rewind();
+  data.t_tot = 0;
+  data.t_blk = 0;
+  cout << "n,type,t_to,t_blk,lambda,s,feedrate,acc,xn,yn,zn,x,y,z" << endl;
 }
 
 // This function is called in 2 transitions:
@@ -143,7 +247,7 @@ void reset(T &data) {
 // 2. from go_to_zero to go_to_zero
 template<class T>
 void begin_rapid(T &data) {
-  /* Your Code Here */
+  data.t_blk = 0;
 }
 
 // This function is called in 2 transitions:
@@ -158,7 +262,7 @@ void end_rapid(T &data) {
 // 1. from load_block to interp_motion
 template<class T>
 void begin_interp(T &data) {
-  /* Your Code Here */
+  data.t_blk = 0;
 }
 
 // This function is called in 1 transition:
