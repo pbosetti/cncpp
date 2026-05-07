@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
   };
 
   double_d timer_interval(data.machine->tq());
-  double_d timer_max_interval(0.05);
+  double_d timer_max_interval(data.machine->tq_max());
   data.timer = make_unique<Timer<double_d, false>>(timer_interval, timer_max_interval);
   data.timer->start();
 

@@ -1,6 +1,7 @@
 [machine]
 zero = [0.0, 0.0, 0.0]   # Workpiece origin coordinates
 offset = [0.0, 0.0, 0.0] # Tool offset coordinates
-tq = 0.001
+tq = 0.003               # in seconds
+tq_max = 0.030               # in seconds
 A = 10.0
 fmax = 1000.0
