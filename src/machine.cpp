@@ -24,6 +24,7 @@ std::string Machine::desc(bool colored) const {
   stringstream ss;
   ss << "A = " << _A << ", "
      << "tq = " << _tq << ", "
+     << "tq_max = " << _tq_max << ", "
      << "max_error = " << _max_error << ", "
      << "fmax = " << _fmax << ", "
      << "zero = " << _zero.desc(colored) << ", "
@@ -37,6 +38,10 @@ void Machine::load(nlohmann::json &j) {
   if (_data.contains("tq")) {
     if (!_data["tq"].is_number()) throw runtime_error("tq is not a number");
     _tq = _data["tq"];
+  }
+  if (_data.contains("tq_max")) {
+    if (!_data["tq_max"].is_number()) throw runtime_error("tq_max is not a number");
+    _tq_max = _data["tq_max"];
   }
   if (_data.contains("A")) {
     if (!_data["A"].is_number()) throw runtime_error("A is not a number");
@@ -76,6 +81,10 @@ void Machine::load(toml::table &t) {
   if (t.contains("tq")) {
     if (!t["tq"].is_floating_point()) throw runtime_error("tq is not a number");
     _tq = t["tq"].value_or(_tq);
+  }
+  if (t.contains("tq_max")) {
+    if (!t["tq_max"].is_floating_point()) throw runtime_error("tq_max is not a number");
+    _tq_max = t["tq_max"].value_or(_tq_max);
   }
   if (t.contains("A")) {
     if (!t["A"].is_floating_point()) throw runtime_error("A is not a number");

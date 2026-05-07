@@ -97,6 +97,12 @@ class Machine : public Object {
   data_t tq() const { return _tq; }
 
   /**
+   * @brief Gets the maximum machine sampling period.
+   * @return Maximum quantization period.
+   */
+  data_t tq_max() const { return _tq_max; }
+
+  /**
    * @brief Gets the maximum feed rate.
    * @return Maximum feed rate.
    */
@@ -173,6 +179,7 @@ class Machine : public Object {
   Point _zero{0, 0, 0};
   Point _offset{0, 0, 0};
   data_t _tq = 0.001;        // 1 ms
+  data_t _tq_max = 0.01;      // 10 ms
   data_t _A = 5.0;           // m^s/s
   data_t _fmax = 10000.0;    // mm/min
   data_t _max_error = 0.005; // mm
