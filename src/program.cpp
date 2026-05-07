@@ -73,7 +73,7 @@ block_iterator Program::load_next() {
 }
 
 void Program::rewind() {
-  _current = begin();
+  _current = end();
   _done = false;
 }
 
