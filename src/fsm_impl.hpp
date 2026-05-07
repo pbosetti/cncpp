@@ -45,6 +45,7 @@ namespace cncpp {
 template<class T> 
 state_t do_init(T &data) {
   state_t next_state = cncpp::STATE_IDLE;
+  // Try to load the program, if it fails, transition to STOP state
   try {
     data.program = make_unique<cncpp::Program>(data.program_file, data.machine.get());
     cerr << "Program loaded: " << endl
@@ -62,16 +63,18 @@ state_t do_init(T &data) {
 template<class T> 
 state_t do_idle(T &data) {
   state_t next_state = cncpp::NO_CHANGE;
-  
-  // 1. wait for user's input
+  // STEPS =====================================================================
+  // 1. write available commands
   cerr << "Press <SPACE> to run, Z to go to zero, R to reload program, Q to quit" << endl;
 
+  // 2. stop the timer, for we are waiting indefinitely
   data.timer->stop();
+
+  // 3. wait for input and select next state
   char key = keystroker::read_key();
   switch(key) {
     case ' ':
       next_state = cncpp::STATE_LOAD_BLOCK;
-      data.program->rewind();
       break;
     case 'r':
     case 'R':
@@ -95,6 +98,7 @@ state_t do_idle(T &data) {
       cerr << "Wrong selection, pick another command" << endl;
   }
 
+  // 4. re-enable timer
   data.timer->start();
   return next_state;
 }
@@ -104,11 +108,18 @@ state_t do_idle(T &data) {
 template<class T> 
 state_t do_load_block(T &data) {
   state_t next_state = cncpp::UNIMPLEMENTED;
+
+  // STEPS =====================================================================
+
+  // 1. load next block
   data.program->load_next();
+
+  // 2. go back if we reached the program end
   if (data.program->done()) {
     return cncpp::STATE_IDLE;
   }
 
+  // 3. decide next state depending on block type
   auto &b = *data.program->current();
   cerr << "Loading " << b << endl;
   switch (b.type()) {
@@ -127,6 +138,7 @@ state_t do_load_block(T &data) {
       next_state = cncpp::STATE_IDLE;
   }
 
+  // 4. Increment total time
   data.t_tot += data.machine->tq();
   
   return next_state;
@@ -156,23 +168,30 @@ template<class T>
 state_t do_interp_motion(T &data) {
   state_t next_state = cncpp::NO_CHANGE;
   
+  // STEPS =====================================================================
+  // 1. get current block and define some values
   auto &b = *data.program->current();
   data_t lambda, speed;
   data_t tq = data.machine->tq();
+  Point p = data.machine->position();                   // actual position
 
-  Point tgt = b.interpolate(data.t_blk, lambda, speed);
-  Point p = data.machine->position();
+  // 2. Perform axes interpolation
+  Point tgt = b.interpolate(data.t_blk, lambda, speed); // target position
 
+  // 3. Print current values
+  //    p.x() and friends are optionals and may throw if undefined
   try {
     cout << fmt::format("{:0>3d},{:0>2d},{:.3f},{:.3f},{:.3f},{:.3f},,{:.1f},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), speed, b.profile().current_acc, tgt.x(), tgt.y(), tgt.z(), p.x(), p.y(), p.z()) << endl;
   } catch (const bad_optional_access &e) {
     cout << fmt::format("{:0>3d},{:0>2d},{:.3f},{:.3f},{:.3f},{:.3f},,{:.1f},{:.3f},{:.3f},{:.3f},{:.3f},{:>3},{:>3},{:>3}", b.n(), static_cast<int>(b.type()), data.t_tot, data.t_blk, lambda, lambda * b.length(), speed, b.profile().current_acc, tgt.x(), tgt.y(), tgt.z(), "-", "-", "-") << endl;
   }
 
+  // 4. Check if we reached the end of block (use a tolerance!)
   if (data.t_blk > b.dt() + tq / 10.0) {
     next_state = cncpp::STATE_LOAD_BLOCK;
   }
 
+  // 5. Update timings
   data.t_tot += tq;
   data.t_blk += tq;
 
@@ -184,9 +203,12 @@ state_t do_interp_motion(T &data) {
 template<class T> 
 state_t do_no_motion(T &data) {
   state_t next_state = cncpp::STATE_LOAD_BLOCK;
+  // STEPS =====================================================================
+  // 1. Give feedback
   auto &b = *data.program->current();
   cerr << fg::yellow << "No motion block: " << b << fg::reset << endl;
   
+  // 2. Update timings
   data.t_tot += data.machine->tq();
 
   return next_state;
@@ -197,10 +219,11 @@ state_t do_no_motion(T &data) {
 template<class T> 
 state_t do_stop(T &data) {
   state_t next_state = cncpp::NO_CHANGE;
-
-  // reset SIGINT signal handler
+  // STEPS =====================================================================
+  // 1. Reset SIGINT signal handler
   signal(SIGINT, SIG_DFL);
 
+  // 2. Give feedback
   cerr << fg::red << style::bold << "STOP!" << style::reset << fg::reset << endl;
   
   return next_state;
@@ -235,10 +258,12 @@ state_t do_go_to_zero(T &data) {
 // 1. from idle to load_block
 template<class T>
 void reset(T &data) {
-  auto &p = data.program;
-  p->rewind();
+  // Rewind program, be sure to start from the beginning
+  data.program->rewind();
+  // Reset timings
   data.t_tot = 0;
   data.t_blk = 0;
+  // Print a header line on cout, so that we can redirect to a CSV file
   cout << "n,type,t_to,t_blk,lambda,s,feedrate,acc,xn,yn,zn,x,y,z" << endl;
 }
 
@@ -247,6 +272,7 @@ void reset(T &data) {
 // 2. from go_to_zero to go_to_zero
 template<class T>
 void begin_rapid(T &data) {
+  // Reset block time
   data.t_blk = 0;
 }
 
@@ -262,6 +288,7 @@ void end_rapid(T &data) {
 // 1. from load_block to interp_motion
 template<class T>
 void begin_interp(T &data) {
+  // Reset block time
   data.t_blk = 0;
 }
 

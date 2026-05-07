@@ -9,6 +9,7 @@
 using namespace std;
 using double_d = std::chrono::duration<double>;
 
+// This struct is accessible to all state and transition functions
 struct FsmData {
   string program_file;
   unique_ptr<cncpp::Machine> machine;
@@ -30,17 +31,22 @@ int main(int argc, char *argv[]) {
     machine_file = argv[2];
   }
 
+  // Initialise data struct
   FsmData data{
     .program_file = program_file,
     .machine = make_unique<cncpp::Machine>(machine_file)
   };
+  cerr << "Machine initialized:\n" << *data.machine << endl;
 
+  // Prepare the Timer
   double_d timer_interval(data.machine->tq());
   double_d timer_max_interval(data.machine->tq_max());
   data.timer = make_unique<Timer<double_d, false>>(timer_interval, timer_max_interval);
   data.timer->start();
 
+  // Create the FSM instance
   auto fsm = cncpp::FiniteStateMachine(&data);
+  // Use Timer to pace the FSM main loop
   fsm.set_timing_function([&]() {
     try {
       data.timer->wait_throw();
@@ -48,7 +54,7 @@ int main(int argc, char *argv[]) {
       cerr << "Timer error: " << e.what() << endl;
     }
   });
-
+  // Run the FSM
   fsm.run([&](FsmData &s) {
     // put here any operation that must be executed at each loop
   });
