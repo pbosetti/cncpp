@@ -102,6 +102,13 @@ class Machine : public Object {
   void sync();
 
   /**
+   * @brief Send metrics to the MADS broker
+   * @param metrics JSON object containing the metrics to send (a dictnary
+   * of keys and scalar values, numbers or strings)
+   */
+  void send_metrics(const nlohmann::json &metrics);
+
+  /**
    * @brief Set the setpoint object
    * 
    * This call implicitly calls `sync()` to send the new setpoint to the agent 

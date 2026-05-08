@@ -210,6 +210,14 @@ void Machine::set_setpoint(const Point &p) {
   }
 }
 
+void Machine::send_metrics(const nlohmann::json &metrics) {
+  if (_agent) {
+    auto msg = nlohmann::json::object();
+    msg["metrics"] = metrics;
+    _agent->publish(msg, "fmu_machine_tool");
+  }
+}
+
 void Machine::reset() {
   if (_agent) {
     _command["fmu_reset"] = true;

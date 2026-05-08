@@ -142,6 +142,7 @@ state_t do_load_block(T &data) {
     default:
       next_state = cncpp::STATE_IDLE;
   }
+  data.machine->send_metrics({{"line", b.line()}});
 
   // 4. Increment total time
   data.t_tot += data.machine->tq();
@@ -292,6 +293,7 @@ template<class T>
 void begin_rapid(T &data) {
   // Reset block time
   data.t_blk = 0;
+  data.machine->send_metrics({{"rapid_start", data.t_tot}});
 }
 
 // This function is called in 2 transitions:
@@ -299,7 +301,7 @@ void begin_rapid(T &data) {
 // 2. from go_to_zero to idle
 template<class T>
 void end_rapid(T &data) {
-  /* Your Code Here */
+  data.machine->send_metrics({{"rapid_end", data.t_tot}});
 }
 
 // This function is called in 1 transition:
