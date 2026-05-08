@@ -40,7 +40,7 @@ void Machine::load(nlohmann::json &j) {
     _tq = _data["tq"];
   }
   if (_data.contains("tq_max")) {
-    if (!_data["tq_max"].is_number()) throw runtime_error("tq_max is not a number");
+    if (!_data["tq_max"].is_number()) throw runtime_error("tq_mx is not a number");
     _tq_max = _data["tq_max"];
   }
   if (_data.contains("A")) {
