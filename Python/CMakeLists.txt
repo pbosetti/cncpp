@@ -28,6 +28,8 @@ FetchContent_Declare(toml
 
 FetchContent_MakeAvailable(fmt json toml)
 
+find_package(Mads REQUIRED)
+
 set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 CONFIG QUIET)
 if(NOT pybind11_FOUND)
@@ -58,7 +60,7 @@ target_include_directories(_cncpp PRIVATE
   ${toml_SOURCE_DIR}/include
 )
 
-target_link_libraries(_cncpp PRIVATE fmt::fmt)
+target_link_libraries(_cncpp PRIVATE fmt::fmt Mads::Mads)
 target_compile_features(_cncpp PRIVATE cxx_std_17)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")

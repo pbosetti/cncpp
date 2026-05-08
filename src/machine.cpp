@@ -4,10 +4,12 @@
 #include <fstream>
 #include <strstream>
 #include <filesystem>
-
+#include <chrono>
 
 using namespace cncpp;
 using namespace std;
+using namespace Mads;
+using namespace std::chrono_literals;
 using json = nlohmann::json;
 
 // LIFECYCLE =================================================================
@@ -17,8 +19,18 @@ Machine::Machine(json &j) {
 }
 
 Machine::Machine(std::string &filename) {
-  load(filename);
+  if (filename.substr(0, 6) == "tcp://") {
+    connect("cncpp", filename);
+  } else {
+    load(filename);
+  }
 }
+
+Machine::~Machine() {
+  if (_agent) {
+    _agent->disconnect();
+  }
+};
 
 std::string Machine::desc(bool colored) const {
   stringstream ss;
@@ -158,6 +170,77 @@ data_t Machine::quantize(data_t t, data_t &dq) const {
     return q;
   }
 
+// MADS related ================================================================
+
+void Machine::connect(const std::string &name, const std::string &url) {
+  _agent = make_unique<Agent>(name, url);
+  _agent->init();
+  json settings = _agent->get_settings();
+  load(settings);
+  _agent->set_agent_id("cncpp");
+  _agent->set_high_watermark(1);
+  _agent->set_receive_timeout(1000ms); // ms
+  _agent->connect();
+  clear_command();
+}
+
+void Machine::sync() {
+  if (_agent) {
+    try {
+      _agent->publish(_command);
+      _agent->receive();
+      _state = json::parse(get<1>(_agent->last_message()));
+    } catch (const exception &e) {
+      cerr << "Error during MADS sync: " << e.what() << endl;
+    }
+    try {
+      _error = _setpoint.delta(position()).length();
+    } catch (const exception &e) {
+      _error = numeric_limits<data_t>::quiet_NaN();
+    }
+    clear_command();
+  }
+}
+
+void Machine::set_setpoint(const Point &p) {
+  _setpoint = p;
+  if (_agent) {
+    _command["fmu_input"]["setpoint"] = {p.x(), p.y(), p.z()};
+    sync();
+  }
+}
+
+void Machine::reset() {
+  if (_agent) {
+    _command["fmu_reset"] = true;
+    sync();
+  }
+}
+
+
+// ACCESSORS ===================================================================
+
+Point Machine::position() const {
+  Point pos = _position;
+  if (_agent) {
+    try {
+      pos = Point(_state["output"]["position"].at(0).get<data_t>(),
+                  _state["output"]["position"].at(1).get<data_t>(),
+                  _state["output"]["position"].at(2).get<data_t>());
+    } catch (const exception &e) {
+      cerr << "Error occurred while parsing position data: " << e.what()
+           << endl;
+    }
+  }
+  return pos;
+}
+
+
+// PRIVATE =====================================================================
+void Machine::clear_command() {
+  _command["fmu_input"] = json::object();
+  _command["fmu_reset"] = false;
+}
 
 #ifdef CNCPP_TEST_MACHINE
 #include <iostream>

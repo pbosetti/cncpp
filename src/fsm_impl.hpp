@@ -17,6 +17,7 @@ Generated with command:mads fsm -p cncpp --cpp -o src/fsm -k stop src/fsm.dot
 #include <rang.hpp>
 #include <fmt/format.h>
 #include <keystroker.h>
+#include <goback.hpp>
 
 using namespace std;
 using namespace fmt;
@@ -65,7 +66,11 @@ state_t do_idle(T &data) {
   state_t next_state = cncpp::NO_CHANGE;
   // STEPS =====================================================================
   // 1. write available commands
-  cerr << "Press <SPACE> to run, Z to go to zero, R to reload program, Q to quit" << endl;
+  cerr << "Press " 
+       << fg::green << "<SPACE>" << fg::reset << " to run, "
+       << fg::blue << "Z" << fg::reset << " to go to zero, "
+       << fg::cyan << "R" << fg::reset << " to reload program, "
+       << fg::red << "Q" << fg::reset << " to quit" << endl;
 
   // 2. stop the timer, for we are waiting indefinitely
   data.timer->stop();
@@ -151,13 +156,20 @@ template<class T>
 state_t do_rapid_motion(T &data) {
   state_t next_state = cncpp::NO_CHANGE;
   auto &b = *data.program->current();
-  
-  cerr << fg::cyan << "Rapid motion block: " << fg::reset
-       << b << endl;
-  next_state = cncpp::STATE_LOAD_BLOCK;
+  data.machine->set_setpoint(b.target()); // command the end point
+  cerr << Mads::goback(1) << "Current position: " << data.machine->position()
+       << " Current error: " << data.machine->error() << " mm" << endl;
+  if (data.machine->error() < data.machine->max_error()) {
+    next_state = cncpp::STATE_LOAD_BLOCK;
+  }
   
   data.t_tot += data.machine->tq();
+  data.t_blk += data.machine->tq();
 
+  if (stop_requested) {
+    stop_requested = false; // reset flag
+    next_state = cncpp::STATE_LOAD_BLOCK;
+  }
   return next_state;
 }
 
@@ -177,6 +189,7 @@ state_t do_interp_motion(T &data) {
 
   // 2. Perform axes interpolation
   Point tgt = b.interpolate(data.t_blk, lambda, speed); // target position
+  data.machine->set_setpoint(tgt); // command the new position
 
   // 3. Print current values
   //    p.x() and friends are optionals and may throw if undefined
@@ -234,8 +247,13 @@ state_t do_stop(T &data) {
 // SIGINT triggers an emergency transition to STATE_STOP
 template<class T> 
 state_t do_go_to_zero(T &data) {
-  state_t next_state = cncpp::UNIMPLEMENTED;
-  /* Your Code Here */
+  state_t next_state = cncpp::NO_CHANGE;
+  data.machine->set_setpoint(data.machine->zero());
+  cerr << Mads::goback(1) << "Current position: " << data.machine->position()
+       << " Current error: " << data.machine->error() << " mm" << endl;
+  if (data.machine->error() < data.machine->max_error()) {
+    next_state = cncpp::STATE_IDLE;
+  }
   
   return next_state;
 }

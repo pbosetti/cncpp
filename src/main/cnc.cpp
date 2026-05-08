@@ -19,7 +19,7 @@ struct FsmData {
 };
 
 int main(int argc, char *argv[]) {
-  string machine_file = "machine.toml";
+  string machine_file = "tcp://localhost:9092"; // Default machine configuration file or agent URL
 
   if (argc < 2) {
     cerr << "Usage: " << argv[0] << " <program.gcode> [machine.toml]" << endl;
@@ -36,7 +36,16 @@ int main(int argc, char *argv[]) {
     .program_file = program_file,
     .machine = make_unique<cncpp::Machine>(machine_file)
   };
-  cerr << "Machine initialized:\n" << *data.machine << endl;
+  if (data.machine->agent()) {
+    cerr << fg::blue << "Connected to MADS agent at " << machine_file 
+         << fg::reset << endl;
+    data.machine->agent()->info(cerr);
+  } else {
+    cerr << fg::green << "Loaded machine configuration from " << machine_file 
+         << fg::reset << endl;
+  } 
+  cerr << style::bold << "Machine initialized:" << style::reset 
+       << endl << *data.machine << endl;
 
   // Prepare the Timer
   double_d timer_interval(data.machine->tq());

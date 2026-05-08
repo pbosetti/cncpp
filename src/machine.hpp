@@ -4,6 +4,7 @@
 #include "point.hpp"
 #include <nlohmann/json.hpp>
 #include <toml++/toml.hpp>
+#include <agent.hpp>
 
 namespace cncpp {
 
@@ -37,7 +38,7 @@ class Machine : public Object {
   /**
    * @brief Destroys the machine instance.
    */
-  ~Machine() = default; 
+  ~Machine(); 
 
   /**
    * @brief Returns a human-readable description of the machine configuration.
@@ -81,6 +82,42 @@ class Machine : public Object {
    * @return Quantized time value.
    */
   data_t quantize(data_t t, data_t &dq) const;
+
+  // MADS related ==============================================================
+  /**
+   * @brief Connect to the MADS broker and initialize the agent for machine control.
+   * 
+   * The agent will get from the broker the machine settings in the section 
+   * having its `name`
+   * 
+   * @param name Name of the agent, used for registration with the MADS broker
+   * @param url Broker address
+   */
+  void connect(const std::string &name, const std::string &url = "tcp://localhost:9092");
+
+  /**
+   * @brief Send and receive data
+   * 
+   */
+  void sync();
+
+  /**
+   * @brief Set the setpoint object
+   * 
+   * This call implicitly calls `sync()` to send the new setpoint to the agent 
+   * and update the machine state.
+   * 
+   * @param p The setpoint coordinates
+   */
+  void set_setpoint(const Point &p);
+
+  /**
+   * @brief Reset the machine
+   * 
+   * This call implicitly calls `sync()` to send the new setpoint to the agent 
+   * and update the machine state.
+   */
+  void reset();
 
 
   // ACCESSORS =================================================================
@@ -158,14 +195,7 @@ class Machine : public Object {
    * @brief Gets the current actual position.
    * @return Current machine position.
    */
-  Point position() const { return _position; }
-
-  /**
-   * @brief Sets the current actual position.
-   * @param p New machine position.
-   * @return Updated machine position.
-   */
-  Point position(Point p) { return _position = p; }
+  Point position() const;
 
   /**
    * @brief Gets the last loaded configuration data.
@@ -173,19 +203,36 @@ class Machine : public Object {
    */
   nlohmann::json data() const { return _data; }
 
+  /**
+   * @brief The MADS Agent associated with this machine, if any.
+   * 
+   * @return Reference to the Agent instance, or nullptr if no agent is associated.
+   */
+  Mads::Agent* agent() const { return _agent.get(); }
+
+  /**
+   * @brief Gets the current state of the machine.
+   * @return JSON data representing the machine state.
+   */
+  nlohmann::json state() const { return _state; }
+
   private:
+  void clear_command();
   nlohmann::json _data{};
   // properties
   Point _zero{0, 0, 0};
   Point _offset{0, 0, 0};
   data_t _tq = 0.001;        // 1 ms
-  data_t _tq_max = 0.010;        // 10 ms
+  data_t _tq_max = 0.010;    // 10 ms
   data_t _A = 5.0;           // m^s/s
   data_t _fmax = 10000.0;    // mm/min
   data_t _max_error = 0.005; // mm
   // State parameters
   Point _setpoint, _position;
-  data_t _error = 0.0;       // mm
+  data_t _error = numeric_limits<data_t>::quiet_NaN();       // mm
+  std::unique_ptr<Mads::Agent> _agent;  // Optional agent for sim/machine control
+  nlohmann::json _command{};
+  nlohmann::json _state{};
 };
 
 } // namespace cncpp
