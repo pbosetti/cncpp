@@ -126,6 +126,8 @@ class Machine : public Object {
    */
   void reset();
 
+  bool is_connected() const { return _agent && _agent->is_connected(); }
+
 
   // ACCESSORS =================================================================
   /**

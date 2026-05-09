@@ -67,9 +67,11 @@ state_t do_idle(T &data) {
   // STEPS =====================================================================
   // 1. write available commands
   cerr << "Press " 
-       << fg::green << "<SPACE>" << fg::reset << " to run, "
-       << fg::blue << "Z" << fg::reset << " to go to zero, "
-       << fg::cyan << "R" << fg::reset << " to reload program, "
+       << fg::green << "<SPACE>" << fg::reset << " to run, ";
+  if (data.machine->is_connected()) {
+    cerr << fg::blue << "Z" << fg::reset << " to go to zero, ";
+  }
+  cerr << fg::cyan << "R" << fg::reset << " to reload program, "
        << fg::red << "Q" << fg::reset << " to quit" << endl;
 
   // 2. stop the timer, for we are waiting indefinitely
@@ -158,8 +160,15 @@ state_t do_rapid_motion(T &data) {
   state_t next_state = cncpp::NO_CHANGE;
   auto &b = *data.program->current();
   data.machine->set_setpoint(b.target()); // command the end point
-  cerr << Mads::goback(1) << "Current position: " << data.machine->position()
-       << " Current error: " << data.machine->error() << " mm" << endl;
+  if (!data.machine->is_connected()) {
+    cerr << Mads::goback(1) << fg::yellow
+         << "Warning: machine notconnected, skipping rapid motion to " 
+         << b.target() << fg::reset <<endl;
+         next_state = cncpp::STATE_LOAD_BLOCK;
+  } else {
+    cerr << Mads::goback(1) << "Current position: " << data.machine->position()
+         << " Current error: " << data.machine->error() << " mm" << endl;
+  }
   if (data.machine->error() < data.machine->max_error()) {
     next_state = cncpp::STATE_LOAD_BLOCK;
   }
