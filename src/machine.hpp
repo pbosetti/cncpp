@@ -4,6 +4,7 @@
 #include "point.hpp"
 #include <nlohmann/json.hpp>
 #include <toml++/toml.hpp>
+#include <agent.hpp>
 
 namespace cncpp {
 
@@ -37,7 +38,7 @@ class Machine : public Object {
   /**
    * @brief Destroys the machine instance.
    */
-  ~Machine() = default; 
+  ~Machine(); 
 
   /**
    * @brief Returns a human-readable description of the machine configuration.
@@ -81,6 +82,19 @@ class Machine : public Object {
    * @return Quantized time value.
    */
   data_t quantize(data_t t, data_t &dq) const;
+
+
+  // MADS related ==============================================================
+
+  void connect(const std::string &name, const std::string &url = "tcp://localhost:9092");
+
+  void sync();
+
+  void set_setpoint(const Point &p);
+
+  void reset();
+
+  bool is_connected();
 
 
   // ACCESSORS =================================================================
@@ -173,19 +187,29 @@ class Machine : public Object {
    */
   nlohmann::json data() const { return _data; }
 
+  Mads::Agent *agent() const { return _agent.get(); }
+
+  nlohmann::json state() const { return _state; }
+
   private:
+  void clear_command();
   nlohmann::json _data{};
   // properties
   Point _zero{0, 0, 0};
   Point _offset{0, 0, 0};
   data_t _tq = 0.001;        // 1 ms
-  data_t _tq_max = 0.010;        // 10 ms
+  data_t _tq_max = 0.010;    // 10 ms
   data_t _A = 5.0;           // m^s/s
   data_t _fmax = 10000.0;    // mm/min
   data_t _max_error = 0.005; // mm
   // State parameters
   Point _setpoint, _position;
-  data_t _error = 0.0;       // mm
+  data_t _error = numeric_limits<data_t>::quiet_NaN();       // mm
+  // MADS agent
+  std::unique_ptr<Mads::Agent> _agent;
+  nlohmann::json _command{};
+  nlohmann::json _state{};
+
 };
 
 } // namespace cncpp

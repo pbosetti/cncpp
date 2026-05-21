@@ -156,7 +156,7 @@ file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 
 add_library(cncpp STATIC ${SRC_FILES})
 target_include_directories(cncpp PUBLIC ${SRC_DIR})
-target_link_libraries(cncpp PUBLIC fmt::fmt)
+target_link_libraries(cncpp PUBLIC fmt::fmt Mads::Mads)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/tests)
 
@@ -177,7 +177,7 @@ target_compile_definitions(machine_test PRIVATE CNCPP_TEST_MACHINE)
 target_link_libraries(machine_test PRIVATE cncpp fmt::fmt)
 
 add_executable(cnc ${SRC_DIR}/main/cnc.cpp)
-target_link_libraries(cnc PRIVATE cncpp Mads::Mads keystroker rang)
+target_link_libraries(cnc PRIVATE cncpp keystroker rang)
 
 #   ___           _        _ _
 #  |_ _|_ __  ___| |_ __ _| | |

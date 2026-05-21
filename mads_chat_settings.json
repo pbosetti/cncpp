@@ -1,0 +1,9 @@
+{
+  "broker_public_key_path": "",
+  "client_private_key_path": "",
+  "host": "localhost",
+  "pub_port": 9090,
+  "pub_topic": "",
+  "sub_port": 9091,
+  "subscribe_topics": ""
+}
