@@ -65,7 +65,11 @@ state_t do_idle(T &data) {
   state_t next_state = cncpp::NO_CHANGE;
   // STEPS =====================================================================
   // 1. write available commands
-  cerr << "Press <SPACE> to run, Z to go to zero, R to reload program, Q to quit" << endl;
+  cerr << "Press <SPACE> to run, R to reload program, Q to quit";
+  if (data.machine->is_connected()) {
+    cerr << ", Z to go to zero";
+  }
+  cerr << endl;
 
   // 2. stop the timer, for we are waiting indefinitely
   data.timer->stop();
@@ -151,12 +155,24 @@ template<class T>
 state_t do_rapid_motion(T &data) {
   state_t next_state = cncpp::NO_CHANGE;
   auto &b = *data.program->current();
-  
-  cerr << fg::cyan << "Rapid motion block: " << fg::reset
-       << b << endl;
-  next_state = cncpp::STATE_LOAD_BLOCK;
+
+  data.machine->set_setpoint(b.target());
+  if (data.machine->is_connected()) {
+    cerr << "Current position: " << data.machine->position()
+         << ", current error: " << data.machine->error() << " mm" << endl;
+    if (data.machine->error() < data.machine->max_error()) {
+      next_state = cncpp::STATE_LOAD_BLOCK;
+    }
+  } else {
+    cerr << "Warning: machine not connected, skipping rapid motion to "
+         << b.target() << endl;
+         next_state = cncpp::STATE_LOAD_BLOCK;
+  }
   
   data.t_tot += data.machine->tq();
+  data.t_blk += data.machine->tq();
+
+  
 
   return next_state;
 }
