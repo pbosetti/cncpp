@@ -45,7 +45,7 @@ std::string Block::desc(bool colored) const {
   // {:>5.0f} -> right align, 5 chars wide, 0 decimals float
   ss << format("[{:>3}] ", _n);
   if (colored) {
-    ss << format("G{:0>2} ", styled(static_cast<int>(_type), fg(color)));
+    ss << format("G{:0>2} ", styled(static_cast<int>(_type), fmt::fg(color)));
   } else {
     ss << format("G{:0>2} ", static_cast<int>(_type));
   }

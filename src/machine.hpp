@@ -83,18 +83,61 @@ class Machine : public Object {
    */
   data_t quantize(data_t t, data_t &dq) const;
 
-
   // MADS related ==============================================================
-
+  /**
+   * @brief Connect to the MADS broker and initialize the agent for machine 
+   * control.
+   * 
+   * The agent will get from the broker the machine settings in the section 
+   * having its `name`
+   * 
+   * @param name Name of the agent, used for registration with the MADS broker
+   * @param url Broker address
+   */
   void connect(const std::string &name, const std::string &url = "tcp://localhost:9092");
 
+  /**
+   * @brief Send and receive data
+   * 
+   */
   void sync();
 
+  /**
+   * @brief Send metrics to the MADS broker
+   * 
+   * Metrics can be any informative JSON object made by scalars (numbers or 
+   * strings), that can be viewed by the mt_viewer plugin.
+   * 
+   * @param metrics JSON object containing the metrics to send (a dictnary
+   * of keys and scalar values, numbers or strings)
+   */
+  void send_metrics(const nlohmann::json &metrics);
+
+  /**
+   * @brief Set the setpoint object
+   * 
+   * This call implicitly calls `sync()` to send the new setpoint to the agent 
+   * and update the machine state.
+   * 
+   * @param p The setpoint coordinates
+   */
   void set_setpoint(const Point &p);
 
+  /**
+   * @brief Reset the machine
+   * 
+   * This call implicitly calls `sync()` to send the new setpoint to the agent 
+   * and update the machine state.
+   */
   void reset();
 
-  bool is_connected();
+  /**
+   * @brief Check if the machine is connected to a MADS agent.
+   * 
+   * @return true 
+   * @return false 
+   */
+  bool is_connected() const;
 
 
   // ACCESSORS =================================================================
@@ -175,20 +218,22 @@ class Machine : public Object {
   Point position() const { return _position; }
 
   /**
-   * @brief Sets the current actual position.
-   * @param p New machine position.
-   * @return Updated machine position.
-   */
-  Point position(Point p) { return _position = p; }
-
-  /**
    * @brief Gets the last loaded configuration data.
    * @return JSON data used to configure the machine.
    */
   nlohmann::json data() const { return _data; }
 
-  Mads::Agent *agent() const { return _agent.get(); }
+  /**
+   * @brief The MADS Agent associated with this machine, if any.
+   * 
+   * @return Reference to the Agent instance, or nullptr if no agent is associated.
+   */
+  Mads::Agent* agent() const { return _agent.get(); }
 
+  /**
+   * @brief Gets the current state of the machine.
+   * @return JSON data representing the machine state.
+   */
   nlohmann::json state() const { return _state; }
 
   private:

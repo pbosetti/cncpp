@@ -37,14 +37,15 @@ int main(int argc, char *argv[]) {
     .machine = make_unique<cncpp::Machine>(machine_file)
   };
   if (data.machine->agent()) {
-    cerr << fg::blue << "Connected to MADS broker at " << machine_file   
+    cerr << fg::blue << "Connected to MADS broker at " << machine_file 
          << fg::reset << endl;
     data.machine->agent()->info(cerr);
   } else {
-    cerr << fg::green << "Loaded machine configuration file " << machine_file
+    cerr << fg::green << "Loaded machine configuration from " << machine_file 
          << fg::reset << endl;
-  }
-  cerr << "Machine initialized:\n" << *data.machine << endl;
+  } 
+  cerr << style::bold << "Machine initialized:" << style::reset 
+       << endl << *data.machine << endl;
 
   // Prepare the Timer
   double_d timer_interval(data.machine->tq());

@@ -19,7 +19,7 @@ Machine::Machine(json &j) {
 }
 
 Machine::Machine(std::string &filename) {
-  if (filename.substr(0,6) == "tcp://") {
+  if (filename.substr(0, 6) == "tcp://") {
     connect("cncpp", filename);
   } else {
     load(filename);
@@ -224,16 +224,25 @@ void Machine::reset() {
   }
 }
 
-bool Machine::is_connected() {
+bool Machine::is_connected() const {
   return _agent && _agent->is_connected();
 }
 
+void Machine::send_metrics(const nlohmann::json &metrics) {
+  if (_agent) {
+    auto msg = nlohmann::json::object();
+    msg["metrics"] = metrics;
+    _agent->publish(msg, "fmu_machine_tool");
+  }
+}
 
+
+
+// PRIVATE =====================================================================
 void Machine::clear_command() {
   _command["fmu_input"] = json::object();
   _command["fmu_reset"] = false;
 }
-
 
 #ifdef CNCPP_TEST_MACHINE
 #include <iostream>

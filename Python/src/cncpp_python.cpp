@@ -39,9 +39,35 @@ void machine_load_dict(cncpp::Machine &machine, py::dict data) {
   machine.load(parsed);
 }
 
-py::object json_to_python(nlohmann::json const &data) {
+void machine_init_from_object(cncpp::Machine &machine, py::object data) {
+  if (data.is_none()) {
+    return;
+  }
+
+  if (py::isinstance<py::dict>(data)) {
+    machine_load_dict(machine, py::cast<py::dict>(data));
+    return;
+  }
+
+  auto os = py::module_::import("os");
+  auto filename = py::str(os.attr("fspath")(data));
+  machine_load(machine, std::string(filename));
+}
+
+py::dict json_to_python_dict(nlohmann::json const &data) {
+  if (data.is_null()) {
+    return py::dict();
+  }
+
   auto json = py::module_::import("json");
-  return json.attr("loads")(data.dump());
+  py::object converted = json.attr("loads")(data.dump());
+  if (py::isinstance<py::dict>(converted)) {
+    return py::cast<py::dict>(converted);
+  }
+
+  py::dict output;
+  output["value"] = converted;
+  return output;
 }
 
 py::object point_tuple_or_none(cncpp::Point const &point) {
@@ -368,6 +394,7 @@ py::dict machine_summary(cncpp::Machine const &machine) {
   py::dict output;
   output["A"] = machine.A();
   output["tq"] = machine.tq();
+  output["tq_max"] = machine.tq_max();
   output["fmax"] = machine.fmax();
   output["error"] = machine.error();
   output["max_error"] = machine.max_error();
@@ -428,14 +455,12 @@ PYBIND11_MODULE(_cncpp, module) {
            [](cncpp::Point const &point) { return point.desc(false); });
 
   py::class_<cncpp::Machine, MachineHandle>(module, "Machine")
-      .def(py::init([](py::object filename) {
+      .def(py::init([](py::object data) {
              auto machine = std::make_shared<cncpp::Machine>();
-             if (!filename.is_none()) {
-               machine_load(*machine, py::cast<std::string>(filename));
-             }
+             machine_init_from_object(*machine, std::move(data));
              return machine;
            }),
-           py::arg("filename") = py::none())
+           py::arg("data") = py::none())
       .def(
           "desc",
           [](cncpp::Machine const &machine, bool colored) {
@@ -444,6 +469,10 @@ PYBIND11_MODULE(_cncpp, module) {
           py::arg("colored") = false)
       .def("load", &machine_load, py::arg("filename"))
       .def("load_dict", &machine_load_dict, py::arg("data"))
+      .def("connect", &cncpp::Machine::connect, py::arg("name"),
+           py::arg("url") = "tcp://localhost:9092")
+      .def("sync", &cncpp::Machine::sync)
+      .def("reset", &cncpp::Machine::reset)
       .def(
           "quantize",
           [](cncpp::Machine const &machine, data_t time) {
@@ -455,46 +484,46 @@ PYBIND11_MODULE(_cncpp, module) {
             return output;
           },
           py::arg("time"))
-      .def_property_readonly("A", &cncpp::Machine::A)
-      .def_property_readonly("tq", &cncpp::Machine::tq)
-      .def_property_readonly("fmax", &cncpp::Machine::fmax)
-      .def_property_readonly("error", &cncpp::Machine::error)
-      .def_property_readonly("max_error", &cncpp::Machine::max_error)
-      .def_property_readonly("zero", &cncpp::Machine::zero)
-      .def_property_readonly("offset", &cncpp::Machine::offset)
+      .def("A", &cncpp::Machine::A)
+      .def("tq", &cncpp::Machine::tq)
+      .def("tq_max", &cncpp::Machine::tq_max)
+      .def("fmax", &cncpp::Machine::fmax)
+      .def("error", &cncpp::Machine::error)
+      .def("max_error", &cncpp::Machine::max_error)
+      .def("zero", &cncpp::Machine::zero)
+      .def("offset", &cncpp::Machine::offset)
+      .def_property_readonly(
+          "has_agent",
+          [](cncpp::Machine const &machine) { return machine.agent() != nullptr; })
       .def_property(
           "setpoint",
           [](cncpp::Machine const &machine) { return machine.setpoint(); },
           [](cncpp::Machine &machine, cncpp::Point const &point) {
             machine.setpoint(point);
           })
-      .def_property(
-          "position",
-          [](cncpp::Machine const &machine) { return machine.position(); },
-          [](cncpp::Machine &machine, cncpp::Point const &point) {
-            machine.position(point);
-          })
+      .def("position",
+           [](cncpp::Machine const &machine) { return machine.position(); })
       .def(
           "set_setpoint",
           [](cncpp::Machine &machine, cncpp::Point const &point) {
-            return machine.setpoint(point);
+            machine.set_setpoint(point);
+            return machine.setpoint();
           },
           py::arg("point"))
       .def(
           "set_setpoint",
           [](cncpp::Machine &machine, data_t x, data_t y, data_t z) {
-            return machine.setpoint(x, y, z);
+            machine.set_setpoint(cncpp::Point(x, y, z));
+            return machine.setpoint();
           },
           py::arg("x"), py::arg("y"), py::arg("z"))
-      .def(
-          "set_position",
-          [](cncpp::Machine &machine, cncpp::Point const &point) {
-            return machine.position(point);
-          },
-          py::arg("point"))
       .def("data",
            [](cncpp::Machine const &machine) {
-             return json_to_python(machine.data());
+             return json_to_python_dict(machine.data());
+           })
+      .def("state",
+           [](cncpp::Machine const &machine) {
+             return json_to_python_dict(machine.state());
            })
       .def("summary", &machine_summary)
       .def("__repr__",
