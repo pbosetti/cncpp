@@ -20,7 +20,7 @@ Machine::Machine(json &j) {
 
 Machine::Machine(std::string &filename) {
   if (filename.substr(0, 6) == "tcp://") {
-    connect("cncpp", filename);
+    connect("cnc", filename);
   } else {
     load(filename);
   }
@@ -150,14 +150,14 @@ void Machine::load(std::string &filename) {
     ifstream f(filename);
     json data = json::parse(f);
     load(data);
-  } else if (path.extension() == ".toml") {
+  } else if (path.extension() == ".toml" || path.extension() == ".ini") {
     toml::table t = toml::parse_file(filename);
-    if (t.contains("machine")) {
-      auto mt = t["machine"];
-      if (!mt.is_table()) throw runtime_error("Expected 'machine' to be a table in TOML file");
+    if (t.contains("cnc")) {
+      auto mt = t["cnc"];
+      if (!mt.is_table()) throw runtime_error("Expected 'cnc' to be a table in TOML file");
       load(*mt.as_table());
     } else {
-      throw runtime_error("TOML file does not contain a 'machine' table: " + filename);
+      throw runtime_error("TOML file does not contain a 'cnc' table: " + filename);
     }
   } else {
     throw runtime_error("Unsupported file type: " + filename);
@@ -173,10 +173,16 @@ data_t Machine::quantize(data_t t, data_t &dq) const {
 
 void Machine::connect(const std::string &name, const std::string &url) {
   _agent = make_unique<Agent>(name, url);
+  _agent->set_settings_timeout(10000);
   _agent->init();
-  json settings = _agent->get_settings();
-  load(settings);
-  _agent->set_agent_id("cncpp");
+  try {
+    json settings = _agent->get_settings();
+    load(settings);
+  } catch (const exception &e) {
+    cerr << "Error fetching agent settings: " << e.what() << endl;
+    exit(EXIT_FAILURE);
+  }
+  _agent->set_agent_id("cnc");
   _agent->set_receive_timeout(1000ms);
   _agent->set_high_watermark(1);
   _agent->connect();
