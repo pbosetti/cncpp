@@ -37,7 +37,7 @@ The project must be completed within the **end of the winter exam session 2027**
 
 # Features
 
-At least two of the following features must be implemented:
+At least two of the following features must be implemented, one of which must be the Tool Radius Compensation or the Look Ahead feature. You can also propose other features or extensions, as long as they are related to CNC machining and are approved by the professor.
 
 ## Tool Radius Compensation
 
