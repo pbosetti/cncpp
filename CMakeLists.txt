@@ -101,8 +101,6 @@ elseif(APPLE)
   add_compile_options(-Wno-deprecated-literal-operator)
 endif()
 
-add_compile_options(-Wno-deprecated-literal-operator)
-
 find_package(Mads REQUIRED)
 message(STATUS "Found Mads: ${Mads_DIR}")
 
