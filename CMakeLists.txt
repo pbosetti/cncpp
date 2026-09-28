@@ -92,6 +92,15 @@ include_directories(
   # /opt/homebrew/include
 )
 
+if(WIN32)
+  add_compile_definitions(_CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_DEPRECATE
+                          _USE_MATH_DEFINES NOMINMAX)
+  # Make MSVC report the actual C++ standard in __cplusplus
+  add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)
+elseif(APPLE)
+  add_compile_options(-Wno-deprecated-literal-operator)
+endif()
+
 add_compile_options(-Wno-deprecated-literal-operator)
 
 find_package(Mads REQUIRED)
