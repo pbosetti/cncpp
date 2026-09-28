@@ -14,7 +14,9 @@
 #include <fmt/ranges.h>
 #include <iostream>
 #include <sstream>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 using namespace std;
 using namespace cncpp;

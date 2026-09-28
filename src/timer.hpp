@@ -20,9 +20,21 @@ Author: paolo.bosetti@unitn.it
 #include <sstream>
 #include <stdexcept> // for runtime_error
 #include <string.h>  // for strerror
-#include <sys/time.h>
 #include <time.h>
+#ifdef _WIN32
+#include <winsock2.h> // for struct timeval and timerclear
+#include <windows.h>  // for waitable timers
+#ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
+#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
+#endif
+struct itimerval {
+  struct timeval it_interval;
+  struct timeval it_value;
+};
+#else
+#include <sys/time.h>
 #include <unistd.h>
+#endif
 
 // clang-format off
 /*
@@ -107,6 +119,18 @@ public:
 #ifdef ENABLE_RT_SCHEDULER
     clock_gettime(CLOCK_REALTIME, &_now_ts);
     timespec_add_interval(&_now_ts);
+#elif defined(_WIN32)
+    // No SIGALRM on Windows: wait() sleeps until absolute deadlines on a
+    // high-resolution waitable timer (Windows 10 1803+), falling back to a
+    // standard one
+    _htimer = CreateWaitableTimerExW(NULL, NULL,
+                                     CREATE_WAITABLE_TIMER_HIGH_RESOLUTION,
+                                     TIMER_ALL_ACCESS);
+    if (!_htimer)
+      _htimer = CreateWaitableTimerExW(NULL, NULL, 0, TIMER_ALL_ACCESS);
+    if (!_htimer)
+      throw TimerError("Failed to create waitable timer");
+    _next = steady_clock::now();
 #else
     struct itimerval itimer;
     // First interval:
@@ -125,11 +149,18 @@ public:
   }
 
   void stop() {
+#ifdef _WIN32
+    if (_htimer) {
+      CloseHandle(_htimer);
+      _htimer = NULL;
+    }
+#else
     struct itimerval timer;
     timerclear(&timer.it_value);
     timerclear(&timer.it_interval);
     setitimer(ITIMER_REAL, &timer, NULL);
     signal(SIGALRM, SIG_DFL);
+#endif
     _n = 0;
     _min = INFINITY;
     _max = 0;
@@ -157,6 +188,21 @@ public:
       ret = TIMER_ERR_INTERRUPTED;
     }
     timespec_add_interval(&_now_ts);
+#elif defined(_WIN32)
+    {
+      // Next tick in the future: missed ticks are skipped, as with setitimer
+      const auto step = duration_cast<steady_clock::duration>(_interval);
+      const auto t0 = steady_clock::now();
+      do {
+        _next += step;
+      } while (_next <= t0);
+      LARGE_INTEGER due; // negative means relative, in 100 ns units
+      due.QuadPart = -duration_cast<nanoseconds>(_next - t0).count() / 100;
+      if (!SetWaitableTimer(_htimer, &due, 0, NULL, NULL, FALSE) ||
+          WaitForSingleObject(_htimer, INFINITE) != WAIT_OBJECT_0) {
+        ret = TIMER_ERR_INTERRUPTED;
+      }
+    }
 #else
     // call NOT interrupted by SIGALRM
     if (nanosleep(&_rqtp, NULL) == 0) {
@@ -219,6 +265,10 @@ private:
   struct timespec _now_ts;
   duration<double> _last;
   double _dt = 0; // elapsed time in seconds
+#ifdef _WIN32
+  HANDLE _htimer = NULL;              // waitable timer used by wait()
+  steady_clock::time_point _next;     // deadline of the last tick
+#endif
 
   // PRIVATE METHODS -----------------------------------------------------------
   void update_stats(double x) {
