@@ -12,3 +12,5 @@ out/
 doc/html
 
 imgui.ini
+
+.DS_Store
