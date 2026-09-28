@@ -22,7 +22,7 @@ else()
   add_compile_definitions(DEBUG=1)
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -51,7 +51,7 @@ include(FetchContent)
 message(STATUS "Fetching dependencies...")
 
 FetchContent_Declare(json
-  URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+  URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 

@@ -2,6 +2,8 @@
 
 This is the repository of the code developed during the _Digital Manufacturing_ course, academic year 2025-26, Department of Industrial Engineering, University of Trento.
 
+> **IMPORTANT** --- this version only works with MADS v2.4.3 or v2.5.0: be sure to update MADS to the latest version on [https://git.new/mads](https://git.new/mads) and re-compile the project after updating MADS.
+> **Rerunner** --- Also be sure to update the `mt_plugin` tool to the latest version on [https://github.com/mads-net/mt_plugin](https://github.com/mads-net/mt_plugin) and re-compile the project after updating `mt_plugin`.
 
 ## Contents
 
@@ -65,7 +67,7 @@ To enable the compilation we need to install a few packages: on the linux consol
 
 ```bash
 sudo apt update
-sudo apt install build-essential make cmake cmake-curses-gui cmake-qt-gui clang clang-format lldb libgsl-dev figlet sshfs graphviz gnuplot
+sudo apt install build-essential make cmake cmake-curses-gui cmake-qt-gui clang clang-format lldb libgsl-dev figlet sshfs graphviz gnuplot libopengl0
 sudo update-alternatives --set c++ /usr/bin/clang++
 sudo update-alternatives --set cc /usr/bin/clang
 ```

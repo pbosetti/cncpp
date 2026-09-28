@@ -124,7 +124,7 @@ int main(int argc, const char *argv[]) {
     // loop within a block
     block.walk([&](Block &b, data_t t, data_t l, data_t s) {
       Point pos = b.interpolate(l);
-      cout << format("{:},{:},{:},{:},{:},{:},{:},{:}", b.n(), t_tot, t, l, s,
+      cout << fmt::format("{:},{:},{:},{:},{:},{:},{:},{:}", b.n(), t_tot, t, l, s,
                     pos.x(), pos.y(), pos.z())
           << endl;
       t_tot += machine.tq();

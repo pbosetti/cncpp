@@ -43,16 +43,16 @@ std::string Block::desc(bool colored) const {
   // {:0>2} -> pad with "0", right align, 2 chars wide
   // {:-^9} -> pad with "-", center align, 9 chars wide
   // {:>5.0f} -> right align, 5 chars wide, 0 decimals float
-  ss << format("[{:>3}] ", _n);
+  ss << fmt::format("[{:>3}] ", _n);
   if (colored) {
-    ss << format("G{:0>2} ", styled(static_cast<int>(_type), fmt::fg(color)));
+    ss << fmt::format("G{:0>2} ", styled(static_cast<int>(_type), fmt::fg(color)));
   } else {
-    ss << format("G{:0>2} ", static_cast<int>(_type));
+    ss << fmt::format("G{:0>2} ", static_cast<int>(_type));
   }
   ss << _target.desc(colored);
-  ss << format(" F{:>5.0f} S{:>4.0f} ", _feedrate, _spindle);
-  ss << format("T{:0>2} M{:0>2} ", _tool, _m);
-  ss << format("L{:>6.2f}mm DT{:>6.2f}s", _length, _profile.dt);
+  ss << fmt::format(" F{:>5.0f} S{:>4.0f} ", _feedrate, _spindle);
+  ss << fmt::format("T{:0>2} M{:0>2} ", _tool, _m);
+  ss << fmt::format("L{:>6.2f}mm DT{:>6.2f}s", _length, _profile.dt);
   return ss.str();
 }
 
@@ -366,7 +366,7 @@ void Block::calc_arc() {
   // from now on, it's safer to drop the sign of radius angle
   _r = fabs(_r);
   if (isnan(_length) || isinf(_length)) {
-    throw runtime_error(format("Block {:}: Invalid arc radius: {}:", n(), _r));
+    throw runtime_error(fmt::format("Block {:}: Invalid arc radius: {}:", n(), _r));
   }
 }
 
@@ -396,7 +396,7 @@ int main() {
   cout << "t,lambda,s,x,y,z" << endl;
   b3.walk([&](Block &b, data_t t, data_t l, data_t s) {
     Point pos = b.interpolate(l);
-    cout << format("{:},{:},{:},{:},{:},{:}", t, l, s, pos.x(), pos.y(),
+    cout << fmt::format("{:},{:},{:},{:},{:},{:}", t, l, s, pos.x(), pos.y(),
                    pos.z())
          << endl;
   });

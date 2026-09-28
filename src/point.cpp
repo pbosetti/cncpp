@@ -96,12 +96,12 @@ std::vector<data_t> Point::vec() const {
 static string coord_str(opt_data_t const &coord, col_t const &color) {
   string str;
   if (coord && color) {
-    str = format("{:" CNCPP_NUMBERS_WIDTH ".3f}",
+    str = fmt::format("{:" CNCPP_NUMBERS_WIDTH ".3f}",
                  styled(coord.value(), fg(color.value())));
   } else if (coord) {
-    str = format("{:" CNCPP_NUMBERS_WIDTH ".3f}", coord.value());
+    str = fmt::format("{:" CNCPP_NUMBERS_WIDTH ".3f}", coord.value());
   } else {
-    str = format("{:>" CNCPP_NUMBERS_WIDTH "}", "-");
+    str = fmt::format("{:>" CNCPP_NUMBERS_WIDTH "}", "-");
   }
   return str;
 }

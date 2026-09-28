@@ -2,7 +2,10 @@
 
 #include "machine.hpp"
 #include <fstream>
-#include <strstream>
+// include only if C++ <<= 17
+#if __cplusplus <= 201703L
+#include <stringstream>
+#endif
 #include <filesystem>
 #include <chrono>
 
