@@ -97,10 +97,9 @@ if(WIN32)
                           _USE_MATH_DEFINES NOMINMAX)
   # Make MSVC report the actual C++ standard in __cplusplus
   add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)
-else()
+elseif(APPLE)
   add_compile_options(-Wno-deprecated-literal-operator)
 endif()
-
 
 find_package(Mads REQUIRED)
 message(STATUS "Found Mads: ${Mads_DIR}")
