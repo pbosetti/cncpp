@@ -2,6 +2,8 @@
 
 This is the repository of the code developed during the _Digital Manufacturing_ course, academic year 2025-26, Department of Industrial Engineering, University of Trento.
 
+> **PREVIOUS ACADEMIC YEARS** --- the code developed in previous academic years is available in the branch `main26` (2025-26) and `main25` (2024-25). If you use git, you can check out those branches with `git switch main26` or `git switch main25`.
+
 > **IMPORTANT** --- this version only works with MADS v2.4.3 or v2.5.0: be sure to update MADS to the latest version on [https://git.new/mads](https://git.new/mads) and re-compile the project after updating MADS.
 > **Rerunner** --- Also be sure to update the `mt_plugin` tool to the latest version on [https://github.com/mads-net/mt_plugin](https://github.com/mads-net/mt_plugin) and re-compile the project after updating `mt_plugin`.
 
