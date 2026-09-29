@@ -14,50 +14,19 @@ This is the repository of the code developed during the _Digital Manufacturing_ 
 
 ## Prerequisites
 
-We are going to develop a C++17 project for the UNIX command-line environment. On Linux and MacOS, you are set already, on Windows we are going to use a WSL2 environment with Ubuntu OS (more later).
+We are going to develop a C++20 project for the UNIX command-line environment. On Linux and MacOS, you are set already, on Windows we are going to use a WSL2 environment with Ubuntu OS (more later).
 
 If you have a Windows laptop, you are suggested to use at least Windows 10, preferably Windows 11. Be sure to install Windows Terminal app <https://learn.microsoft.com/en-us/windows/terminal/install>
 
-Regardless your platform, begin with installing Visual Studio Code from here: <https://code.visualstudio.com/download>. Then open a terminal and type the following to install commonly used VSCode extensions:
-
-```sh
-code --install-extension xaver.clang-format
-code --install-extension tintinweb.graphviz-interactive-preview
-code --install-extension canna.figlet
-code --install-extension Juancete.gcode-formatter
-code --install-extension vscode-gcode.gcode
-code --install-extension vadimcn.vscode-lldb
-```
+Regardless your platform, begin with installing Visual Studio Code from here: <https://code.visualstudio.com/download>. 
 
 Also, you want to install the Fira Code font family, from <https://github.com/tonsky/FiraCode/releases/tag/6.2>. Download the file `FiraCode_6.2.zip`, unzip it and install the new font.
 
-
 ## VS Code setup
 
-The development is carried out in Visual Studio Code (VS Code for brevity).
+Browse the `Goodies` folder and follow the instructions in `Goodies/README.md`
+ to install the VSCode profile `Goodies/CNCpp.code-profile`.
 
-I suggest to configure VS Code with the following settings. Open the settings file: `Ctrl`+`Shift`+`p` then type `json` and select the item "Preferences: Open Settings (JSON)". Then be sure that the list contains the following items (the first two settings **only if you have installed Fira Code font**):
-
-```json
-{
-  "editor.fontFamily": "Fira Code",
-  "editor.fontLigatures": true,
-  "editor.tabSize": 2,
-  "editor.insertSpaces": true,
-  "editor.wrappingIndent": "indent",
-  "editor.renderControlCharacters": true,
-  "editor.wordWrap": "bounded",
-  "editor.wordWrapColumn": 80,
-  "editor.rulers": [80],
-  "editor.renderLineHighlight": "all",
-  "cmake.configureOnEdit": false,
-  "cmake.configureOnOpen": false,
-  "C_Cpp.default.cppStandard": "c++17",
-  "C_Cpp.default.cStandard": "c17",
-}
-```
-
-It there are already other items in the JSON file, just add (don't replace) the above ones to the list (pay attention to separate each line with a comma and to put everithyng in between the outer curly braces).
 
 
 ### 🪟 Windows (or 🐧 Ubuntu/Debian Linux)
@@ -94,13 +63,13 @@ brew install --cask cmake
 This repository will be regularly updated after each lesson. To have your own project together with the reference, the following workflow is suggested:
 
 0. work in `Develop` folder: `cd ~/Develop`
-1. download this repository with `wget https://github.com/pbosetti/cncpp/archive/refs/heads/main26.zip`
+1. download this repository with `wget https://github.com/pbosetti/cncpp/archive/refs/heads/main26-27.zip`
 2. unzip it twice:
-  - `unzip main26.zip && mv cncpp-main26 cncpp-reference`
-  - `unzip main26.zip && rm main26.zip`
-3. Now in `Develop` you have two identical folders: you'll work in `cncpp-main26`, while 'cncpp-reference` will be continuously updated with the instructor's version and used as a reference
-4. Open in VSCode the `cncpp-main26` project: `code cncpp-main26/cncpp.code-workspace`, then in the explorer side panel, right click in the blank space and select *Add folder to workspace...*
-5. before each lesson, update the reference version with `wget https://github.com/pbosetti/cncpp/archive/refs/heads/main26.zip && unzip -u main26.zip && rm main26.zip` **from the `Develop` folder**
+  - `unzip main26-27.zip && mv cncpp-main26-27 cncpp-reference`
+  - `unzip main26-27.zip && rm main26-27.zip`
+3. Now in `Develop` you have two identical folders: you'll work in `cncpp-main26-27`, while 'cncpp-reference` will be continuously updated with the instructor's version and used as a reference
+4. Open in VSCode the `cncpp-main26-27` project: `code cncpp-main26-27/cncpp.code-workspace`, then in the explorer side panel, right click in the blank space and select *Add folder to workspace...* and pick the `cncpp-reference` folder. Now you have both the development and the reference version in the same workspace.
+5. before each lesson, update the reference version with `wget https://github.com/pbosetti/cncpp/archive/refs/heads/main26-27.zip && unzip -u main26-27.zip && rm main26-27.zip` **from the `Develop` folder**
 
 Now you can keep side by side your development and the reference version.
 
@@ -134,17 +103,17 @@ You are suggested to run `export PATH=$PATH:$PWD/products_host/bin` once per ses
 
 # Git worktree
 
-If you want to have both the main branch and the development branch on your local machine, in two different folders, you can do the following:
+If you want to have both the main branch and the development branch on your local machine, in two different folders, and you are ready to use git, you can do the following:
 
 ```sh
 # make your own development branch
 git branch devel
 git switch devel
 # create a new worktree in a folder named cncpp_main
-git worktree add ../cncpp_main main25
+git worktree add ../cncpp_main main26-27
 ```
 
-This creates the folder `../cncpp_main` and checks out the `main25` branch in it.
+This creates the folder `../cncpp_main` and checks out the `main26-27` branch in it.
 
 You can regularly downoad the latest changes from the remote repository with `git pull` in the `../cncpp_main` folder.
 

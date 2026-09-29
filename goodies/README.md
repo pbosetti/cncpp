@@ -2,6 +2,10 @@
 
 This forder contains useful stuff.
 
+## VSCode profile
+
+The file `goodies/CNCpp.code-profile` contains common settings and extensions that we will use in class. You can import it in VSCode by going to the cog button in the bottom left corner, then "Profile", then "Profiles" and finally "Import profile".
+
 ## Keymap: `italyprog.zip` (**Windows only**)
 
 **NOTE: this is only needed if you have a physical italian keyboard**.
