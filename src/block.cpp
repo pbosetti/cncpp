@@ -19,7 +19,7 @@ using namespace cncpp;
 using namespace fmt;
 
 // LIFECYCLE ==================================================================
-Block::Block(string line) : _line(line), _n(0) {}
+Block::Block(string line) : _line(std::move(line)) {}
 
 Block::Block(string line, Block &prev) : Block(line) { *this = prev; }
 
@@ -44,11 +44,8 @@ std::string Block::desc(bool colored) const {
   // {:-^9} -> pad with "-", center align, 9 chars wide
   // {:>5.0f} -> right align, 5 chars wide, 0 decimals float
   ss << fmt::format("[{:>3}] ", _n);
-  if (colored) {
-    ss << fmt::format("G{:0>2} ", styled(static_cast<int>(_type), fmt::fg(color)));
-  } else {
-    ss << fmt::format("G{:0>2} ", static_cast<int>(_type));
-  }
+  auto style = colored ? fmt::fg(color) : fmt::text_style();
+  ss << fmt::format("G{:0>2} ", styled(static_cast<int>(_type), style));
   ss << _target.desc(colored);
   ss << fmt::format(" F{:>5.0f} S{:>4.0f} ", _feedrate, _spindle);
   ss << fmt::format("T{:0>2} M{:0>2} ", _tool, _m);
@@ -78,8 +75,7 @@ Block &Block::parse(const Machine *m) {
 
   while (ss >> token) {
     try {
-      if (!parse_token(token))
-        break;
+      parse_token(token);
     } catch (runtime_error &e) {
       stringstream es;
       es << "Parsing error at line: " << _line << endl;
@@ -151,7 +147,7 @@ Point Block::interpolate(data_t lambda) {
   else {
     throw runtime_error("Cannot interpolate block" + _line);
   }
-  result.z(prev->target().z() + _delta.z() * lambda);
+  result.z(p0.z() + _delta.z() * lambda);
   return result;
 }
 
@@ -189,7 +185,6 @@ data_t Block::Profile::lambda(data_t t, data_t &s) {
   } else if (t < dt_1 + dt_m) {
     r = f * (dt_1 / 2.0 + (t - dt_1));
     s = f;
-    current_acc = 0;
   } else if (t < dt_1 + dt_m + dt_2) {
     data_t t_2 = dt_1 + dt_m;
     r = f * dt_1 / 2.0 + f * (dt_m + t - t_2) +
@@ -208,13 +203,12 @@ data_t Block::Profile::lambda(data_t t, data_t &s) {
 
 // PRIVATE METHODS ============================================================
 
-bool Block::parse_token(string &token) {
-  bool res = true;
+void Block::parse_token(string &token) {
   char cmd = toupper(token[0]); // g -> G, and G -> G
   string arg = token.substr(1);
 
   if (cmd == '#' || cmd == ';') // comments
-    return false;
+    return;
   if (arg.empty()) // empty argument
     throw runtime_error("Empty command argument");
 
@@ -271,13 +265,8 @@ bool Block::parse_token(string &token) {
     break;
 
   default:
-    stringstream ss;
-    ss << "Unknown/unsupported command: '" << token << "'";
-    throw runtime_error(ss.str());
-    break;
+    throw runtime_error("Unknown/unsupported command: '" + token + "'");
   }
-
-  return res;
 }
 
 Point Block::start_point() { return prev ? prev->target() : _machine->zero(); }
@@ -347,8 +336,7 @@ void Block::calc_arc() {
     if (fabs(_r - r2) > _machine->max_error()) {
       throw runtime_error(
           fmt::format("Block {:}: Arc endpoints mismatch error ({:} vs: {:})",
-                      n(), _r - r2, _machine->max_error())
-              .c_str());
+                      n(), _r - r2, _machine->max_error()));
     }
   }
   _center.x(xc);

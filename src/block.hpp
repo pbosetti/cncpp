@@ -42,14 +42,12 @@ public:
     data_t a = 0.0, d = 0.0;
     /// Peak feed and path length.
     data_t f = 0.0, l = 0.0;
-    /// Initial and final feed values.
-    data_t fs = 0.0, fe = 0.0;
     /// Phase durations (accel, cruise, decel).
     data_t dt_1 = 0.0, dt_m = 0.0, dt_2 = 0.0;
     /// Total block duration.
     data_t dt = 0.0;
     /// Instantaneous acceleration value, used mainly for arc motion.
-    data_t current_acc;
+    data_t current_acc = 0.0;
 
     /**
      * @brief Computes normalized path position over profile time.
@@ -133,7 +131,7 @@ public:
 
   // ACCESSORS =================================================================
   /** @brief Returns the original G-code line text. */
-  std::string line() const { return _line; }
+  const std::string &line() const { return _line; }
   /** @brief Returns the block number parsed from the N word. */
   size_t n() const { return _n; }
   /** @brief Returns total execution time of the block. */
@@ -173,9 +171,9 @@ public:
 private:
   std::string _line;                // original G-Code line, eg "N01 G00 X100"
   size_t _n = 0;                    // block number
-  Point _target = Point();          // block destination
-  Point _center = Point();          // arc center
-  Point _delta = Point();           // block projections
+  Point _target;                    // block destination
+  Point _center;                    // arc center
+  Point _delta;                     // block projections
   data_t _length = 0;               // block length
   data_t _i = 0, _j = 0, _r = 0;    // arc parameters
   data_t _theta_0 = 0, _dtheta = 0; // arc initial and included angles
@@ -191,12 +189,10 @@ private:
   Machine const *_machine = nullptr;      // machine we're running on
 
   // UTILITIES =================================================================
-  bool parse_token(std::string &token);
+  void parse_token(std::string &token);
   Point start_point();
   void compute();
   void calc_arc();
-
-
 }; // class Block
 
 } // namespace cncpp
