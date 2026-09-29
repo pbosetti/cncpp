@@ -1,4 +1,4 @@
-# CNCPP 2026
+# CNCPP 2026–27
 
 This is the repository of the code developed during the _Digital Manufacturing_ course, academic year 2025-26, Department of Industrial Engineering, University of Trento.
 
