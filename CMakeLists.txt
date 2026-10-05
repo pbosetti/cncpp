@@ -116,7 +116,7 @@ message(STATUS "Found Mads: ${Mads_DIR}")
 #   ${SRC_DIR}/defines.hpp
 # )
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
+# add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 
 #  ____                                        _        _   _
 # |  _ \  ___   ___ _   _ _ __ ___   ___ _ __ | |_ __ _| |_(_) ___  _ __
@@ -161,30 +161,7 @@ endif()
 # main Library
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 
-add_library(cncpp STATIC ${SRC_FILES})
-target_include_directories(cncpp PUBLIC ${SRC_DIR})
-target_link_libraries(cncpp PUBLIC fmt::fmt Mads::Mads)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/tests)
-
-add_executable(point_test ${SRC_DIR}/point.cpp)
-target_compile_definitions(point_test PRIVATE CNCPP_TEST_POINT)
-target_link_libraries(point_test PRIVATE cncpp fmt::fmt)
-
-add_executable(block_test ${SRC_DIR}/block.cpp)
-target_compile_definitions(block_test PRIVATE CNCPP_TEST_BLOCK)
-target_link_libraries(block_test PRIVATE cncpp fmt::fmt)
-
-add_executable(program_test ${SRC_DIR}/program.cpp)
-target_compile_definitions(program_test PRIVATE CNCPP_TEST_PROGRAM)
-target_link_libraries(program_test PRIVATE cncpp fmt::fmt)
-
-add_executable(machine_test ${SRC_DIR}/machine.cpp)
-target_compile_definitions(machine_test PRIVATE CNCPP_TEST_MACHINE)
-target_link_libraries(machine_test PRIVATE cncpp fmt::fmt)
-
-add_executable(cnc ${SRC_DIR}/main/cnc.cpp)
-target_link_libraries(cnc PRIVATE cncpp keystroker rang)
 
 #   ___           _        _ _
 #  |_ _|_ __  ___| |_ __ _| | |

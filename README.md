@@ -38,7 +38,7 @@ To enable the compilation we need to install a few packages: on the linux consol
 
 ```bash
 sudo apt update
-sudo apt install build-essential make cmake cmake-curses-gui cmake-qt-gui clang clang-format lldb libgsl-dev figlet sshfs graphviz gnuplot libopengl0
+sudo apt install build-essential make cmake cmake-curses-gui cmake-qt-gui clang clang-format lldb libgsl-dev figlet sshfs graphviz gnuplot libopengl0 ninja-build git gh doxygen
 sudo update-alternatives --set c++ /usr/bin/clang++
 sudo update-alternatives --set cc /usr/bin/clang
 ```
