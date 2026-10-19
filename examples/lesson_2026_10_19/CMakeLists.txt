@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
 project(Lesson3 LANGUAGES CXX)
 
-# C++ version
+# C++ version, REQUIRED means that cmake fails if the compiler
+# does not support C++20
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Generates build/compile_commands.json, used by the editor
+# to find the headers and give suggestions
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Adding more compilation warnings
 add_compile_options(-Wall -Wextra)
@@ -12,7 +15,8 @@ add_compile_options(-Wall -Wextra)
 add_library(thermostat STATIC src/thermostat.cpp)
 target_include_directories(thermostat PUBLIC src)
 
-## Executables here
+# One executable for each part of the lesson,
+# all of them linked to the thermostat library
 add_executable(references src/main/01_references.cpp)
 target_link_libraries(references PRIVATE thermostat)
 
@@ -27,3 +31,6 @@ target_link_libraries(operators PRIVATE thermostat)
 
 add_executable(lambdas src/main/05_lambdas.cpp)
 target_link_libraries(lambdas PRIVATE thermostat)
+
+# cmake -B build
+# cmake --build build
