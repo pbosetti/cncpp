@@ -90,7 +90,7 @@ Block &Block::parse(const Machine *m) {
   }
   // Modal behavior
   _target.modal(start_point());
-  _delta = _target.delta(start_point());
+  _delta = _target - start_point();
   _acc = _machine->A();
   _length = _delta.length();
 

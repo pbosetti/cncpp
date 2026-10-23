@@ -14,7 +14,6 @@
 #include <fmt/ranges.h>
 #include <iostream>
 #include <sstream>
-#include <unistd.h>
 
 using namespace std;
 using namespace cncpp;
@@ -41,15 +40,6 @@ void Point::reset() {
 }
 
 // OPERATORS/OPERATIONS ========================================================
-Point Point::delta(Point const &o) const {
-  if (!is_complete() || !o.is_complete()) {
-    throw runtime_error("Points are not complete, can't do delta");
-  }
-  Point out(_x.value() - o._x.value(), _y.value() - o._y.value(),
-            _z.value() - o._z.value());
-  return out;
-}
-
 data_t Point::length() const {
   if (!is_complete()) {
     throw runtime_error("Point is not complete, can't compute length");
@@ -66,19 +56,21 @@ void Point::modal(Point const &o) {
     _z = o._z;
 }
 
-Point &Point::operator=(Point const &o) {
-  _x = o._x;
-  _y = o._y;
-  _z = o._z;
-  return *this;
-}
-
 Point Point::operator+(Point const &o) const {
   if (!is_complete() || !o.is_complete()) {
     throw runtime_error("Points are not complete, can't do the sum");
   }
   Point out(_x.value() + o._x.value(), _y.value() + o._y.value(),
             _z.value() + o._z.value());
+  return out;
+}
+
+Point Point::operator-(Point const &o) const {
+  if (!is_complete() || !o.is_complete()) {
+    throw runtime_error("Points are not complete, can't do the difference");
+  }
+  Point out(_x.value() - o._x.value(), _y.value() - o._y.value(),
+            _z.value() - o._z.value());
   return out;
 }
 
@@ -119,7 +111,7 @@ int main() {
   Point p3 = p1 + p2;
   cout << "p3 (p1 + p2): " << p3 << endl;
   cout << "p3 length: " << p3.length() << endl;
-  cerr << "p3 delta p1: " << p3.delta(p1) << endl;
+  cerr << "p3 - p1: " << p3 - p1 << endl;
   return 0;
 }
 

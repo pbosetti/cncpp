@@ -13,7 +13,13 @@ Author: Paolo Bosetti, 2026
 #include <iostream>
 #include <optional>
 #include <sstream>
+#ifdef _WIN32
+#include <io.h> // isatty
+#define STDOUT_FILENO 1
+#define STDERR_FILENO 2
+#else
 #include <unistd.h>
+#endif
 
 // Semantic versioning
 #define CNCPP_VERSION "0.1.0"

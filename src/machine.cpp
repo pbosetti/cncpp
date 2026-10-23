@@ -211,7 +211,7 @@ void Machine::sync() {
     cerr << "Error during MADS sync: " << e.what() << endl;
   }
   try {
-    _error = _setpoint.delta(position()).length();
+    _error = (_setpoint - _position).length();
   } catch (const exception &e) {
     _error = numeric_limits<data_t>::quiet_NaN();
   }

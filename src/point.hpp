@@ -23,7 +23,9 @@ namespace cncpp {
  * @brief Represents a point in 3-D space with optional coordinates.
  *
  * A coordinate can be unset (std::nullopt) and later completed through
- * mutators or modal updates.
+ * mutators or modal updates. Partial points only come from G-code parsing
+ * (e.g. "G01 X10" leaves Y and Z unset until modal() fills them in).
+ * Arithmetic operations require complete points.
  */
 class Point : public Object {
 
@@ -51,12 +53,6 @@ public:
   void reset();
 
   // OPERATORS/OPERATIONS ======================================================
-  /**
-   * @brief Computes the coordinate-wise difference from another point.
-   * @param other Point used as reference for the subtraction.
-   * @return A new point equal to this point minus @p other.
-   */
-  Point delta(Point const &other) const;
 
   /**
    * @brief Computes the Euclidean length of the point vector.
@@ -71,18 +67,18 @@ public:
   void modal(Point const &other);
 
   /**
-   * @brief Assigns coordinates from another point.
-   * @param other Point to copy from.
-   * @return Reference to this point.
-   */
-  Point &operator=(Point const &other);      // p1 = p2;
-
-  /**
    * @brief Adds two points component-wise.
    * @param other Point to add.
    * @return Sum of this point and @p other.
    */
   Point operator+(Point const &other) const; // Point p3 = p1 + p2;
+
+  /**
+   * @brief Subtracts two points component-wise.
+   * @param other Point to subtract.
+   * @return Difference of this point and @p other.
+   */
+  Point operator-(Point const &other) const; // Point d = p1 - p2;
 
   /**
    * @brief Checks whether all coordinates are set.

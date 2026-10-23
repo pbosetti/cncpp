@@ -126,27 +126,27 @@ int main() {
         !require(threw, "operator+ with incomplete: throws runtime_error");
   }
 
-  // DELTA
+  // OPERATOR -
   {
     Point p1(5.0, 7.0, 9.0);
     Point p2(1.0, 2.0, 3.0);
-    Point d = p1.delta(p2);
-    failures += !require(approx_equal(d.x(), 4.0), "delta: x");
-    failures += !require(approx_equal(d.y(), 5.0), "delta: y");
-    failures += !require(approx_equal(d.z(), 6.0), "delta: z");
+    Point d = p1 - p2;
+    failures += !require(approx_equal(d.x(), 4.0), "operator-: x");
+    failures += !require(approx_equal(d.y(), 5.0), "operator-: y");
+    failures += !require(approx_equal(d.z(), 6.0), "operator-: z");
   }
   {
-    // delta with incomplete point throws
+    // operator- with incomplete point throws
     Point p1(1.0, 2.0, 3.0);
     Point p2;
     bool threw = false;
     try {
-      p1.delta(p2);
+      (void)(p1 - p2);
     } catch (std::runtime_error const &) {
       threw = true;
     }
     failures +=
-        !require(threw, "delta with incomplete: throws runtime_error");
+        !require(threw, "operator- with incomplete: throws runtime_error");
   }
 
   // LENGTH
