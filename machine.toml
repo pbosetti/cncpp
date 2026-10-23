@@ -1,4 +1,4 @@
-[machine]
+[cnc]
 zero = [0.0, 0.0, 0.0]   # Workpiece origin coordinates
 offset = [0.0, 0.0, 0.0] # Tool offset coordinates
 tq = 0.003               # in seconds

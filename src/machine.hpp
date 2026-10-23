@@ -2,6 +2,8 @@
 
 #include "defines.hpp"
 #include "point.hpp"
+#include <limits>
+#include <memory>
 #include <nlohmann/json.hpp>
 #include <toml++/toml.hpp>
 #include <agent.hpp>
@@ -13,7 +15,10 @@ namespace cncpp {
  *
  * A machine stores physical limits, quantization settings, coordinate offsets,
  * and the current commanded and actual positions. Configuration values can be
- * loaded from a JSON object or from a JSON file.
+ * loaded from a JSON object, a TOML table, or a JSON/TOML file.
+ *
+ * Units: lengths in mm, times in s, feedrates in mm/min, accelerations in
+ * mm/s^2.
  */
 class Machine : public Object {
   public:
@@ -27,13 +32,14 @@ class Machine : public Object {
    * @brief Constructs a machine and loads configuration from JSON data.
    * @param j JSON object containing machine configuration values.
    */
-  Machine(nlohmann::json &j);
+  Machine(nlohmann::json const &j);
 
   /**
-   * @brief Constructs a machine and loads configuration from a JSON file.
-   * @param filename Path to the JSON configuration file.
+   * @brief Constructs a machine from a configuration file or a MADS broker.
+   * @param filename Path to a JSON/TOML configuration file, or a broker URL
+   * starting with `tcp://`.
    */
-  Machine(std::string &filename);
+  Machine(std::string const &filename);
 
   /**
    * @brief Destroys the machine instance.
@@ -55,25 +61,25 @@ class Machine : public Object {
    * Recognized keys are `tq`, `A`, `fmax`, `max_error`, `zero`, and `offset`.
    * Invalid value types raise std::runtime_error.
    */
-  void load(nlohmann::json &j);
+  void load(nlohmann::json const &j);
 
   /**
    * @brief Loads machine configuration values from TOML data.
    * @param t TOML table containing optional machine parameters.
    *
-   * Recognized keys are `tq`, `A`, `fmax`, `max_error`, `zero`, and `offset`.
-   * Invalid value types raise std::runtime_error.
+   * The table is converted to JSON and loaded with load(nlohmann::json const&).
    */
-  void load(toml::table &t);
+  void load(toml::table const &t);
 
   /**
-   * @brief Loads machine configuration values from a JSON file.
-   * 
-   * Note that if using the TOML format, the machine configuration must be nested under a `machine` table.
-   * 
+   * @brief Loads machine configuration values from a JSON or TOML file.
+   *
+   * Note that if using the TOML format (`.toml` or `.ini`), the machine
+   * configuration must be nested under a `cnc` table.
+   *
    * @param filename Path to the JSON/TOML configuration file.
    */
-  void load(std::string &filename);
+  void load(std::string const &filename);
 
   /**
    * @brief Quantizes a time value to the next machine sampling instant.
@@ -115,10 +121,11 @@ class Machine : public Object {
 
   /**
    * @brief Set the setpoint object
-   * 
-   * This call implicitly calls `sync()` to send the new setpoint to the agent 
-   * and update the machine state.
-   * 
+   *
+   * This call implicitly calls `sync()` to send the new setpoint to the agent
+   * and update the machine state. When no agent is connected, the machine is
+   * ideal: the position immediately follows the setpoint.
+   *
    * @param p The setpoint coordinates
    */
   void set_setpoint(const Point &p);
@@ -196,22 +203,6 @@ class Machine : public Object {
   Point setpoint() const { return _setpoint; }
 
   /**
-   * @brief Sets the current setpoint.
-   * @param p New setpoint position.
-   * @return Updated setpoint position.
-   */
-  Point setpoint(Point p) { return _setpoint = p; }
-
-  /**
-   * @brief Sets the current setpoint from coordinate values.
-   * @param x New x coordinate.
-   * @param y New y coordinate.
-   * @param z New z coordinate.
-   * @return Updated setpoint position.
-   */
-  Point setpoint(data_t x, data_t y, data_t z) { return _setpoint = Point(x, y, z); } 
-
-  /**
    * @brief Gets the current actual position.
    * @return Current machine position.
    */
@@ -244,12 +235,12 @@ class Machine : public Object {
   Point _offset{0, 0, 0};
   data_t _tq = 0.001;        // 1 ms
   data_t _tq_max = 0.010;    // 10 ms
-  data_t _A = 5.0;           // m^s/s
+  data_t _A = 5.0;           // mm/s^2
   data_t _fmax = 10000.0;    // mm/min
   data_t _max_error = 0.005; // mm
   // State parameters
   Point _setpoint, _position;
-  data_t _error = numeric_limits<data_t>::quiet_NaN();       // mm
+  data_t _error = std::numeric_limits<data_t>::quiet_NaN(); // mm
   // MADS agent
   std::unique_ptr<Mads::Agent> _agent;
   nlohmann::json _command{};

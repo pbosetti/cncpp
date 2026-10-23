@@ -1,13 +1,11 @@
 
 
 #include "machine.hpp"
-#include <fstream>
-// include only if C++ <<= 17
-#if __cplusplus <= 201703L
-#include <stringstream>
-#endif
-#include <filesystem>
+#include <algorithm>
 #include <chrono>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 
 using namespace cncpp;
 using namespace std;
@@ -15,13 +13,16 @@ using namespace Mads;
 using namespace chrono_literals; // allows to do 100ms
 using json = nlohmann::json;
 
+static data_t read_number(json const &j, string const &key, data_t def);
+static Point read_point(json const &j, string const &key, Point const &def);
+
 // LIFECYCLE =================================================================
 
-Machine::Machine(json &j) {
+Machine::Machine(json const &j) {
   load(j);
 }
 
-Machine::Machine(std::string &filename) {
+Machine::Machine(std::string const &filename) {
   if (filename.substr(0, 6) == "tcp://") {
     connect("cnc", filename);
   } else {
@@ -49,119 +50,38 @@ std::string Machine::desc(bool colored) const {
 }
 
 // OPERATIONS/OPERATORS ======================================================
-void Machine::load(nlohmann::json &j) {
+void Machine::load(json const &j) {
   _data = j;
-  if (_data.contains("tq")) {
-    if (!_data["tq"].is_number()) throw runtime_error("tq is not a number");
-    _tq = _data["tq"];
-  }
-  if (_data.contains("tq_max")) {
-    if (!_data["tq_max"].is_number()) throw runtime_error("tq_mx is not a number");
-    _tq_max = _data["tq_max"];
-  }
-  if (_data.contains("A")) {
-    if (!_data["A"].is_number()) throw runtime_error("A is not a number");
-    _A = _data["A"];
-  }
-  if (_data.contains("fmax")) {
-    if (!_data["fmax"].is_number()) throw runtime_error("fmax is not a number");
-    _fmax = _data["fmax"];
-  }
-  if (_data.contains("max_error")) {
-    if (!_data["max_error"].is_number()) throw runtime_error("max_error is not a number");
-    _max_error = _data["max_error"];
-  }
-  if (_data.contains("zero")) {
-    if (!_data["zero"].is_array() || _data["zero"].size() != 3)
-      throw runtime_error("zero must be an array of three numbers");
-    for (auto &v : _data["zero"]) {
-      if (!v.is_number()) throw runtime_error("zero has a non-numerical value");
-    }
-    _zero.x(_data["zero"][0]);
-    _zero.y(_data["zero"][1]);
-    _zero.z(_data["zero"][2]);
-  }
-  if (_data.contains("offset")) {
-    if (!(_data["offset"].is_array() && _data["offset"].size() == 3))
-      throw runtime_error("offset must be an array of three numbers");
-    for (auto &v : _data["offset"]) {
-      if (!v.is_number()) throw runtime_error("offset has a non-numerical value");
-    }
-    _offset.x(_data["offset"][0]);
-    _offset.y(_data["offset"][1]);
-    _offset.z(_data["offset"][2]);
-  }
+  _tq = read_number(j, "tq", _tq);
+  _tq_max = read_number(j, "tq_max", _tq_max);
+  _A = read_number(j, "A", _A);
+  _fmax = read_number(j, "fmax", _fmax);
+  _max_error = read_number(j, "max_error", _max_error);
+  _zero = read_point(j, "zero", _zero);
+  _offset = read_point(j, "offset", _offset);
 }
 
-void Machine::load(toml::table &t) {
-  if (t.contains("tq")) {
-    if (!t["tq"].is_floating_point()) throw runtime_error("tq is not a number");
-    _tq = t["tq"].value_or(_tq);
-  }
-  if (t.contains("tq_max")) {
-    if (!t["tq_max"].is_floating_point()) throw runtime_error("tq_max is not a number");
-    _tq_max = t["tq_max"].value_or(_tq_max);
-  }
-  if (t.contains("A")) {
-    if (!t["A"].is_floating_point()) throw runtime_error("A is not a number");
-    _A = t["A"].value_or(_A);
-  }
-  if (t.contains("fmax")) {
-    if (!t["fmax"].is_floating_point()) throw runtime_error("fmax is not a number");
-    _fmax = t["fmax"].value_or(_fmax);
-  }
-  if (t.contains("max_error")) {
-    if (!t["max_error"].is_floating_point()) throw runtime_error("max_error is not a number");
-    _max_error = t["max_error"].value_or(_max_error);
-  }
-  if (t.contains("zero")) {
-    auto zero = t["zero"];
-    if (!zero.is_array() || zero.as_array()->size() != 3)
-      throw runtime_error("zero must be an array of three numbers");
-    for (auto &v : *zero.as_array()) {
-      if (!v.is_floating_point()) throw runtime_error("zero has a non-numerical value");
-    }
-    _zero.x(zero[0].value_or(_zero.x()));
-    _zero.y(zero[1].value_or(_zero.y()));
-    _zero.z(zero[2].value_or(_zero.z()));
-  }
-  if (t.contains("offset")) {
-    auto offset = t["offset"];
-    if (!offset.is_array() || offset.as_array()->size() != 3)
-      throw runtime_error("offset must be an array of three numbers");
-    for (auto &v : *offset.as_array()) {
-      if (!v.is_floating_point()) throw runtime_error("offset has a non-numerical value");
-    }
-    _offset.x(offset[0].value_or(_offset.x()));
-    _offset.y(offset[1].value_or(_offset.y()));
-    _offset.z(offset[2].value_or(_offset.z()));
-  }
-
-  // To store the original TOML structure in _data field, we need to convert 
-  // the toml::table to JSON. We can do this by first formatting the table as 
-  // JSON text and then parsing it back into a JSON object.
+void Machine::load(toml::table const &t) {
+  // Convert the toml::table to JSON by formatting it as JSON text and parsing
+  // it back, then use the JSON loader
   ostringstream ss;
   ss << toml::json_formatter{t} << endl;
-  _data = json::parse(ss.str());
+  load(json::parse(ss.str()));
 }
 
-void Machine::load(std::string &filename) {
+void Machine::load(std::string const &filename) {
   filesystem::path path{filename};
   if (!filesystem::exists(path)) throw runtime_error("File does not exist: " + filename);
   if (!filesystem::is_regular_file(path)) throw runtime_error("Not a regular file: " + filename);
   if (path.extension() == ".json") {
     ifstream f(filename);
-    json data = json::parse(f);
-    load(data);
+    load(json::parse(f));
   } else if (path.extension() == ".toml" || path.extension() == ".ini") {
     toml::table t = toml::parse_file(filename);
-    if (t.contains("cnc")) {
-      auto mt = t["cnc"];
-      if (!mt.is_table()) throw runtime_error("Expected 'cnc' to be a table in TOML file");
-      load(*mt.as_table());
-    } else {
-      throw runtime_error("TOML file does not contain a 'cnc' table: " + filename);
-    }
+    auto mt = t["cnc"];
+    if (!mt) throw runtime_error("TOML file does not contain a 'cnc' table: " + filename);
+    if (!mt.is_table()) throw runtime_error("Expected 'cnc' to be a table in TOML file");
+    load(*mt.as_table());
   } else {
     throw runtime_error("Unsupported file type: " + filename);
   }
@@ -182,10 +102,9 @@ void Machine::connect(const std::string &name, const std::string &url) {
     json settings = _agent->get_settings();
     load(settings);
   } catch (const exception &e) {
-    cerr << "Error fetching agent settings: " << e.what() << endl;
-    exit(EXIT_FAILURE);
+    throw runtime_error(string("Error fetching agent settings: ") + e.what());
   }
-  _agent->set_agent_id("cnc");
+  _agent->set_agent_id(name);
   _agent->set_receive_timeout(1000ms);
   _agent->set_high_watermark(1);
   _agent->connect();
@@ -223,6 +142,9 @@ void Machine::set_setpoint(const Point &p) {
   if (_agent) {
     _command["fmu_input"]["setpoint"] = {p.x(), p.y(), p.z()};
     sync();
+  } else { // ideal machine: no dynamics, no error
+    _position = p;
+    _error = 0;
   }
 }
 
@@ -251,6 +173,28 @@ void Machine::send_metrics(const nlohmann::json &metrics) {
 void Machine::clear_command() {
   _command["fmu_input"] = json::object();
   _command["fmu_reset"] = false;
+}
+
+// UTILITY FUNCTIONS ===========================================================
+
+// Reads an optional numeric value, returning def when the key is missing
+static data_t read_number(json const &j, string const &key, data_t def) {
+  if (!j.contains(key))
+    return def;
+  if (!j.at(key).is_number())
+    throw runtime_error(key + " is not a number");
+  return j.at(key).get<data_t>();
+}
+
+// Reads an optional array of three numbers, returning def when missing
+static Point read_point(json const &j, string const &key, Point const &def) {
+  if (!j.contains(key))
+    return def;
+  json const &v = j.at(key);
+  if (!v.is_array() || v.size() != 3 ||
+      !all_of(v.begin(), v.end(), [](json const &e) { return e.is_number(); }))
+    throw runtime_error(key + " must be an array of three numbers");
+  return Point(v[0].get<data_t>(), v[1].get<data_t>(), v[2].get<data_t>());
 }
 
 #ifdef CNCPP_TEST_MACHINE
