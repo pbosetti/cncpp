@@ -18,4 +18,10 @@ if(BUILD_TESTING)
   target_compile_definitions(machine_unit_tests PRIVATE
     CNCPP_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
   add_test(NAME machine_unit_tests COMMAND machine_unit_tests)
+
+  add_executable(program_unit_tests
+    ${CMAKE_CURRENT_LIST_DIR}/program_unit_tests.cpp
+  )
+  target_link_libraries(program_unit_tests PRIVATE cncpp)
+  add_test(NAME program_unit_tests COMMAND program_unit_tests)
 endif()

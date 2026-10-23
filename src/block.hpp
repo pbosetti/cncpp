@@ -25,9 +25,14 @@ class Machine;
  * @brief Represents a single parsed G-code block.
  *
  * A block stores one line of G-code together with its decoded motion,
- * geometric parameters, and feed profile. A block is a plain value: when it
- * is created from a previous block, it copies the modal state (motion type,
- * feedrate, spindle, tool) and the start point, and keeps no reference to it.
+ * geometric parameters, and feed profile. Blocks are linked with previous and
+ * next blocks to form a full program path: on parse(), a block inherits the
+ * modal state (motion type, feedrate, spindle, tool, block number) and the
+ * start point from its previous block, so after inserting a block in the
+ * middle of a sequence, re-parsing the following blocks updates them.
+ *
+ * Links are raw pointers: a copied block still points at the neighbors of the
+ * original. Blocks owned by a Program are linked by the Program itself.
  */
 class Block : public Object {
 public:
@@ -80,11 +85,14 @@ public:
   Block(std::string line);
 
   /**
-   * @brief Creates a block following a previous one, inheriting modal state.
+   * @brief Creates a block linked after a previous one.
+   *
+   * Sets `prev` as previous block of this one, and this one as next block of
+   * `prev`. Modal state is inherited when the block is parsed.
    * @param line Raw block text.
-   * @param prev Previous (already parsed) block in the sequence.
+   * @param prev Previous block in the sequence.
    */
-  Block(std::string line, Block const &prev);
+  Block(std::string line, Block &prev);
 
   /**
    * @brief Returns a human-readable description of the block.
@@ -96,6 +104,9 @@ public:
   // OPERATIONS/OPERATORS ======================================================
   /**
    * @brief Parses the block using the provided machine context.
+   *
+   * Parsing starts from a clean state, so a block can be parsed again after
+   * its previous block has changed. The previous block must be parsed.
    * @param m Machine settings and limits used for interpretation.
    * @return Reference to this block.
    */
@@ -166,6 +177,10 @@ public:
   bool parsed() const { return _parsed; }
   /** @brief Returns the radius of the arc. */
   data_t r() const { return _r; }
+  /** @brief Returns the previous block in the sequence, or nullptr. */
+  Block *prev() const { return _prev; }
+  /** @brief Returns the next block in the sequence, or nullptr. */
+  Block *next() const { return _next; }
 
 private:
   std::string _line;                // original G-Code line, eg "N01 G00 X100"
@@ -186,10 +201,15 @@ private:
   Profile _profile;                       // feedrate profile
   data_t _tq = 0;                         // machine sampling period
   bool _parsed = false;                   // has it been parsed?
+  Block *_prev = nullptr;                 // previous block in the sequence
+  Block *_next = nullptr;                 // next block in the sequence
 
   // UTILITIES =================================================================
   void parse_token(std::string const &token);
   void calc_arc(data_t max_error);
+
+  // Program owns, links and unlinks its blocks
+  friend class Program;
 
 }; // class Block
 

@@ -29,16 +29,9 @@ static int to_int(string const &s);
 // LIFECYCLE ==================================================================
 Block::Block(string line) : _line(line) {}
 
-Block::Block(string line, Block const &prev) : Block(line) {
-  if (!prev._parsed)
-    throw runtime_error("Previous block has not been parsed");
-  // modal values are inherited from the previous block
-  _type = prev._type;
-  _tool = prev._tool;
-  _feedrate = prev._feedrate;
-  _spindle = prev._spindle;
-  _n = _min_n = prev._n + 1;
-  _start = prev._target;
+Block::Block(string line, Block &prev) : Block(line) {
+  _prev = &prev;
+  prev._next = this;
 }
 
 std::string Block::desc(bool colored) const {
@@ -77,18 +70,38 @@ std::string Block::desc(bool colored) const {
 Block &Block::parse(const Machine *m) {
   if (!m)
     throw runtime_error("Cannot parse block without a machine");
+
+  // start from a clean state, keeping only the line and the links
+  Block *prev = _prev, *next = _next;
+  *this = Block(_line);
+  _prev = prev;
+  _next = next;
+
   stringstream ss(_line);
   string token;
 
   try {
+    // modal values are inherited from the previous block; the first block
+    // starts from machine zero
+    if (_prev) {
+      if (!_prev->_parsed)
+        throw runtime_error("Previous block has not been parsed");
+      _type = _prev->_type;
+      _tool = _prev->_tool;
+      _feedrate = _prev->_feedrate;
+      _spindle = _prev->_spindle;
+      _n = _min_n = _prev->_n + 1;
+      _start = _prev->_target;
+    } else {
+      _start = m->zero();
+    }
+
     while (ss >> token) {
       if (token[0] == '#' || token[0] == ';') // comment: skip rest of line
         break;
       parse_token(token);
     }
-    // Modal behavior: the first block starts from machine zero
-    if (!_start.is_complete())
-      _start = m->zero();
+    // Modal behavior: missing coordinates are taken from the start point
     _target.modal(_start);
     _delta = _target - _start;
     _length = _delta.length();

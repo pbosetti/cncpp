@@ -10,26 +10,27 @@
 #include "program.hpp"
 #include "defines.hpp"
 #include <fstream>
+#include <iterator>
 
 using namespace std;
 using namespace cncpp;
 
-Program::Program(const std::string &f, Machine *m) : _filename(f), _machine(m) {
+// LIFECYCLE ===================================================================
+Program::Program(const std::string &f, Machine *m) : _machine(m), _filename(f) {
   load(_filename);
 }
 
 Program::Program(Machine *m) : _machine(m) {}
 
-Program::~Program() {}
-
 std::string Program::desc(bool colored) const {
   ostringstream ss;
-  for (auto &current_block : *this) {
+  for (auto &current_block : _blocks) {
     ss << current_block.desc(colored) << endl;
   }
   return ss.str();
 }
 
+// OPERATORS/OPERATIONS ========================================================
 void Program::load(const string &filename, bool append) {
   _filename = filename;
 
@@ -41,45 +42,74 @@ void Program::load(const string &filename, bool append) {
     reset();
   string line;
   while (getline(file, line)) {
-    if (line[0] == '#')
-      continue;
+    size_t first = line.find_first_not_of(" \t\r");
+    if (first == string::npos || line[first] == '#' || line[first] == ';')
+      continue; // blank or comment line
     *this << line;
   }
-  file.close();
 }
 
-// NOTE on begin/end and front/back:
-// - begin() and end() are used for iteration and return iterators
-// - front() and back() are used for accessing the first and last elements directly
-
 Program &Program::operator<<(const std::string &line) {
-  if (size() > 0) { // this is not the first block
-    emplace_back(line, back());
-  } else { // this is the first block
-    emplace_back(line);
-  }
-  back().parse(_machine);
+  insert(_blocks.size(), line);
   return *this;
 }
 
-block_iterator Program::load_next() {
-  if (_current == end()) {
-    _current = begin();
-  } else {
-    _current++;
+Block &Program::insert(size_t index, const std::string &line) {
+  if (index > _blocks.size())
+    throw out_of_range("Cannot insert block at position " + to_string(index));
+  auto pos = next(_blocks.begin(), index);
+  Block *before = (pos == _blocks.begin()) ? nullptr : &*std::prev(pos);
+  Block *after = (pos == _blocks.end()) ? nullptr : &*pos;
+
+  // link the new block between the two neighbors
+  Block &b = *_blocks.emplace(pos, line);
+  b._prev = before;
+  b._next = after;
+  if (before)
+    before->_next = &b;
+  if (after)
+    after->_prev = &b;
+
+  try {
+    reparse_from(&b);
+  } catch (...) {
+    // unlink and remove the new block, then restore the following blocks
+    if (before)
+      before->_next = after;
+    if (after)
+      after->_prev = before;
+    _blocks.erase(std::prev(pos));
+    if (after)
+      reparse_from(after);
+    throw;
   }
-  _done = (_current == end());
+  return b;
+}
+
+Block *Program::load_next() {
+  if (!_started) {
+    _started = true;
+    _current = _blocks.empty() ? nullptr : &_blocks.front();
+  } else if (_current) {
+    _current = _current->next();
+  }
   return _current;
 }
 
 void Program::rewind() {
-  _current = end();
-  _done = false;
+  _current = nullptr;
+  _started = false;
 }
 
 void Program::reset() {
-  clear();
+  _blocks.clear();
   rewind();
+}
+
+// PRIVATE =====================================================================
+void Program::reparse_from(Block *b) {
+  for (; b; b = b->next())
+    b->parse(_machine);
 }
 
 /*
