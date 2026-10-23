@@ -15,17 +15,19 @@ can have multiple parameters.
 
 #include "defines.hpp"
 #include "point.hpp"
-#include "machine.hpp"
 #include <functional>
 
 namespace cncpp {
+
+class Machine;
 
 /**
  * @brief Represents a single parsed G-code block.
  *
  * A block stores one line of G-code together with its decoded motion,
- * geometric parameters, and feed profile. It can be linked with previous and
- * next blocks to form a full program path.
+ * geometric parameters, and feed profile. A block is a plain value: when it
+ * is created from a previous block, it copies the modal state (motion type,
+ * feedrate, spindle, tool) and the start point, and keeps no reference to it.
  */
 class Block : public Object {
 public:
@@ -36,25 +38,35 @@ public:
 
   /**
    * @brief Kinematic profile used to execute this block.
+   *
+   * Units: lengths in mm, times in s, feeds in mm/s, accelerations in mm/s^2.
    */
   struct Profile {
     /// Acceleration and deceleration magnitudes.
     data_t a = 0.0, d = 0.0;
     /// Peak feed and path length.
     data_t f = 0.0, l = 0.0;
-    /// Initial and final feed values.
-    data_t fs = 0.0, fe = 0.0;
     /// Phase durations (accel, cruise, decel).
     data_t dt_1 = 0.0, dt_m = 0.0, dt_2 = 0.0;
     /// Total block duration.
     data_t dt = 0.0;
     /// Instantaneous acceleration value, used mainly for arc motion.
-    data_t current_acc;
+    data_t current_acc = 0.0;
+
+    /**
+     * @brief Computes a trapezoidal (or triangular) velocity profile.
+     * @param l Path length (mm).
+     * @param f Nominal feedrate (mm/min).
+     * @param A Maximum acceleration (mm/s^2).
+     * @param m Machine used to quantize the total duration.
+     * @return The profile; all zeros for a zero-length path.
+     */
+    static Profile trapezoid(data_t l, data_t f, data_t A, Machine const &m);
 
     /**
      * @brief Computes normalized path position over profile time.
      * @param t Elapsed time from the beginning of the block.
-     * @param s Output instantaneous speed.
+     * @param s Output instantaneous speed (mm/min).
      * @return Normalized path coordinate in [0, 1].
      */
     data_t lambda(data_t t, data_t &s);
@@ -68,16 +80,11 @@ public:
   Block(std::string line);
 
   /**
-   * @brief Creates a block linked to a previous block.
+   * @brief Creates a block following a previous one, inheriting modal state.
    * @param line Raw block text.
-   * @param prev Previous block in the sequence.
+   * @param prev Previous (already parsed) block in the sequence.
    */
-  Block(std::string line, Block &prev);
-
-  /**
-   * @brief Destroys the block instance.
-   */
-  ~Block();
+  Block(std::string line, Block const &prev);
 
   /**
    * @brief Returns a human-readable description of the block.
@@ -85,13 +92,6 @@ public:
    * @return Text description of block state and parameters.
    */
   std::string desc(bool colored = true) const override;
-
-  /**
-   * @brief Assigns another block to this one.
-   * @param b Source block.
-   * @return Reference to this block.
-   */
-  Block &operator=(Block &b);
 
   // OPERATIONS/OPERATORS ======================================================
   /**
@@ -127,6 +127,8 @@ public:
 
   /**
    * @brief Iterates along the block profile and invokes a callback.
+   *
+   * The callback is invoked at t = 0, tq, 2 tq, ..., dt.
    * @param func Callback receiving block, time, lambda and speed values.
    */
   void walk(std::function<void(Block &b, data_t t, data_t l, data_t s)> func);
@@ -142,14 +144,14 @@ public:
   BlockType type() const { return _type; }
   /** @brief Returns the active tool number for this block. */
   size_t tool() const { return _tool; }
-  /** @brief Returns programmed linear feedrate. */
+  /** @brief Returns programmed feedrate (mm/min). */
   data_t feedrate() const { return _feedrate; }
-  /** @brief Returns feedrate projected along arc geometry. */
-  data_t arc_feedrate() const { return _arc_feedrate; }
   /** @brief Returns spindle speed value. */
   data_t spindle() const { return _spindle; }
   /** @brief Returns geometric path length of the block. */
   data_t length() const { return _length; }
+  /** @brief Returns start point of the block. */
+  const Point &start() const { return _start; }
   /** @brief Returns target point of the block. */
   const Point &target() const { return _target; }
   /** @brief Returns arc center point for circular motion. */
@@ -165,37 +167,29 @@ public:
   /** @brief Returns the radius of the arc. */
   data_t r() const { return _r; }
 
-  /// Previous block in the linked sequence, or nullptr.
-  Block *prev = nullptr;
-  /// Next block in the linked sequence, or nullptr.
-  Block *next = nullptr;
-
 private:
   std::string _line;                // original G-Code line, eg "N01 G00 X100"
   size_t _n = 0;                    // block number
-  Point _target = Point();          // block destination
-  Point _center = Point();          // arc center
-  Point _delta = Point();           // block projections
+  size_t _min_n = 0;                // smallest allowed block number
+  Point _start;                     // previous target (machine zero if first)
+  Point _target;                    // block destination
+  Point _center;                    // arc center
+  Point _delta;                     // block projections
   data_t _length = 0;               // block length
   data_t _i = 0, _j = 0, _r = 0;    // arc parameters
   data_t _theta_0 = 0, _dtheta = 0; // arc initial and included angles
-  data_t _feedrate = 0;             // feedrate
-  data_t _arc_feedrate = 0;         // feedrate along the arc
+  data_t _feedrate = 0;             // programmed feedrate (mm/min)
   data_t _spindle = 0;              // spindle rate
-  data_t _acc = 0;                  // actual acceleration
   size_t _m = 0;                    // M command argument
   size_t _tool = 0;                 // current tool number
   BlockType _type = BlockType::NO_MOTION; // type of block
   Profile _profile;                       // feedrate profile
+  data_t _tq = 0;                         // machine sampling period
   bool _parsed = false;                   // has it been parsed?
-  Machine const *_machine = nullptr;      // machine we're running on
 
   // UTILITIES =================================================================
-  bool parse_token(std::string &token);
-  Point start_point();
-  void compute();
-  void calc_arc();
-
+  void parse_token(std::string const &token);
+  void calc_arc(data_t max_error);
 
 }; // class Block
 

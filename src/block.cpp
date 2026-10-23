@@ -9,21 +9,37 @@ Block class implementation
  */
 
 #include "block.hpp"
+#include "machine.hpp"
+#include <cmath>
 #include <fmt/color.h>
 #include <fmt/format.h>
 #include <iostream>
+#include <numbers>
 #include <sstream>
 
 using namespace std;
 using namespace cncpp;
 using namespace fmt;
 
+using numbers::pi;
+
+static data_t to_number(string const &s);
+static int to_int(string const &s);
+
 // LIFECYCLE ==================================================================
-Block::Block(string line) : _line(line), _n(0) {}
+Block::Block(string line) : _line(line) {}
 
-Block::Block(string line, Block &prev) : Block(line) { *this = prev; }
-
-Block::~Block() = default;
+Block::Block(string line, Block const &prev) : Block(line) {
+  if (!prev._parsed)
+    throw runtime_error("Previous block has not been parsed");
+  // modal values are inherited from the previous block
+  _type = prev._type;
+  _tool = prev._tool;
+  _feedrate = prev._feedrate;
+  _spindle = prev._spindle;
+  _n = _min_n = prev._n + 1;
+  _start = prev._target;
+}
 
 std::string Block::desc(bool colored) const {
   if (!_parsed) {
@@ -56,63 +72,57 @@ std::string Block::desc(bool colored) const {
   return ss.str();
 }
 
-Block &Block::operator=(Block &b) {
-  if (!b._parsed)
-    throw runtime_error("Previous block has not been parsed");
-  _tool = b._tool;
-  _feedrate = b._feedrate;
-  _spindle = b._spindle;
-  _n = b._n + 1;
-  _target.reset();
-  prev = &b;
-  b.next = this;
-  return *this;
-}
-
 // OPERATIONS/OPERATORS =======================================================
 
 Block &Block::parse(const Machine *m) {
-  _machine = m;
+  if (!m)
+    throw runtime_error("Cannot parse block without a machine");
   stringstream ss(_line);
   string token;
 
-  while (ss >> token) {
-    try {
-      if (!parse_token(token))
+  try {
+    while (ss >> token) {
+      if (token[0] == '#' || token[0] == ';') // comment: skip rest of line
         break;
-    } catch (runtime_error &e) {
-      stringstream es;
-      es << "Parsing error at line: " << _line << endl;
-      es << "Token: " << token << endl;
-      es << "Exception: " << e.what() << endl;
-      throw runtime_error(es.str());
+      parse_token(token);
     }
-  }
-  // Modal behavior
-  _target.modal(start_point());
-  _delta = _target - start_point();
-  _acc = _machine->A();
-  _length = _delta.length();
+    // Modal behavior: the first block starts from machine zero
+    if (!_start.is_complete())
+      _start = m->zero();
+    _target.modal(_start);
+    _delta = _target - _start;
+    _length = _delta.length();
+    _tq = m->tq();
 
-  // Calculate profile
-  switch (_type) {
-  case BlockType::LINE:
-    // calculate segment profile
-    _arc_feedrate = _feedrate;
-    compute();
-    break;
+    // Calculate profile
+    data_t feed = min(_feedrate, m->fmax());
+    switch (_type) {
+    case BlockType::LINE:
+      if (feed <= 0)
+        throw runtime_error("Feedrate not set");
+      _profile = Profile::trapezoid(_length, feed, m->A(), *m);
+      break;
 
-  case BlockType::CWA:
-  case BlockType::CCWA:
-    // calculate arc profile
-    calc_arc();
-    _arc_feedrate =
-        min(_feedrate, pow(pow(_machine->A(), 2) * pow(_r, 2), 0.25) * 60);
-    compute();
-    break;
+    case BlockType::CWA:
+    case BlockType::CCWA:
+      if (feed <= 0)
+        throw runtime_error("Feedrate not set");
+      calc_arc(m->max_error());
+      // limit the feed so that the centripetal acceleration v^2/r stays
+      // below A: v = sqrt(A r) (mm/s), times 60 for mm/min
+      feed = min(feed, sqrt(m->A() * _r) * 60);
+      _profile = Profile::trapezoid(_length, feed, m->A(), *m);
+      break;
 
-  default:
-    break;
+    default:
+      break;
+    }
+  } catch (exception &e) {
+    stringstream es;
+    es << "Parsing error at line: " << _line << endl;
+    es << "Token: " << token << endl;
+    es << "Exception: " << e.what() << endl;
+    throw runtime_error(es.str());
   }
 
   _parsed = true;
@@ -129,7 +139,6 @@ Point Block::interpolate(data_t lambda) {
   if (!_parsed)
     throw runtime_error("Block not parsed");
   Point result = Point();
-  Point p0 = start_point();
 
   // Interpolation:
   // x(t) = x(0) + d_x * lambda(t)
@@ -138,8 +147,8 @@ Point Block::interpolate(data_t lambda) {
 
   // 1. block is a straight segment
   if (_type == BlockType::LINE) {
-    result.x(p0.x() + _delta.x() * lambda);
-    result.y(p0.y() + _delta.y() * lambda);
+    result.x(_start.x() + _delta.x() * lambda);
+    result.y(_start.y() + _delta.y() * lambda);
   }
   // Block is an arc
   else if (_type == BlockType::CWA || _type == BlockType::CCWA) {
@@ -149,9 +158,9 @@ Point Block::interpolate(data_t lambda) {
   }
   // Something is wrong
   else {
-    throw runtime_error("Cannot interpolate block" + _line);
+    throw runtime_error("Cannot interpolate block " + _line);
   }
-  result.z(prev->target().z() + _delta.z() * lambda);
+  result.z(_start.z() + _delta.z() * lambda);
   return result;
 }
 
@@ -165,19 +174,55 @@ Point Block::interpolate(data_t time, data_t &lambda, data_t &speed) {
 // });
 void Block::walk(
     std::function<void(Block &b, data_t t, data_t l, data_t s)> func) {
-  data_t t = 0.0, l, s;
-  while (t <= _profile.dt) {
-    l = lambda(t, s);
+  if (!_parsed)
+    throw runtime_error("Block not parsed");
+  // count steps with an integer, so that rounding errors do not accumulate
+  size_t steps = static_cast<size_t>(llround(_profile.dt / _tq));
+  for (size_t i = 0; i <= steps; i++) {
+    data_t t = i * _tq, s;
+    data_t l = lambda(t, s);
     func(*this, t, l, s);
-    t += _machine->tq();
   }
 }
 
 // Profile struct methods ======================================================
 
+Block::Profile Block::Profile::trapezoid(data_t l, data_t f, data_t A,
+                                         Machine const &m) {
+  Profile p;
+  p.l = l;
+  if (l <= 0) // nothing to move
+    return p;
+
+  data_t dq;
+  data_t f_m = f / 60.0; // mm/min -> mm/s
+  p.dt_1 = p.dt_2 = f_m / A;
+  p.dt_m = l / f_m - (p.dt_1 + p.dt_2) / 2.0;
+
+  if (p.dt_m > 0) { // long block, trapezoid
+    p.dt = m.quantize(p.dt_1 + p.dt_m + p.dt_2, dq);
+    p.dt_m += dq;
+  } else { // short block, triangle
+    p.dt_1 = p.dt_2 = sqrt(l / A);
+    p.dt = m.quantize(p.dt_1 + p.dt_2, dq);
+    p.dt_m = 0;
+    p.dt_2 += dq;
+  }
+  // reduce the peak feed so that the area under the profile is still l
+  p.f = (2 * l) / (p.dt_1 + p.dt_2 + 2 * p.dt_m);
+  p.a = p.f / p.dt_1;
+  p.d = -(p.f / p.dt_2);
+  return p;
+}
+
 data_t Block::Profile::lambda(data_t t, data_t &s) {
   data_t r;
   current_acc = 0.0;
+
+  if (l <= 0) { // zero-length block: already at the end
+    s = 0.0;
+    return 1.0;
+  }
 
   if (t < 0) {
     r = 0.0;
@@ -189,7 +234,6 @@ data_t Block::Profile::lambda(data_t t, data_t &s) {
   } else if (t < dt_1 + dt_m) {
     r = f * (dt_1 / 2.0 + (t - dt_1));
     s = f;
-    current_acc = 0;
   } else if (t < dt_1 + dt_m + dt_2) {
     data_t t_2 = dt_1 + dt_m;
     r = f * dt_1 / 2.0 + f * (dt_m + t - t_2) +
@@ -208,118 +252,79 @@ data_t Block::Profile::lambda(data_t t, data_t &s) {
 
 // PRIVATE METHODS ============================================================
 
-bool Block::parse_token(string &token) {
-  bool res = true;
+void Block::parse_token(string const &token) {
   char cmd = toupper(token[0]); // g -> G, and G -> G
   string arg = token.substr(1);
 
-  if (cmd == '#' || cmd == ';') // comments
-    return false;
   if (arg.empty()) // empty argument
     throw runtime_error("Empty command argument");
 
   switch (cmd) {
   case 'N':
-    _n = stoi(arg);
-    if (prev && _n <= prev->_n) // block number is not increasing
+    _n = to_int(arg);
+    if (_n < _min_n) // block number is not increasing
       throw runtime_error("Block number must be increasing: " +
-                          to_string(prev->_n));
+                          to_string(_min_n - 1));
     break;
 
-  case 'G':
-    _type = static_cast<BlockType>(stoi(arg));
+  case 'G': {
+    int g = to_int(arg);
+    if (g < static_cast<int>(BlockType::RAPID) ||
+        g > static_cast<int>(BlockType::NO_MOTION))
+      throw runtime_error("Unsupported G code: G" + arg);
+    _type = static_cast<BlockType>(g);
     break;
+  }
 
   case 'X':
-    _target.x(stod(arg));
+    _target.x(to_number(arg));
     break;
 
   case 'Y':
-    _target.y(stod(arg));
+    _target.y(to_number(arg));
     break;
 
   case 'Z':
-    _target.z(stod(arg));
+    _target.z(to_number(arg));
     break;
 
   case 'I':
-    _i = stod(arg);
+    _i = to_number(arg);
     break;
 
   case 'J':
-    _j = stod(arg);
+    _j = to_number(arg);
     break;
 
   case 'R':
-    _r = stod(arg);
+    _r = to_number(arg);
     break;
 
   case 'F':
-    _feedrate = stod(arg);
+    _feedrate = to_number(arg);
     break;
 
   case 'S':
-    _spindle = stod(arg);
+    _spindle = to_number(arg);
     break;
 
   case 'T':
-    _tool = stoi(arg);
+    _tool = to_int(arg);
     break;
 
   case 'M':
-    _m = stoi(arg);
+    _m = to_int(arg);
     break;
 
   default:
-    stringstream ss;
-    ss << "Unknown/unsupported command: '" << token << "'";
-    throw runtime_error(ss.str());
-    break;
+    throw runtime_error("Unknown/unsupported command: '" + token + "'");
   }
-
-  return res;
 }
 
-Point Block::start_point() { return prev ? prev->target() : _machine->zero(); }
-
-void Block::compute() {
-  data_t dt, dt_1, dt_m, dt_2, dq;
-  data_t f_m, &l = _length;
-  data_t &A = _acc, a, d;
-
-  f_m = _arc_feedrate / 60.0;
-  dt_1 = f_m / A;
-  dt_2 = dt_1;
-  dt_m = l / f_m - (dt_1 + dt_2) / 2.0;
-
-  if (dt_m > 0) { // long block, trapezoid
-    dt = _machine->quantize(dt_1 + dt_m + dt_2, dq);
-    dt_m = dt_m + dq;
-    f_m = (2 * l) / (dt_1 + dt_2 + 2 * dt_m);
-  } else { // short block, trinagle
-    dt_1 = dt_2 = sqrt(l / A);
-    dt = _machine->quantize(dt_1 + dt_2, dq);
-    dt_m = 0;
-    dt_2 = dt_2 + dq;
-    f_m = 2 * l / (dt_1 + dt_2);
-  }
-  a = f_m / dt_1;
-  d = -(f_m / dt_2);
-  _profile.dt_1 = dt_1;
-  _profile.dt_2 = dt_2;
-  _profile.dt_m = dt_m;
-  _profile.a = a;
-  _profile.d = d;
-  _profile.f = f_m;
-  _profile.dt = dt;
-  _profile.l = l;
-}
-
-void Block::calc_arc() {
+void Block::calc_arc(data_t max_error) {
   data_t x0, y0, xc, yc, xf, yf;
-  Point p0 = start_point();
-  x0 = p0.x();
-  y0 = p0.y();
+  x0 = _start.x();
+  y0 = _start.y();
   xf = _target.x();
   yf = _target.y();
 
@@ -344,30 +349,48 @@ void Block::calc_arc() {
     xc = x0 + _i;
     yc = y0 + _j;
     r2 = hypot(xf - xc, yf - yc);
-    if (fabs(_r - r2) > _machine->max_error()) {
+    if (fabs(_r - r2) > max_error) {
       throw runtime_error(
           fmt::format("Block {:}: Arc endpoints mismatch error ({:} vs: {:})",
-                      n(), _r - r2, _machine->max_error())
-              .c_str());
+                      n(), _r - r2, max_error));
     }
   }
   _center.x(xc);
   _center.y(yc);
   _theta_0 = atan2(y0 - yc, x0 - xc);
   _dtheta = atan2(yf - yc, xf - xc) - _theta_0;
-  // we need the net angle so we take the 2PI complement if negative
-  if (_dtheta < 0)
-    _dtheta = 2 * M_PI + _dtheta;
-  // if CW, take the negative complement
-  if (_type == BlockType::CWA)
-    _dtheta = -(2 * M_PI - _dtheta);
-  //
-  _length = fabs(_dtheta * _r);
+  // we need the net angle: positive for CCW, negative for CW. When start and
+  // end points coincide, the arc is a full circle
+  if (_type == BlockType::CCWA && _dtheta <= 0)
+    _dtheta += 2 * pi;
+  else if (_type == BlockType::CWA && _dtheta >= 0)
+    _dtheta -= 2 * pi;
   // from now on, it's safer to drop the sign of radius angle
   _r = fabs(_r);
+  // helical motion: the Z travel adds to the arc length
+  _length = hypot(_dtheta * _r, _delta.z());
   if (isnan(_length) || isinf(_length)) {
-    throw runtime_error(fmt::format("Block {:}: Invalid arc radius: {}:", n(), _r));
+    throw runtime_error(fmt::format("Block {:}: Invalid arc radius: {}", n(), _r));
   }
+}
+
+// UTILITY FUNCTIONS ===========================================================
+
+// Converts the whole string to a number, rejecting trailing garbage ("1a")
+static data_t to_number(string const &s) {
+  size_t pos = 0;
+  data_t v = stod(s, &pos);
+  if (pos != s.size())
+    throw runtime_error("Invalid number: " + s);
+  return v;
+}
+
+// Same as to_number, but rejects non-integer values ("1.5")
+static int to_int(string const &s) {
+  data_t v = to_number(s);
+  if (v != floor(v))
+    throw runtime_error("Expected an integer: " + s);
+  return static_cast<int>(v);
 }
 
 /*

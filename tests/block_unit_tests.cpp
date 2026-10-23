@@ -428,6 +428,137 @@ int test_arc_ccw_r_negative() {
   return failures;
 }
 
+// Returns true if parsing `line` (after an origin block) throws a
+// std::runtime_error whose message mentions the offending line
+bool parse_throws_runtime_error(cncpp::Machine &m, const std::string &line) {
+  cncpp::Block b0 = make_origin_block(m);
+  cncpp::Block b1(line, b0);
+  try {
+    b1.parse(&m);
+  } catch (const std::runtime_error &e) {
+    return std::string(e.what()).find(line) != std::string::npos;
+  } catch (const std::exception &) {
+    return false;
+  }
+  return false;
+}
+
+int test_parsing_errors() {
+  int failures = 0;
+  cncpp::Machine m;
+  failures += !require(parse_throws_runtime_error(m, "N2 G17 X10"),
+                       "unsupported G code throws runtime_error");
+  failures += !require(parse_throws_runtime_error(m, "N2 G00 X1a"),
+                       "trailing garbage in number throws runtime_error");
+  failures += !require(parse_throws_runtime_error(m, "N2 G00 Xabc"),
+                       "non-numeric argument throws runtime_error");
+  failures += !require(parse_throws_runtime_error(m, "N2 G1.5 X10"),
+                       "non-integer G code throws runtime_error");
+  failures += !require(parse_throws_runtime_error(m, "N2 G01 X10"),
+                       "interpolated block without feedrate throws");
+  return failures;
+}
+
+int test_modal_motion_type() {
+  int failures = 0;
+  using cncpp::Block;
+  cncpp::Machine m;
+  Block b0 = make_origin_block(m);
+  Block b1("N2 G01 X10 F1000", b0);
+  b1.parse(&m);
+  Block b2("N3 X20", b1);
+  b2.parse(&m);
+  failures += !require(b2.type() == Block::BlockType::LINE,
+                       "G01 is modal: block without G word inherits LINE");
+  failures += !require_near(b2.feedrate(), 1000.0, "feedrate is modal");
+  return failures;
+}
+
+int test_zero_length_block() {
+  int failures = 0;
+  using cncpp::Block;
+  using ::data_t;
+  cncpp::Machine m;
+  Block b0 = make_origin_block(m);
+  Block b1("N2 G01 X0 Y0 Z0 F1000", b0);
+  b1.parse(&m);
+  data_t s = 0;
+  data_t l = b1.lambda(0.0, s);
+  failures += !require(std::isfinite(b1.dt()), "zero-length block: finite dt");
+  failures += !require(std::isfinite(l) && std::isfinite(s),
+                       "zero-length block: finite lambda and speed");
+  return failures;
+}
+
+int test_walk_no_nan() {
+  int failures = 0;
+  using cncpp::Block;
+  using ::data_t;
+  cncpp::Machine m;
+  Block b0 = make_origin_block(m); // G00 block: no profile
+  bool finite = true;
+  b0.walk([&](Block &, data_t, data_t l, data_t s) {
+    finite = finite && std::isfinite(l) && std::isfinite(s);
+  });
+  failures += !require(finite, "walk on rapid block yields no NaN");
+
+  Block b1("N2 G01 X100 Y100 Z0 F1000", b0);
+  b1.parse(&m);
+  data_t last_t = -1, last_l = -1;
+  b1.walk([&](Block &, data_t t, data_t l, data_t) {
+    last_t = t;
+    last_l = l;
+  });
+  failures += !require_near(last_t, b1.dt(), "walk last sample is at t=dt",
+                            m.tq() / 10.0);
+  failures += !require_near(last_l, 1.0, "walk last sample has lambda=1");
+  return failures;
+}
+
+int test_fmax_clamp() {
+  int failures = 0;
+  using cncpp::Block;
+  using ::data_t;
+  nlohmann::json cfg = {{"fmax", 500.0}};
+  cncpp::Machine m(cfg);
+  Block b0 = make_origin_block(m);
+  Block b1("N2 G01 X100 F1000", b0);
+  b1.parse(&m);
+  data_t max_s = 0;
+  b1.walk([&](Block &, data_t, data_t, data_t s) { max_s = std::max(max_s, s); });
+  failures += !require_lt(max_s, 500.0 + kEps, "feedrate clamped to fmax");
+  return failures;
+}
+
+int test_full_and_helical_arcs() {
+  int failures = 0;
+  using cncpp::Block;
+  cncpp::Machine m;
+  Block b0 = make_origin_block(m);
+  Block full("N2 G03 X0 Y0 I10 J0 F1000", b0);
+  full.parse(&m);
+  failures += !require_near(full.length(), 2 * kPi * 10, "full CCW circle length",
+                            kLengthTol);
+
+  Block helix("N2 G03 X20 Y0 Z10 I10 J0 F1000", b0);
+  helix.parse(&m);
+  failures += !require_near(helix.length(), std::hypot(kPi * 10, 10.0),
+                            "helical arc length includes Z", kLengthTol);
+  return failures;
+}
+
+int test_first_block_interpolation() {
+  int failures = 0;
+  using cncpp::Block;
+  cncpp::Machine m;
+  Block b("N1 G01 X10 Y0 Z5 F1000"); // no previous block: starts at zero
+  b.parse(&m);
+  cncpp::Point p = b.interpolate(0.5);
+  failures += !require_near(p.x(), 5.0, "first block: x at lambda=0.5");
+  failures += !require_near(p.z(), 2.5, "first block: z at lambda=0.5");
+  return failures;
+}
+
 } // namespace
 
 int main() {
@@ -438,6 +569,13 @@ int main() {
   failures += test_arc_ccw_ij();
   failures += test_arc_cw_r_positive();
   failures += test_arc_ccw_r_negative();
+  failures += test_parsing_errors();
+  failures += test_modal_motion_type();
+  failures += test_zero_length_block();
+  failures += test_walk_no_nan();
+  failures += test_fmax_clamp();
+  failures += test_full_and_helical_arcs();
+  failures += test_first_block_interpolation();
 
   if (failures == 0) {
     std::cout << "All Block tests passed.\n";
