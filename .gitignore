@@ -1,5 +1,5 @@
 /*build/
-src/defines.hpp
+# src/defines.hpp
 usr/
 *.dgraph
 /*.csv

@@ -81,6 +81,16 @@ FetchContent_Declare(keystroker
 
 FetchContent_MakeAvailable(fmt rang json toml keystroker)
 
+if(BUILD_TESTING)
+  FetchContent_Declare(Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v3.8.1
+    GIT_SHALLOW    TRUE
+  )
+  FetchContent_MakeAvailable(Catch2)
+  list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+endif()
+
 message(STATUS "Dependencies fetched.")
 
 include_directories(
@@ -101,8 +111,8 @@ elseif(APPLE)
   add_compile_options(-Wno-deprecated-literal-operator)
 endif()
 
-find_package(Mads REQUIRED)
-message(STATUS "Found Mads: ${Mads_DIR}")
+# find_package(Mads REQUIRED)
+# message(STATUS "Found Mads: ${Mads_DIR}")
 
 #    ____             __ _                          _    __ _ _
 #   / ___|___  _ __  / _(_) __ _ _   _ _ __ ___  __| |  / _(_) | ___  ___
@@ -160,6 +170,31 @@ endif()
 
 # main Library
 file(GLOB HEADERS ${SRC_DIR}/*.hpp)
+
+add_library(cncpp STATIC ${SRC_FILES})
+target_include_directories(cncpp PUBLIC ${SRC_DIR})
+target_link_libraries(cncpp PUBLIC fmt::fmt)
+
+add_executable(point_test ${SRC_DIR}/point.cpp)
+target_compile_definitions(point_test PRIVATE CNCPP_TEST_POINT)
+target_link_libraries(point_test PRIVATE fmt::fmt)
+
+#   _____         _
+#  |_   _|__  ___| |_ ___
+#    | |/ _ \/ __| __/ __|
+#    | |  __/\__ \ |_\__ \
+#    |_|\___||___/\__|___/
+
+if(BUILD_TESTING)
+  include(Catch)
+  file(GLOB TEST_FILES ${CMAKE_CURRENT_LIST_DIR}/tests/test_*.cpp)
+  foreach(test_src ${TEST_FILES})
+    get_filename_component(test_name ${test_src} NAME_WE)
+    add_executable(${test_name} ${test_src})
+    target_link_libraries(${test_name} PRIVATE cncpp Catch2::Catch2WithMain)
+    catch_discover_tests(${test_name})
+  endforeach()
+endif()
 
 
 
