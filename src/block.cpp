@@ -32,7 +32,7 @@ Block &Block::parse(const Machine *m) {
   string token;
 
   while (ss >> token) {
-    if (token[0] == "#" || token[0] == ";") {
+    if (token[0] == '#' || token[0] == ';') {
       break;
     }
     parse_token(token);

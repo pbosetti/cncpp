@@ -274,12 +274,11 @@ public:
 private:
   std::string _line; // original G-Code line
   data_t _tq;        // quantization time, to be loaded from machine
-  size_t _n;     // block number (size_t is the longest unsigned integer on the
-                 // platform)
-  Point _start;  // initial block position
-  Point _target; // final block position
-  Point _center; // arc center coords
-  Point _delta;  // projections on axes
+  size_t _n;         // block number 
+  Point _start;      // initial block position
+  Point _target;     // final block position
+  Point _center;     // arc center coords
+  Point _delta;      // projections on axes
   data_t _length = 0.0;
   data_t _i = 0, _j = 0, _r = 0;
   data_t _theta_0 = 0, _dtheta = 0;
@@ -288,7 +287,8 @@ private:
   size_t _m = 0;
   size_t _tool = 0;
   bool _parsed = false;
-  Block *_prev = nullptr, *_next = nullptr;
+  Block *_prev = nullptr; 
+  Block *_next = nullptr;
   Profile _profile;
   BlockType _type = BlockType::NO_MOTION;
 
