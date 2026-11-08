@@ -185,7 +185,6 @@ public:
 private:
   std::string _line;                // original G-Code line, eg "N01 G00 X100"
   size_t _n = 0;                    // block number
-  size_t _min_n = 0;                // smallest allowed block number
   Point _start;                     // previous target (machine zero if first)
   Point _target;                    // block destination
   Point _center;                    // arc center
@@ -205,6 +204,7 @@ private:
   Block *_next = nullptr;                 // next block in the sequence
 
   // UTILITIES =================================================================
+  size_t min_n() const; // minimum block number for this block
   void parse_token(std::string const &token);
   void calc_arc(data_t max_error);
 

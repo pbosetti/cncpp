@@ -90,7 +90,6 @@ Block &Block::parse(const Machine *m) {
       _tool = _prev->_tool;
       _feedrate = _prev->_feedrate;
       _spindle = _prev->_spindle;
-      _n = _min_n = _prev->_n + 1;
       _start = _prev->_target;
     } else {
       _start = m->zero();
@@ -265,6 +264,13 @@ data_t Block::Profile::lambda(data_t t, data_t &s) {
 
 // PRIVATE METHODS ============================================================
 
+size_t Block::min_n() const {
+  if (_prev)
+    return _prev->_n + 1;
+  else
+    return 1;
+}
+
 void Block::parse_token(string const &token) {
   char cmd = toupper(token[0]); // g -> G, and G -> G
   string arg = token.substr(1);
@@ -275,9 +281,9 @@ void Block::parse_token(string const &token) {
   switch (cmd) {
   case 'N':
     _n = to_int(arg);
-    if (_n < _min_n) // block number is not increasing
+    if (_n < min_n()) // block number is not increasing
       throw runtime_error("Block number must be increasing: " +
-                          to_string(_min_n - 1));
+                          to_string(_n));
     break;
 
   case 'G': {
@@ -423,20 +429,42 @@ int main() {
 
   Block b1{"N01 G00 X100 Y100 z200"};
   Block b2{"N02 G00 Z150", b1.parse(&m)};
-  Block b3{"n03 G01 x50 y20 T1 f5000 s200 M3", b2.parse(&m)};
-  b3.parse(&m);
-  cerr << b1 << endl << b2 << endl << b3 << endl;
+  Block b3{"n03 G01 x50 y20 z110 T1 f1000 s200 M3", b2.parse(&m)};
+  Block b4{"n04 G03 x40 y10 r10", b3.parse(&m)};
+  b4.parse(&m);
+  cerr << b1 << endl << b2 << endl << b3 << endl <<b4 << endl;
 
   // walk along b3 and routinely print the time, coordinates, and feedrate
   // first: print a header line
-  cout << "t,lambda,s,x,y,z" << endl;
-  b3.walk([&](Block &b, data_t t, data_t l, data_t s) {
-    Point pos = b.interpolate(l);
-    cout << fmt::format("{:},{:},{:},{:},{:},{:}", t, l, s, pos.x(), pos.y(),
-                   pos.z())
-         << endl;
-  });
 
+  bool first_line = true;
+  auto print_values = [&first_line](Block &b, data_t t, data_t l, data_t s) {
+    Point pos = b.interpolate(l);
+    if (first_line) {
+      cout << "t,lambda,s,x,y,z" << endl;
+      first_line = false;
+    }
+    cout << fmt::format("{:},{:},{:},{:},{:},{:}", t, l, s, pos.x(), pos.y(),
+                        pos.z())
+         << endl;
+  };
+
+  auto print_values_tidy = [&first_line](Block &b, data_t t, data_t lambda, data_t speed) {
+    Point pos = b.interpolate(lambda);
+    if (first_line) {
+      cout << "t,field,value" << endl;
+      first_line = false;
+    }
+    cout << fmt::format("{:},{:},{:}", t, "lambda", lambda) << endl
+         << fmt::format("{:},{:},{:}", t, "speed", speed) << endl
+         << fmt::format("{:},{:},{:}", t, "x", pos.x()) << endl
+         << fmt::format("{:},{:},{:}", t, "y", pos.y()) << endl
+         << fmt::format("{:},{:},{:}", t, "z", pos.z()) << endl;
+  };
+
+  cout << "#clear" << endl;
+  b3.walk(print_values_tidy);
+  // b4.walk(print_values);
   return 0;
 }
 
