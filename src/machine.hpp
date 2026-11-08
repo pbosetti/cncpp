@@ -109,13 +109,13 @@ class Machine : public Object {
 
 
   private:
-  data_t _A = 5.0; // mm/s/s
-  data_t _fmax = 10000.0; // mm/min
-  data_t _max_error = 0.005; // mm
-  data_t _tq = 0.001; // s
-  Point _zero{0.0, 0.0, 0.0};   // Initial position
-  Point _offset{0.0, 0.0, 0.0}; // WP origin offset
-  Point _travels{1000.0, 1000.0, 1000.0} // TODO: actually support this!
+  data_t _A = 5.0;                        // mm/s/s
+  data_t _fmax = 10000.0;                 // mm/min
+  data_t _max_error = 0.005;              // mm
+  data_t _tq = 0.001;                     // s
+  Point _zero{0.0, 0.0, 0.0};             // Initial position
+  Point _offset{0.0, 0.0, 0.0};           // WP origin offset
+  Point _travels{1000.0, 1000.0, 1000.0}; // TODO: actually support this!
 };
 
 } // namespace cncpp
