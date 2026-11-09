@@ -1,21 +1,20 @@
 /*
-  __  __            _     _                   _               
- |  \/  | __ _  ___| |__ (_)_ __   ___    ___| | __ _ ___ ___ 
+  __  __            _     _                   _
+ |  \/  | __ _  ___| |__ (_)_ __   ___    ___| | __ _ ___ ___
  | |\/| |/ _` |/ __| '_ \| | '_ \ / _ \  / __| |/ _` / __/ __|
  | |  | | (_| | (__| | | | | | | |  __/ | (__| | (_| \__ \__ \
  |_|  |_|\__,_|\___|_| |_|_|_| |_|\___|  \___|_|\__,_|___/___/
-                                                              
+
 
  */
 #pragma once
 #include "defines.hpp"
 #include "point.hpp"
 
-
 namespace cncpp {
 class Machine : public Object {
 
-  public:
+public:
   // LIFECYCLE =================================================================
   Machine() = default;
   ~Machine() {};
@@ -24,7 +23,18 @@ class Machine : public Object {
 
   // INTERFACE =================================================================
 
-
+  /**
+   * @brief Quantizes a time value to the nearest time quantum.
+   * @param t The time to quantize.
+   * @param dq A reference to a variable that will hold the quantization error.
+   * @return The quantized time.
+   */
+  data_t quantize(data_t t, data_t &dq) const {
+    data_t q;
+    q = static_cast<int>((t / _tq) + 1) * _tq;
+    dq = q - t;
+    return q;
+  }
 
   // ACCESSORS =================================================================
   // TODO: check and remove setters that are not really needed
@@ -105,10 +115,11 @@ class Machine : public Object {
    * @return A constant reference to the assigned initial position.
    */
   Point const &zero(Point const &value) { return (_zero = value); }
-  Point const &zero(data_t x, data_t y, data_t z) { return (_zero = Point{x, y, z}); }
+  Point const &zero(data_t x, data_t y, data_t z) {
+    return (_zero = Point{x, y, z});
+  }
 
-
-  private:
+private:
   data_t _A = 5.0;                        // mm/s/s
   data_t _fmax = 10000.0;                 // mm/min
   data_t _max_error = 0.005;              // mm
@@ -116,6 +127,6 @@ class Machine : public Object {
   Point _zero{0.0, 0.0, 0.0};             // Initial position
   Point _offset{0.0, 0.0, 0.0};           // WP origin offset
   Point _travels{1000.0, 1000.0, 1000.0}; // TODO: actually support this!
-};
+}; // class Machine
 
 } // namespace cncpp

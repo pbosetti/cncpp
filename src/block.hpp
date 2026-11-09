@@ -45,7 +45,8 @@ public:
     data_t a = 0, d = 0;
     data_t f = 0, l = 0;
     data_t dt_1 = 0, dt_m = 0, dt_2 = 0;
-    data_t dr = 0;
+    data_t dt = 0;
+    data_t current_acc = 0.0;
 
     /**
      * @brief Computes a trapezoidal (or triangular) velocity profile.
@@ -108,14 +109,14 @@ public:
    * @param speed Output speed at the given time.
    * @return Normalized path coordinate in [0, 1].
    */
-  data_t lambda(data_t time, data_t &speed) const;
+  data_t lambda(data_t time, data_t &speed);
 
   /**
    * @brief Interpolates a point from normalized path coordinate.
    * @param lambda Normalized path coordinate in [0, 1].
    * @return Interpolated point on this block trajectory.
    */
-  Point interpolate(data_t lambda) const;
+  Point interpolate(data_t lambda);
 
   /**
    * @brief Interpolates trajectory point and kinematics at a given time.
@@ -124,7 +125,7 @@ public:
    * @param speed Output speed value.
    * @return Interpolated point on this block trajectory.
    */
-  Point interpolate(data_t time, data_t &lambda, data_t &speed) const;
+  Point interpolate(data_t time, data_t &lambda, data_t &speed);
 
   /**
    * @brief Iterates along the block profile and invokes a callback.
@@ -132,7 +133,8 @@ public:
    * The callback is invoked at t = 0, tq, 2 tq, ..., dt.
    * @param func Callback receiving block, time, lambda and speed values.
    */
-  void walk(std::function<void(Block &b, data_t t, data_t l, data_t s)> func) const;
+  void
+  walk(std::function<void(Block &b, data_t t, data_t l, data_t s)> func) const;
 
   // ACCESSORS =================================================================
 
@@ -274,7 +276,7 @@ public:
 private:
   std::string _line; // original G-Code line
   data_t _tq;        // quantization time, to be loaded from machine
-  size_t _n;         // block number 
+  size_t _n;         // block number
   Point _start;      // initial block position
   Point _target;     // final block position
   Point _center;     // arc center coords
@@ -287,13 +289,18 @@ private:
   size_t _m = 0;
   size_t _tool = 0;
   bool _parsed = false;
-  Block *_prev = nullptr; 
+  Block *_prev = nullptr;
   Block *_next = nullptr;
   Profile _profile;
   BlockType _type = BlockType::NO_MOTION;
 
-  // Methods
+  // Private Methods ===========================================================
+  // Parse a signle G-code word, eg "G01", "X12.3", "F1000"
   void parse_token(std::string const &token);
+  // Returns the minimum block number allowed for this block
+  size_t min_n();
+  // Calculates the arc parameters within max_error tolerance
+  void calc_arc(data_t max_error);
 
 }; // class Block
 
