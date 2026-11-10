@@ -72,7 +72,7 @@ public:
    * @brief Creates a block from a raw G-code line.
    * @param line Raw block text.
    */
-  Block(std::string &line);
+  Block(const std::string line);
 
   /**
    * @brief Creates a block linked after a previous one.
@@ -82,7 +82,7 @@ public:
    * @param line Raw block text.
    * @param prev Previous block in the sequence.
    */
-  Block(std::string &line, Block &prev);
+  Block(const std::string line, Block &prev);
 
   /**
    * @brief Returns a human-readable description of the block.
@@ -134,7 +134,7 @@ public:
    * @param func Callback receiving block, time, lambda and speed values.
    */
   void
-  walk(std::function<void(Block &b, data_t t, data_t l, data_t s)> func) const;
+  walk(std::function<void(Block &b, data_t t, data_t l, data_t s)> func);
 
   // ACCESSORS =================================================================
 

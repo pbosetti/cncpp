@@ -19,7 +19,9 @@ public:
   Machine() = default;
   ~Machine() {};
 
-  std::string desc(bool colored = true) const override;
+  std::string desc(bool colored = true) const override {
+    return "";
+  }
 
   // INTERFACE =================================================================
 

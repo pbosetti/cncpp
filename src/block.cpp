@@ -99,9 +99,9 @@ data_t Block::Profile::lambda(data_t t, data_t &s) {
 
 // LIFECYCLE ===================================================================
 
-Block::Block(string &line) : _line(line) {}
+Block::Block(const string line) : _line(line) {}
 
-Block::Block(string &line, Block &prev) : Block(line) {
+Block::Block(const string line, Block &prev) : Block(line) {
   _prev = &prev;
   prev._next = this;
   // or, equivalently:
@@ -135,8 +135,8 @@ std::string Block::desc(bool colored) const {
   }
   ss << _target.desc(colored);
   ss << fmt::format(" F{:>5.0f} S{:>4.0f}", _feedrate, _spindle);
-  ss << fmt::format("T{:0>2} M{:0>2}", _tool, _m);
-  ss << fmt::format("L{:>6.2f}mm DT{:>6.2f}", _length, _profile.dt);
+  ss << fmt::format(" T{:0>2} M{:0>2}", _tool, _m);
+  ss << fmt::format(" L{:>6.2f}mm DT{:>6.2f}", _length, _profile.dt);
 
   return ss.str();
 }
@@ -176,16 +176,18 @@ Block &Block::parse(const Machine *m) {
 
   // Calculate the velocity profile
   data_t feed = min(_feedrate, m->fmax());
-  if (feed <= 0)
-    throw runtime_error("Feedrate must be strictly positive");
 
   switch (_type) {
   case BlockType::LINE:
+    if (feed <= 0)
+      throw runtime_error("Feedrate must be strictly positive");
     _profile = Profile::trapezoid(_length, feed, m->A(), *m);
     break;
 
   case BlockType::CWA:
   case BlockType::CCWA:
+    if (feed <= 0)
+      throw runtime_error("Feedrate must be strictly positive");
     calc_arc(m->max_error());
     feed = min(feed, sqrt(m->A() * _r) * 60);
     _profile = Profile::trapezoid(_length, feed, m->A(), *m);
@@ -232,6 +234,22 @@ Point Block::interpolate(data_t lambda) {
 Point Block::interpolate(data_t time, data_t &lambda, data_t &speed) {
   lambda = this->lambda(time, speed);
   return interpolate(lambda);
+}
+
+void Block::walk(
+    std::function<void(Block &b, data_t time, data_t distance, data_t feedrate)> func) {
+
+  if (!_parsed)
+    throw runtime_error("Block has not been parsed");
+
+  data_t speed = 0.0, t = 0.0, l = 0.0;
+  size_t steps = static_cast<size_t>(llround(_profile.dt / _tq));
+
+  for (size_t i = 0; i <= steps; i++) {
+    t = i * _tq;
+    l = lambda(t, speed);
+    func(*this, t, l, speed);
+  }
 }
 
 // PRIVATE METHODS =============================================================
@@ -364,3 +382,32 @@ void Block::calc_arc(data_t max_error) {
         fmt::format("Block {:}: Invalid arc radius: {}", _n, _r));
   }
 }
+
+
+
+#ifdef CNCPP_TEST_BLOCK
+
+// To test with complot:
+// complot p1 --aes "x=x y=y"
+// build/block_test | complot p1: --type lines -
+
+int main() {
+  Machine m{};
+
+  Block b1{"N01 G00 X100 Y100 z200"};
+  Block b2{"N02 G00 Z150", b1.parse(&m)};
+  Block b3{"n3 g01 x50 y20 z110 t1 f1000 s200 M3", b2.parse(&m)};
+  Block b4{"n4 G03 x40 y10 r10", b3.parse(&m)};
+  b4.parse(&m);
+
+  cerr << b1 << endl << b2 << endl << b3 << endl << b4 << endl;
+  cout << "t,lambda,feedrate,x,y,z" << endl;
+  b4.walk([](Block &b, data_t t, data_t l, data_t s) {
+    auto p = b.interpolate(l);
+    cout << fmt::format("{:},{:},{:},{:},{:},{:}", t, l, s, p.x(), p.y(), p.z()) << endl;
+  });
+
+  return 0;
+}
+
+#endif
