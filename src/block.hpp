@@ -202,11 +202,11 @@ public:
   size_t m(size_t value) { return (_m = value); }
 
   /**
-   * @brief Sets the block number.
-   * @param value The block number.
+   * @brief Gets the block number.
+   * 
    * @return The assigned block number.
    */
-  size_t n(size_t value) { return (_n = value); }
+  size_t n() { return _n; }
 
   /**
    * @brief Sets the next block in the program.
@@ -271,6 +271,13 @@ public:
    * @return The assigned tool number.
    */
   size_t tool(size_t value) { return (_tool = value); }
+
+  /**
+   * @brief Return the block type
+   * 
+   * @return BlockType 
+   */
+  BlockType type() {return _type; }
 
   const Profile &profile() const { return _profile; }
 

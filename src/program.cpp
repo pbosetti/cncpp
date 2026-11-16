@@ -110,6 +110,7 @@ void Program::reparse_from(Block *b) {
 
 #ifdef CNCPP_TEST_PROGRAM
 
+#include <fmt/format.h>
 
 int main(int argc, const char *argv[]) {
   if (argc != 2) {
@@ -126,6 +127,19 @@ int main(int argc, const char *argv[]) {
     return EXIT_FAILURE;
   }
   cerr << program << endl;
+
+  data_t t_tot = 0.0;
+  cout << "n,t_tot,t,lambda,speed,x,y,z" << endl;
+  for (auto &block : program) {
+    // jump over non-interpolating blocks
+    if (block.type() == Block::BlockType::RAPID || block.type() == Block::BlockType::NO_MOTION) continue;
+    // loop over a block positioning sequence
+    block.walk([&](Block &b, data_t t, data_t l, data_t s) {
+      Point p = b.interpolate(l);
+      cout << fmt::format("{:},{:},{:},{:},{:},{:},{:},{:}", b.n(), t_tot, t, l, s, p.x(), p.y(), p.z()) << endl;
+      t_tot += machine.tq();
+    });
+  }
 
 
   return 0;
