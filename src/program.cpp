@@ -24,6 +24,9 @@ std::string Program::desc(bool colored) const {
   return ss.str();
 }
 
+
+// Operations: =================================================================
+
 Program &Program::operator<<(const string &line) {
   insert(_blocks.size(), line);
   return *this;
@@ -108,11 +111,22 @@ void Program::reparse_from(Block *b) {
 }
 
 
+/*
+  _____         _                     _       
+ |_   _|__  ___| |_   _ __ ___   __ _(_)_ __  
+   | |/ _ \/ __| __| | '_ ` _ \ / _` | | '_ \ 
+   | |  __/\__ \ |_  | | | | | | (_| | | | | |
+   |_|\___||___/\__| |_| |_| |_|\__,_|_|_| |_|
+                                              
+*/
+
 #ifdef CNCPP_TEST_PROGRAM
 
 #include <fmt/format.h>
 
 int main(int argc, const char *argv[]) {
+  // requires exactly one command line argument: the filename of the G-code 
+  // program to load
   if (argc != 2) {
     cerr << "Usage: " << argv[0] << " <filename>" << endl;
     return EXIT_FAILURE;
@@ -120,6 +134,8 @@ int main(int argc, const char *argv[]) {
 
   Machine machine{};
   Program program{&machine};
+  
+  // Try loading the program or exit
   try {
     program.load(argv[1]);
   } catch (exception &e) {
@@ -128,6 +144,7 @@ int main(int argc, const char *argv[]) {
   }
   cerr << program << endl;
 
+  // Loop over all blocks and print the interpolated points at each time quantum
   data_t t_tot = 0.0;
   cout << "n,t_tot,t,lambda,speed,x,y,z" << endl;
   for (auto &block : program) {
@@ -141,8 +158,7 @@ int main(int argc, const char *argv[]) {
     });
   }
 
-
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 
