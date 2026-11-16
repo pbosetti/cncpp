@@ -183,6 +183,10 @@ add_executable(block_test ${SRC_DIR}/block.cpp)
 target_compile_definitions(block_test PRIVATE CNCPP_TEST_BLOCK)
 target_link_libraries(block_test PRIVATE cncpp)
 
+add_executable(program_test ${SRC_DIR}/program.cpp)
+target_compile_definitions(program_test PRIVATE CNCPP_TEST_PROGRAM)
+target_link_libraries(program_test PRIVATE cncpp)
+
 #   _____         _
 #  |_   _|__  ___| |_ ___
 #    | |/ _ \/ __| __/ __|

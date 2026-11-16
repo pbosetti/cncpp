@@ -214,6 +214,7 @@ public:
    * @return The assigned next-block pointer.
    */
   Block *next(Block *value) { return (_next = value); }
+  Block *next() { return _next; }
 
   /**
    * @brief Sets whether the block has been parsed.
@@ -301,6 +302,8 @@ private:
   size_t min_n();
   // Calculates the arc parameters within max_error tolerance
   void calc_arc(data_t max_error);
+
+  friend class Program;
 
 }; // class Block
 
