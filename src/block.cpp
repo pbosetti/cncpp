@@ -265,7 +265,7 @@ void Block::parse_token(string const &t) {
   case 'N':
     _n = to_int(arg);
     if (_n < min_n())
-      throw runtime_error("Bloclk numbers must be increasing");
+      throw runtime_error("Block numbers must be increasing");
     break;
 
   case 'G': {

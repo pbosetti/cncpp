@@ -37,16 +37,21 @@ Block &Program::insert(size_t index, const string &line) {
   if (index > _blocks.size())
     throw out_of_range("Cannot insert block at position " + to_string(index));
 
-  auto pos = next(_blocks.begin(), index);
+  // get the iterator to the next element (possibly a new one)
+  auto pos = std::next(_blocks.begin(), index);
+  // pointers to previous and next blocks
   Block *before = (pos == _blocks.begin()) ? nullptr : &*std::prev(pos);
   Block *after = (pos == _blocks.end()) ? nullptr : &*pos;
 
+  // Emplace a new Block instance in the new position
   Block &b = *_blocks.emplace(pos, line);
   b._prev = before;
   b._next = after;
+  // adjust pointers of neighboring blocks
   if (before) before->_next = &b;
   if (after) after->_prev = &b;
 
+  // reparse the program from the newly inserted block onward
   try {
     reparse_from(&b);
   } catch (...) {
@@ -73,9 +78,13 @@ void Program::load(const string &filename, bool append) {
 
   string line;
   while (getline(file, line)) {
+    // find first occurrence of a non-whitespace character
     size_t first = line.find_first_not_of(" \t\r\n");
-    if (first == string::npos || line[first] == '#' || line[first] == ';')
-      continue;
+    if (
+      first == string::npos || // first occurence is at the end of the longest possible string
+      line[first] == '#' || // first character is a #
+      line[first] == ';'    // first character is a ;
+    ) continue;
     *this << line;
   }
 }
@@ -140,6 +149,8 @@ int main(int argc, const char *argv[]) {
     program.load(argv[1]);
   } catch (exception &e) {
     cerr << "Error loading program: " << e.what() << endl;
+    cerr << "Program state after loading attempt:" << endl;
+    cerr << program << endl;
     return EXIT_FAILURE;
   }
   cerr << program << endl;
