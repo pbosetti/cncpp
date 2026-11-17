@@ -162,6 +162,10 @@ Block &Block::parse(const Machine *m) {
     _start = m->zero();
   }
 
+  // per-block (non-modal) words: clear values left by a previous parse
+  _i = _j = _r = 0;
+  _target = Point();
+
   while (ss >> token) {
     if (token[0] == '#' || token[0] == ';') {
       break;

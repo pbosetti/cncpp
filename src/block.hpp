@@ -55,6 +55,8 @@ public:
      * @param A Maximum acceleration (mm/s^2).
      * @param m Machine used to quantize the total duration.
      * @return The profile; all zeros for a zero-length path.
+     *
+     * @test l <= 0 returns an all-zero profile (dt == 0); a long block gives a trapezoid (dt_m > 0, a == -d); a short block gives a triangle (dt_m == 0); dt is always a multiple of m.tq() and >= the unquantized time; the area under the profile equals l (f * (dt_1 + dt_2 + 2 dt_m) / 2 == l); f never exceeds the nominal feedrate converted to mm/s
      */
     static Profile trapezoid(data_t l, data_t f, data_t A, Machine const &m);
 
@@ -63,6 +65,8 @@ public:
      * @param t Elapsed time from the beginning of the block.
      * @param s Output instantaneous speed (mm/min).
      * @return Normalized path coordinate in [0, 1].
+     *
+     * @test t < 0 gives lambda == 0 and s == 0; t >= dt gives lambda == 1 and s == 0; a zero-length profile always gives lambda == 1 and s == 0; lambda is monotonically non-decreasing and continuous at the phase boundaries dt_1 and dt_1 + dt_m; s reaches f * 60 in the constant-speed phase; current_acc is a, 0 and d in the three phases
      */
     data_t lambda(data_t t, data_t &s); // s is the current speed
   };
@@ -79,6 +83,8 @@ public:
    *
    * Sets `prev` as previous block of this one, and this one as next block of
    * `prev`. Modal state is inherited when the block is parsed.
+   *
+   * @test after construction, prev.next() points to the new block; the new block is not parsed
    * @param line Raw block text.
    * @param prev Previous block in the sequence.
    */
@@ -88,6 +94,8 @@ public:
    * @brief Returns a human-readable description of the block.
    * @param colored Enables ANSI color formatting in the output.
    * @return Text description of block state and parameters.
+   *
+   * @test throws if the block is not parsed; with colored == false the output contains no ANSI escape sequences and includes block number, G code and target
    */
   std::string desc(bool colored = true) const override;
 
@@ -96,6 +104,11 @@ public:
    *
    * Parsing starts from a clean state, so a block can be parsed again after
    * its previous block has changed. The previous block must be parsed.
+   *
+   * @test errors: a null machine, an unparsed previous block, an unknown word (e.g. "Q1"), a word without argument ("X"), a malformed number ("X1.3Y2"), a non-integer where an integer is expected ("G1.5", "N10.5", "T1.5"), an unsupported G code ("G05"), a non-increasing block number, a LINE or arc with feedrate <= 0, an I/J arc whose endpoints are not equidistant from the center within max_error, an R arc whose radius is shorter than half the chord: all throw
+   * @test modal state: a block without G, F, S or T inherits them from the previous block; a first block starts at machine zero, the others at the previous target; omitted target coordinates keep the start value; lowercase words are accepted; text after '#' or ';' is ignored
+   * @test geometry: length equals the distance from start to target for lines; feedrate is capped to machine fmax; for arcs, I/J and R forms of the same arc give the same center and dtheta; dtheta is positive for G03 and negative for G02; coinciding start and target give a full circle (|dtheta| == 2 pi); a helical arc has length hypot(dtheta * r, dz)
+   * @test re-parsing a block (also after changing its previous block) gives the same result as a fresh parse
    * @param machine Machine settings and limits used for interpretation.
    * @return Reference to this block.
    */
@@ -108,6 +121,8 @@ public:
    * @param time Elapsed time from block start.
    * @param speed Output speed at the given time.
    * @return Normalized path coordinate in [0, 1].
+   *
+   * @test throws if the block is not parsed; otherwise returns the same values as profile().lambda()
    */
   data_t lambda(data_t time, data_t &speed);
 
@@ -115,6 +130,8 @@ public:
    * @brief Interpolates a point from normalized path coordinate.
    * @param lambda Normalized path coordinate in [0, 1].
    * @return Interpolated point on this block trajectory.
+   *
+   * @test throws if the block is not parsed or is RAPID/NO_MOTION; lambda == 0 gives start and lambda == 1 gives target (lines and arcs); lambda == 0.5 on a line gives the midpoint; every arc point lies at distance r from the center in XY, and Z varies linearly with lambda
    */
   Point interpolate(data_t lambda);
 
@@ -124,6 +141,8 @@ public:
    * @param lambda Output normalized path coordinate.
    * @param speed Output speed value.
    * @return Interpolated point on this block trajectory.
+   *
+   * @test the returned point equals interpolate(lambda) with the lambda written to the output parameter; time >= profile().dt gives the target
    */
   Point interpolate(data_t time, data_t &lambda, data_t &speed);
 
@@ -131,6 +150,8 @@ public:
    * @brief Iterates along the block profile and invokes a callback.
    *
    * The callback is invoked at t = 0, tq, 2 tq, ..., dt.
+   *
+   * @test throws if the block is not parsed; the callback is called dt / tq + 1 times with increasing t, first t == 0 and lambda == 0, last t == dt and lambda == 1; a NO_MOTION or RAPID block (dt == 0) calls it exactly once
    * @param func Callback receiving block, time, lambda and speed values.
    */
   void
@@ -284,7 +305,7 @@ public:
 private:
   std::string _line; // original G-Code line
   data_t _tq;        // quantization time, to be loaded from machine
-  size_t _n;         // block number
+  size_t _n = 0;     // block number
   Point _start;      // initial block position
   Point _target;     // final block position
   Point _center;     // arc center coords

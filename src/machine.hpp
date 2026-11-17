@@ -60,12 +60,16 @@ public:
   /**
    * @brief loading parameters from a JSON object
    * 
+   * @test for any member field, if the JSON contains a valid value, it is stored; if it is missing, the fedault is used; if it is an invalid type, an exception is thrown
+   * 
    * @param json 
    */
   void load(nlohmann::json const &json);
 
   /**
    * @brief Loading parameters from a TOML table
+   * 
+   * @test the table (already the content of the [cnc] section) is converted to JSON and passed to load(json), so the same rules on valid, missing and invalid fields apply
    * 
    * @param toml 
    */
@@ -74,6 +78,7 @@ public:
   /**
    * @brief Loading parameters by reading a JSON or TOML file
    * 
+   * @test if the file does not exist, is not a regular file, has an extension other than .json or .toml, or cannot be parsed, an exception is thrown; a JSON file is parsed and passed to load(json); for a TOML file, if it lacks a [cnc] section or [cnc] is not a table, an exception is thrown, otherwise the [cnc] table is passed to load(toml)
    * @param filename 
    */
   void load(std::string const &filename);
