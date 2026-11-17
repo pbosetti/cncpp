@@ -10,20 +10,74 @@
 #pragma once
 #include "defines.hpp"
 #include "point.hpp"
+#include <nlohmann/json.hpp>
+#include <toml++/toml.hpp>
 
 namespace cncpp {
 class Machine : public Object {
 
 public:
   // LIFECYCLE =================================================================
-  Machine() = default;
-  ~Machine() {};
 
-  std::string desc(bool colored = true) const override {
-    return "";
-  }
+  /**
+   * @brief Construct a new Machine object (empty)
+   * 
+   */
+  Machine() = default;
+  
+  /**
+   * @brief Construct a new Machine object from a JSON object
+   * 
+   * @param j nlohmann::json object
+   */
+  Machine(nlohmann::json const &j);
+
+  /**
+   * @brief Construct a new Machine object by reading a JSON or TOML file
+   * 
+   * @param filename Valid JSON or TOML file
+   */
+  Machine(std::string const &filename);
+
+  /**
+   * @brief Destroy the Machine object
+   * 
+   * If connected to the actual machine, it also closes the connection.
+   * 
+   */
+  ~Machine();
+
+  /**
+   * @brief Provide a description of the machine object
+   * 
+   * @param colored output must be colored
+   * @return std::string Machine description
+   */
+  std::string desc(bool colored = true) const override;
 
   // INTERFACE =================================================================
+
+  /**
+   * @brief loading parameters from a JSON object
+   * 
+   * @param json 
+   */
+  void load(nlohmann::json const &json);
+
+  /**
+   * @brief Loading parameters from a TOML table
+   * 
+   * @param toml 
+   */
+  void load(toml::table const &toml);
+
+  /**
+   * @brief Loading parameters by reading a JSON or TOML file
+   * 
+   * @param filename 
+   */
+  void load(std::string const &filename);
+
 
   /**
    * @brief Quantizes a time value to the nearest time quantum.
@@ -31,15 +85,23 @@ public:
    * @param dq A reference to a variable that will hold the quantization error.
    * @return The quantized time.
    */
-  data_t quantize(data_t t, data_t &dq) const {
-    data_t q;
-    q = static_cast<int>((t / _tq) + 1) * _tq;
-    dq = q - t;
-    return q;
-  }
+  data_t quantize(data_t t, data_t &dq) const;
+
+  // Machine connection ========================================================
+
+
+
 
   // ACCESSORS =================================================================
   // TODO: check and remove setters that are not really needed
+
+  /**
+   * @brief Return the loaded data as a JSON object. This is useful for debugging and for saving the machine configuration to a file.
+   * 
+   * @return nlohmann::json const& 
+   */
+  nlohmann::json const &data() const { return _data; }
+
   /**
    * @brief Gets the machine acceleration.
    * @return The acceleration in mm/s^2.
@@ -122,6 +184,7 @@ public:
   }
 
 private:
+  nlohmann::json _data{};
   data_t _A = 5.0;                        // mm/s/s
   data_t _fmax = 10000.0;                 // mm/min
   data_t _max_error = 0.005;              // mm

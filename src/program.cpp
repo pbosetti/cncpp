@@ -9,7 +9,7 @@ using namespace cncpp;
 
 // Lifecycle: ==================================================================
 
-Program::Program(const std::string &f, Machine *m) : _filename(f), _machine(m) {
+Program::Program(const std::string &f, Machine *m) : Program(m) {
   load(_filename);
 }
 
@@ -98,6 +98,8 @@ Block &Program::load_next() {
   } else if (_current) {
     _current = _current->next();
   }
+  if (!_current)
+    throw out_of_range("Invalid block selected");
   return *_current;
 }
 

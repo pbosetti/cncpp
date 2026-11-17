@@ -7,6 +7,22 @@
                   |___/
 */
 
+/* AGENT INSTRUCTIONS
+Pretending the program.cpp does not exist, create the implementation of the 
+Program class hereafter desribed in the _program.cpp file. Do not edit 
+anything else.
+Using the provided test harness (Catch2) implement unit tests for the methods
+that have a @test tag in documentation comments.
+At the end of _program.cpp create a main() function 
+(protected by CNCPP_TEST_PROGRAM macro) that does the following:
+- requires exactly one command line argument: the filename of the G-code program to load
+- creates a Machine object with default parameters
+- creates a Program object with the Machine pointer
+- loads the program from the file, dealing with errors
+- for each block that contains a linear or arc interpolation loop over it using 
+  the Block::walk function, printing total time, block time, block number, lambda, speed and interpolated point coordinates in CSV format to stdout
+*/
+
 #pragma once
 
 #include "block.hpp"
@@ -37,6 +53,9 @@ public:
   /**
    * @brief Construct an new empty Program object with a Machine pointer.
    * 
+   * @test The program can be constructed empty and then loaded from a file or constructed line by line.
+   * @test a program with an error in the middle must throw an exception and allow printing its description up to the error block, excluded
+   * 
    * @param machine A pointer to the machine that will execute the program.
    */
   Program(Machine *machine);
@@ -49,6 +68,11 @@ public:
    * @brief Provide a human-readable description of the program.
    * 
    * The program is describet as a sequence of blocks, routinely calling the desc() method of each block. The output can be colored or not, depending on the parameter.
+   * 
+   * @test an empty program returns an empty string
+   * @test a program with blocks returns a string with the description of each block, one per line
+   * @test a program with blocks returns a string with the description of each block, one per line, with or without color depending on the parameter
+   * 
    * @param colored 
    * @return std::string 
    */
@@ -59,6 +83,8 @@ public:
   /**
    * @brief Load a program from a file.
    * 
+   * @test The program can be loaded from a file, and the blocks are created in the order they appear in the file.
+   * @test A second program can be appended to the first, provided that the line numbers are increasing. If not we must throw an error.
    * @param filename the filename of the file to load the program from.
    * @param append If true, the program will be appended to the existing blocks; if false, the program will be reset before loading.
    * @throws std::runtime_error if the file cannot be opened.
@@ -70,6 +96,8 @@ public:
    * 
    * The new block is created (via Program::insert) from line and appended to the end of the program.
    * 
+   * @test add a line to an empty program, the block is created and can be described
+   * @test add a line to a non-empty program, the block is created and can be described
    * @param line A line of G-code
    * @return Program& 
    */
@@ -80,6 +108,9 @@ public:
    * 
    * If reparsing fails due to the newly inserted block altering the next block, the newly inserted block is removed and the program is reparsed from the next block onward, throwing the parsing error.
    * 
+   * @test insert a block at the beginning of the program, the block is created and can be described
+   * @test insert a block in the middle of the program, the block is created and can be described
+   * @test insert a wrong block at the end of the program, the block is discarded and the program can be printed up to the previous block, and the parsing error is thrown
    * @param index The index at which to insert the new block.
    * @param line A line of G-code to create the new block from.
    * @return Block& A reference to the newly inserted block.
@@ -113,6 +144,7 @@ public:
   /**
    * @brief The block being loaded and executed by the machine. If the program has not been started, or if it has finished, this will be nullptr.
    * 
+   * @test if the program is empty, not started, or done, must return nullptr
    * @return Block* 
    */
   Block *current() const { return _current; }
