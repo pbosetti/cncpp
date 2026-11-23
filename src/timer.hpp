@@ -398,6 +398,8 @@ private:
 
 Build: clang++ -std=c++20 -DTIMER_MAIN -x c++ src/timer.hpp -o timer_test
 Usage: ./timer_test [period_in_seconds]   (Ctrl-C to stop)
+Plot with complot as:
+./timer_test 0.005 | complot --aes "x=n y=dt" --type hist --create p1  -
 */
 
 #ifdef TIMER_MAIN
