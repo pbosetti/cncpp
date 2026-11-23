@@ -93,7 +93,7 @@ source ~/.zshrc
 
 ## The machine tool viewer
 
-Go to <https://github.com/mads-net/cncpp-viewer/releases> and download the latest version as a zip folder. Unzip it and move to a folder where you have easy access: you'll need to open a Terminal shell into that.
+Go to <https://github.com/mads-net/mt_plugin/releases> and download the latest version as a zip folder. Unzip it and move to a folder where you have easy access: you'll need to open a Terminal shell into that.
 
 On macOS, remove the protection (once) by typing:
 
