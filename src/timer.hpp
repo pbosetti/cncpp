@@ -418,7 +418,7 @@ int main(int argc, const char *argv[]) {
   // Default Unit is duration<double> (seconds). Or, e.g.:
   // Timer<milliseconds> t(200ms, 1000ms);
   Timer<duration<double>, true> t(duration<double>(delay),
-                                  duration<double>(delay * 1.1));
+                                  duration<double>(delay * 10));
 
   try {
     t.enable_rt_scheduler();
@@ -436,19 +436,18 @@ int main(int argc, const char *argv[]) {
       std::cout << s.n << ',' << t.dt() << ',' << s.min << ',' << s.max << ','
         << s.mean << ',' << s.sd << ',' << s.tet << std::endl;
     }
-    std::this_thread::sleep_for(75ms); // simulated task
+    std::this_thread::sleep_for(2ms); // simulated task
     try {
       t.wait_throw();
     } catch (const TimerError &e) {
       if (running) // Ctrl-C also interrupts the sleep: not an error
         std::cerr << "Error: " << e.what() << '\n';
-      running = 0;
     }
   }
   t.stop();
 
   const auto s = t.stats();
-  std::cout << "\nTimer stopped after " << s.n << " events.\n"
+  std::cerr << "\nTimer stopped after " << s.n << " events.\n"
             << "Min time:           " << s.min << " s\n"
             << "Max time:           " << s.max << " s\n"
             << "Mean time:          " << s.mean << " s\n"
