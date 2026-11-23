@@ -87,7 +87,7 @@ On macOS: download the `.dmg` file, open it and drag the `usr` folder to your us
 
 ```bash
 xattr -rd com.apple.quarantine ~/usr
-echo 'export PATH=$HOME/usr/bin:$PATH' >> ~/.zshrc
+echo 'export PATH=$HOME/usr/local/bin:$PATH' >> ~/.zshrc
 source ~/.zshrc
 ```
 
