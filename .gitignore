@@ -15,3 +15,5 @@ imgui.ini
 
 .DS_Store
 .cache
+FMU_agent/
+*.bak

@@ -106,6 +106,44 @@ static Point read_point(json const &j, const string &key, Point const &def) {
   return Point(v[0].get<data_t>(), v[1].get<data_t>(), v[2].get<data_t>());
 }
 
+// MADS-related ================================================================
+
+void Machine::connect(const string &name, const string &url) {
+  _agent = make_unique<Mads::Agent>(name, url);
+  _agent->init();
+  json settings = _agent->get_settings();
+  load(settings);
+  _agent->connect();
+}
+
+void Machine::sync() {
+  _agent->publish(_command);
+  _agent->receive();
+}
+
+
+void Machine::set_setpoint(const Point &p) {
+
+}
+
+
+void Machine::reset() {
+
+}
+
+
+bool Machine::is_connected() const {
+  return false; // TODO: implement this method to check if the agent is connected 
+}
+
+
+void Machine::send_metrics(const nlohmann::json &metrics) {
+
+}
+
+
+
+
 
 
 #ifdef CNCPP_TEST_MACHINE

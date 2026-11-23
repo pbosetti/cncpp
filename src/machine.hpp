@@ -12,6 +12,7 @@
 #include "point.hpp"
 #include <nlohmann/json.hpp>
 #include <toml++/toml.hpp>
+#include <agent.hpp>
 
 namespace cncpp {
 class Machine : public Object {
@@ -94,6 +95,49 @@ public:
 
   // Machine connection ========================================================
 
+  /**
+   * @brief Connects the machine to a MADS broker.
+   * @param name The name of this Agent.
+   * @param url The URL of the remote server in the form `"tcp<hostname or IP>:<port>`".
+   */
+  void connect(const std::string &name, const std::string &url = "tcp://localhost:9092");
+
+  /**
+   * @brief Synchronizes the machine state with the MADS broker.
+   * 
+   * This will send the current setpoint and receive the current state from 
+   * the machine/machine simulator.
+   */
+  void sync();
+
+  /**
+   * @brief Sets the machine's setpoint to the specified point.
+   * @param p The point to set as the new setpoint.
+   */
+  void set_setpoint(const Point &p);
+
+  /**
+   * @brief Resets the machine to its initial state.
+   */
+  void reset();
+
+  /**
+   * @brief Checks if the machine is connected to the MADS broker.
+   * @return true if the machine is connected, false otherwise.
+   */
+  bool is_connected() const;
+
+  /**
+   * @brief Sends metrics to the MADS network.
+   * 
+   * Metrics are sent as JSON and typically used by the viewer/dashboard for
+   * debugging/logging purposes. The metrics can include any relevant 
+   * information about the machine's state, performance, or other data that may
+   *  be useful for monitoring or analysis.
+   * 
+   * @param metrics The metrics to send.
+   */
+  void send_metrics(const nlohmann::json &metrics);
 
 
 
@@ -197,6 +241,12 @@ private:
   Point _zero{0.0, 0.0, 0.0};             // Initial position
   Point _offset{0.0, 0.0, 0.0};           // WP origin offset
   Point _travels{1000.0, 1000.0, 1000.0}; // TODO: actually support this!
+
+  // Interfacing with machine/simulator:
+  std::unique_ptr<Mads::Agent> _agent;
+  nlohmann::json _command{};
+  nlohmann::json _state{};
+
 }; // class Machine
 
 } // namespace cncpp

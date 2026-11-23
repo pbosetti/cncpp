@@ -111,8 +111,12 @@ elseif(APPLE)
   add_compile_options(-Wno-deprecated-literal-operator)
 endif()
 
-# find_package(Mads REQUIRED)
-# message(STATUS "Found Mads: ${Mads_DIR}")
+find_package(Mads REQUIRED)
+if (NOT Mads_FOUND)
+  message(FATAL_ERROR "Mads not found. Please install Mads and set Mads_DIR.")
+else()
+  message(STATUS "Mads found: ${Mads_DIR}")
+endif()
 
 #    ____             __ _                          _    __ _ _
 #   / ___|___  _ __  / _(_) __ _ _   _ _ __ ___  __| |  / _(_) | ___  ___
@@ -173,7 +177,7 @@ file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 
 add_library(cncpp STATIC ${SRC_FILES})
 target_include_directories(cncpp PUBLIC ${SRC_DIR})
-target_link_libraries(cncpp PUBLIC fmt::fmt)
+target_link_libraries(cncpp PUBLIC fmt::fmt Mads::Mads)
 
 add_executable(point_test ${SRC_DIR}/point.cpp)
 target_compile_definitions(point_test PRIVATE CNCPP_TEST_POINT)

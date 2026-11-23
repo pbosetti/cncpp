@@ -22,6 +22,24 @@ Installin MADS is easy anc common to all platforms: head to <https://github.com/
 
 # On Windows
 
+## Enabling scripts and custom executables
+
+By default, Windows 11 refuses to run PowerShell scripts (e.g. the Python venv `activate` script used below) and may block executables downloaded from the Internet. To lift these limits, open the Terminal app (PowerShell) **once** and type:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+and answer `Y` when asked. This allows local scripts to run, for the current user only.
+
+Files downloaded from the Internet are also marked as *blocked*. After unzipping a downloaded folder, unblock all its files with:
+
+```powershell
+Get-ChildItem -Path <unzipped folder> -Recurse | Unblock-File
+```
+
+If, when launching an `.exe`, a blue *"Windows protected your PC"* (SmartScreen) window appears, click **More info** and then **Run anyway**. If the executable is still blocked, open *Settings > Privacy & security > Windows Security > App & browser control > Smart App Control* and set it to **Off** (note: once turned off, it cannot be turned back on without reinstalling Windows).
+
 ## MADS installation
 
 Just launch the `.exe` installer and follow the instructions. Then veryfy the installation by opening the Terminal app and typing:
@@ -32,9 +50,9 @@ mads -v
 
 ## The machine tool viewer
 
-Go to <https://github.com/mads-net/cncpp-viewer/releases> and download the latest version as a zip folder. Unzip it and move to a folder where you have easy access: you'll need to open a Terminal shell into that.
+Go to <https://github.com/mads-net/mt_plugin/releases> and download the latest version as a zip folder. Unzip it and move to a folder where you have easy access: you'll need to open a Terminal shell into that.
 
-The viewer uses [Rerun](https://rerun.io/) which, in turn, requires a Python3 installation. Open a Temrinal shell into the `cncpp-viewer` folder and type:
+The viewer uses [Rerun](https://rerun.io/) which, in turn, requires a Python3 installation. Open a Terminal shell into the `mt_plugin` folder unzipped above and type:
 
 ```powershell
 python3 -mvenv venv
@@ -101,7 +119,7 @@ On macOS, remove the protection (once) by typing:
 xattr -rd com.apple.quarantine <unzipped folder>
 ```
 
-The viewer uses [Rerun](https://rerun.io/) which, in turn, requires a Python3 installation. Open a Temrinal shell into the `cncpp-viewer` folder and type:
+The viewer uses [Rerun](https://rerun.io/) which, in turn, requires a Python3 installation. Open a Terminal shell into the `mt_plugin` folder unzipped aboveand type:
 
 ```bash
 python3 -mvenv .venv
