@@ -110,15 +110,44 @@ static Point read_point(json const &j, const string &key, Point const &def) {
 
 void Machine::connect(const string &name, const string &url) {
   _agent = make_unique<Mads::Agent>(name, url);
+  _agent->set_settings_timeout(3000);
   _agent->init();
-  json settings = _agent->get_settings();
-  load(settings);
+  try {
+    json settings = _agent->get_settings();
+    load(settings);
+  } catch (const exception &e) {
+    throw runtime_error(string("Error fetching settings from broker: ") + e.what());
+  }
+  _agent->set_receive_timeout(1000);
+  _agent->set_high_watermark(1);
   _agent->connect();
+  clear_command();
 }
 
 void Machine::sync() {
-  _agent->publish(_command);
-  _agent->receive();
+  if (!_agent) {
+    return;
+  }
+  try {
+    _agent->publish(_command);
+    _agent->receive();
+    _state = json::parse(get<1>(_agent->last_message()));
+    try {
+     _position.x(_state["output"]["position"][0]);
+      _position.y(_state["output"]["position"][1]);
+      _position.z(_state["output"]["position"][2]);
+    } catch (const exception &e) {
+      cerr << "Error parsing postion data: " + e.what(); << endl;
+    }
+  } catch (const exception &e) {
+    cerr << "Error synchronizing: " + e.what() << endl();
+  }
+  try {
+    _error = (_setpoint - _position).length();
+  } catch (const exception &e) {
+    _error = numeric_limits<data_t>::quiet_NaN();
+  }
+  clear_command();
 }
 
 
@@ -142,7 +171,10 @@ void Machine::send_metrics(const nlohmann::json &metrics) {
 }
 
 
-
+void Machine::clear_command() {
+  _command["input"] = json::object();
+  _command["reset"] = false;
+}
 
 
 

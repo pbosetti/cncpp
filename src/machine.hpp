@@ -232,6 +232,34 @@ public:
     return (_zero = Point{x, y, z});
   }
 
+  /**
+   * @brief Gets the current setpoint.
+   * @return Commanded setpoint position.
+   */
+  Point setpoint() const { return _setpoint; }
+
+  /**
+   * @brief Sets the current setpoint.
+   * @param p New setpoint position.
+   * @return Updated setpoint position.
+   */
+  Point setpoint(Point p) { return _setpoint = p; }
+
+  /**
+   * @brief Sets the current setpoint from coordinate values.
+   * @param x New x coordinate.
+   * @param y New y coordinate.
+   * @param z New z coordinate.
+   * @return Updated setpoint position.
+   */
+  Point setpoint(data_t x, data_t y, data_t z) { return _setpoint = Point(x, y, z); } 
+
+  /**
+   * @brief Gets the current actual position.
+   * @return Current machine position.
+   */
+  Point position() const { return _position; }
+
 private:
   nlohmann::json _data{};
   data_t _A = 5.0;                        // mm/s/s
@@ -243,9 +271,13 @@ private:
   Point _travels{1000.0, 1000.0, 1000.0}; // TODO: actually support this!
 
   // Interfacing with machine/simulator:
+  Point _position{}, _setpoint{};
+  data_t _error = numeric_limits<data_t>::quiet_NaN();
   std::unique_ptr<Mads::Agent> _agent;
   nlohmann::json _command{};
   nlohmann::json _state{};
+
+  void clear_command();
 
 }; // class Machine
 
